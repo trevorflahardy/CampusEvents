@@ -20,7 +20,10 @@ router.post("/", async (c) => {
 // GET /api/tickets/user/:userId — get all tickets for a user
 router.get("/user/:userId", async (c) => {
   const userId = Number(c.req.param("userId"));
-  const rows = await db.select().from(tickets).where(eq(tickets.userId, userId));
+  const rows = await db
+    .select()
+    .from(tickets)
+    .where(eq(tickets.userId, userId));
   return c.json(rows);
 });
 

@@ -50,7 +50,10 @@ const userData = [
 async function seed() {
   console.log("🌱 Seeding database...");
 
-  const insertedCategories = await db.insert(categories).values(categoryData).returning();
+  const insertedCategories = await db
+    .insert(categories)
+    .values(categoryData)
+    .returning();
   console.log(`  ✓ Inserted ${insertedCategories.length} categories`);
 
   const insertedUsers = await db.insert(users).values(userData).returning();
@@ -61,7 +64,8 @@ async function seed() {
   const eventData = [
     {
       title: "Spring Career Fair 2026",
-      description: "Meet top employers hiring USF students for internships and full-time roles.",
+      description:
+        "Meet top employers hiring USF students for internships and full-time roles.",
       location: "Marshall Student Center Ballroom",
       startTime: new Date("2026-04-10T10:00:00"),
       endTime: new Date("2026-04-10T16:00:00"),
@@ -72,7 +76,8 @@ async function seed() {
     },
     {
       title: "Bulls After Dark: Spring Concert",
-      description: "Live performances by student bands and special guest artists.",
+      description:
+        "Live performances by student bands and special guest artists.",
       location: "USF Amphitheater",
       startTime: new Date("2026-04-18T19:00:00"),
       endTime: new Date("2026-04-18T23:00:00"),
@@ -83,7 +88,8 @@ async function seed() {
     },
     {
       title: "Hackathon @ USF 2026",
-      description: "24-hour coding competition — form teams, build projects, win prizes.",
+      description:
+        "24-hour coding competition — form teams, build projects, win prizes.",
       location: "ENB 118",
       startTime: new Date("2026-04-25T09:00:00"),
       endTime: new Date("2026-04-26T09:00:00"),

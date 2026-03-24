@@ -30,7 +30,11 @@ router.post("/", async (c) => {
 router.patch("/:id", async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json();
-  const updated = await db.update(events).set(body).where(eq(events.id, id)).returning();
+  const updated = await db
+    .update(events)
+    .set(body)
+    .where(eq(events.id, id))
+    .returning();
   if (!updated.length) return c.json({ error: "Event not found" }, 404);
   return c.json(updated[0]);
 });
