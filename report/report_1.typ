@@ -25,6 +25,10 @@
   },
 )
 
+// ── Fletcher (ER diagram arrows) ─────────────────────────────
+#import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node
+#import "@preview/oxdraw:0.1.0": *
+
 // ── Global Typography ────────────────────────────────────────
 #set text(font: "Linux Libertine", size: 11pt, fill: luma(20))
 #set par(justify: true, leading: 0.7em, spacing: 1.2em)
@@ -163,120 +167,11 @@ The database is modeled around *five entity sets* connected by *four relationshi
 
 The diagram below represents the entity-relationship model for CampusEvents. Entities are shown as labeled rectangles, and the relationships between them are annotated with their cardinality. A machine-readable version of this diagram is also available as `er_diagram.mermaid` in the project root.
 
-#v(0.8em)
-
-// ── ER Diagram (drawn with native Typst layout) ──────────────
-// We use place() + box() to position entity boxes and draw
-// relationship lines between them across a fixed canvas.
-
-#let er-box(name, attrs) = block(
-  stroke: 0.6pt + luma(80),
-  radius: 2pt,
-  width: 100%,
-  [
-    #block(
-      width: 100%,
-      fill: luma(215),
-      inset: (x: 8pt, y: 5pt),
-      radius: (top: 2pt),
-      text(font: "Liberation Mono", size: 9pt, weight: "bold")[#name],
-    )
-    #block(
-      width: 100%,
-      fill: luma(252),
-      inset: (x: 8pt, y: 5pt),
-      radius: (bottom: 2pt),
-      {
-        for (a, t) in attrs [
-          #text(font: "Liberation Mono", size: 8.2pt)[#a] #h(1fr) #text(size: 8pt, fill: luma(100))[#t] \
-        ]
-      },
-    )
-  ],
+#figure(
+  image("./schema_diagram.png", alt: "ER Diagram for CampusEvents"),
 )
 
-#grid(
-  columns: (1fr, 0.7fr, 1fr),
-  gutter: 1.2em,
-  // Column 1
-  stack(
-    spacing: 1.2em,
-    er-box("USERS", (
-      ("id", "SERIAL PK"),
-      ("net_id", "VARCHAR UK"),
-      ("name", "VARCHAR"),
-      ("email", "VARCHAR UK"),
-      ("password_hash", "TEXT"),
-      ("role", "ENUM"),
-      ("created_at", "TIMESTAMP"),
-    )),
-    er-box("CATEGORIES", (
-      ("id", "SERIAL PK"),
-      ("name", "VARCHAR UK"),
-    )),
-  ),
-  // Column 2 — relationship labels, centered vertically
-  align(center + horizon)[
-    #stack(
-      spacing: 3.2em,
-      v(1em),
-      block(
-        stroke: 0.4pt + luma(180),
-        inset: (x: 6pt, y: 4pt),
-        radius: 8pt,
-        fill: white,
-        text(size: 8pt)[*organizes* \ #text(fill: luma(100))[1 : N]],
-      ),
-      block(
-        stroke: 0.4pt + luma(180),
-        inset: (x: 6pt, y: 4pt),
-        radius: 8pt,
-        fill: white,
-        text(size: 8pt)[*books* \ #text(fill: luma(100))[1 : N]],
-      ),
-      block(
-        stroke: 0.4pt + luma(180),
-        inset: (x: 6pt, y: 4pt),
-        radius: 8pt,
-        fill: white,
-        text(size: 8pt)[*tagged with* \ #text(fill: luma(100))[M : N]],
-      ),
-    )
-  ],
-  // Column 3
-  stack(
-    spacing: 1.2em,
-    er-box("EVENTS", (
-      ("id", "SERIAL PK"),
-      ("title", "VARCHAR"),
-      ("description", "TEXT"),
-      ("location", "VARCHAR"),
-      ("start_time", "TIMESTAMP"),
-      ("end_time", "TIMESTAMP"),
-      ("capacity", "INTEGER"),
-      ("ticket_price", "NUMERIC"),
-      ("status", "ENUM"),
-      ("organizer_id", "INTEGER FK"),
-    )),
-    er-box("EVENT_CATEGORIES", (
-      ("event_id", "INTEGER FK/PK"),
-      ("category_id", "INTEGER FK/PK"),
-    )),
-    er-box("TICKETS", (
-      ("id", "SERIAL PK"),
-      ("user_id", "INTEGER FK"),
-      ("event_id", "INTEGER FK"),
-      ("purchased_at", "TIMESTAMP"),
-      ("checked_in", "BOOLEAN"),
-      ("confirmation_code", "VARCHAR UK"),
-    )),
-  ),
-)
-
-#v(0.4em)
-#note[*Figure 1.* Entity-relationship diagram for CampusEvents. Arrows connect USERS→EVENTS (organizes, 1:N), USERS→TICKETS (books, 1:N), EVENTS→TICKETS (has, 1:N), and EVENTS↔CATEGORIES (tagged with, M:N via EVENT\_CATEGORIES).]
-
-== 3.2 Entity Sets & Attributes
+== Entity Sets & Attributes
 
 Each entity set is described below with its full attribute list, types, and constraints. Primary keys are underlined by convention; foreign keys are noted explicitly.
 
