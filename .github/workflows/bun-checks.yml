@@ -1,0 +1,71 @@
+name: Bun Checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "client/**"
+      - "server/**"
+      - ".github/workflows/bun-checks.yml"
+  pull_request:
+    paths:
+      - "client/**"
+      - "server/**"
+      - ".github/workflows/bun-checks.yml"
+
+jobs:
+  checks:
+    name: ${{ matrix.package }} / ${{ matrix.script }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: client
+            script: lint
+          - package: client
+            script: typecheck
+          - package: client
+            script: format:check
+          - package: server
+            script: lint
+          - package: server
+            script: typecheck
+          - package: server
+            script: format:check
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.package }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check script existence
+        id: script_check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if bun -e "const p = JSON.parse(await Bun.file('package.json').text()); process.exit(p.scripts && p.scripts['${{ matrix.script }}'] ? 0 : 1)"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run script
+        if: steps.script_check.outputs.exists == 'true'
+        run: bun run "${{ matrix.script }}"
+
+      - name: Skip missing script
+        if: steps.script_check.outputs.exists != 'true'
+        run: echo "Skipping ${{ matrix.script }} in ${{ matrix.package }} (script not defined)."
