@@ -17,36 +17,6 @@
 
 ---
 
-## Project Structure
-
-```
-project_4/
-├── client/              # React + Vite frontend
-│   ├── src/
-│   │   ├── App.tsx
-│   │   └── index.css
-│   └── vite.config.ts
-├── server/              # Bun + Hono backend
-│   ├── src/
-│   │   ├── index.ts         # Entry point
-│   │   ├── db/
-│   │   │   ├── schema.ts    # Drizzle schema (source of truth)
-│   │   │   ├── client.ts    # DB connection
-│   │   │   ├── migrate.ts   # Migration runner
-│   │   │   └── seed.ts      # Sample data
-│   │   └── routes/
-│   │       ├── events.ts
-│   │       ├── tickets.ts
-│   │       └── users.ts
-│   ├── drizzle.config.ts
-│   └── package.json
-├── docker-compose.yml   # PostgreSQL container
-├── .env.example
-└── README.md
-```
-
----
-
 ## Getting Started
 
 ### Prerequisites
@@ -146,10 +116,10 @@ See `server/src/db/schema.ts` for the full Drizzle schema.
 
 ## Team
 
-| Name            |
-| --------------- |
-| Trevor Flahardy |
-| Sofia Cobo      |
+| Name             |
+| ---------------- |
+| Trevor Flahardy  |
+| Sofia Cobo Navas |
 
 ---
 
