@@ -1,0 +1,22 @@
+# Environment
+.env
+*.env.local
+
+# Dependencies
+node_modules/
+bun.lockb
+
+# Build output
+dist/
+build/
+
+# DB migrations (generated — commit these after review)
+# src/db/migrations/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

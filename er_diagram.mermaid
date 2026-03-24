@@ -1,0 +1,63 @@
+erDiagram
+
+    USERS {
+        int     id              PK
+        varchar net_id          UK  "University NetID (e.g. trev123)"
+        varchar name
+        varchar email           UK
+        text    password_hash
+        enum    role                "admin | organizer | student"
+        timestamp created_at
+    }
+
+    EVENTS {
+        int       id              PK
+        varchar   title
+        text      description
+        varchar   location
+        timestamp start_time
+        timestamp end_time
+        int       capacity            "Must be > 0"
+        numeric   ticket_price        "Default 0.00 (free)"
+        enum      status              "upcoming | ongoing | completed | cancelled"
+        int       organizer_id    FK  "References USERS.id"
+        timestamp created_at
+    }
+
+    CATEGORIES {
+        int     id    PK
+        varchar name  UK  "e.g. Academic, Music, Sports, Career"
+    }
+
+    EVENT_CATEGORIES {
+        int event_id     FK  "References EVENTS.id"
+        int category_id  FK  "References CATEGORIES.id"
+    }
+
+    TICKETS {
+        int       id                PK
+        int       user_id           FK   "References USERS.id"
+        int       event_id          FK   "References EVENTS.id"
+        timestamp purchased_at
+        boolean   checked_in             "Default FALSE"
+        varchar   confirmation_code  UK  "Unique 8-char code"
+    }
+
+    %% ── Relationships ──────────────────────────────────────────
+    %%
+    %%  USERS (organizer) can create many EVENTS
+    %%  EVENTS belong to one organizer (USERS)
+    USERS       ||--o{ EVENTS           : "organizes"
+
+    %%  USERS (student) can book many TICKETS
+    %%  Each TICKET belongs to exactly one USER
+    USERS       ||--o{ TICKETS          : "books"
+
+    %%  EVENTS can have many TICKETS
+    %%  Each TICKET is for exactly one EVENT
+    EVENTS      ||--o{ TICKETS          : "has"
+
+    %%  EVENTS and CATEGORIES have a many-to-many relationship
+    %%  resolved via EVENT_CATEGORIES join table
+    EVENTS      ||--o{ EVENT_CATEGORIES : "tagged with"
+    CATEGORIES  ||--o{ EVENT_CATEGORIES : "applied to"
