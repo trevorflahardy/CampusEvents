@@ -231,24 +231,16 @@ Each entity set is described below with its full attribute list, types, and cons
 *CATEGORIES* and *EVENT\_CATEGORIES* — Categories form a simple lookup table (e.g., Academic, Music, Sports, Career, Technology). The many-to-many relationship between EVENTS and CATEGORIES is resolved through the EVENT\_CATEGORIES join table, allowing a single event to belong to multiple categories for filtering purposes.
 
 #v(0.3em)
-#grid(
-  columns: (1fr, 1fr),
-  gutter: 1.2em,
-  table(
-    columns: (auto, 1fr, auto),
-    align: left,
-    table.header[Attribute][Type][Constraint],
-    [#underline[id]], [`SERIAL`], [`PRIMARY KEY`],
-    [`name`], [`VARCHAR(100)`], [`NOT NULL, UNIQUE`],
-  ),
-  table(
-    columns: (1fr, 1fr, 1fr),
-    align: left,
-    table.header[Attribute][Type][Constraint],
-    [`event_id`], [`INTEGER`], [`FK → EVENTS, PK`],
-    [`category_id`], [`INTEGER`], [`FK → CATEGORIES, PK`],
-  ),
+
+#table(
+  columns: (1fr, 1fr, 1fr),
+  table.header[Attribute][Type][Constant],
+  [#underline[id]], [`SERIAL`], [`PRIMARY KEY`],
+  [`name`], [`VARCHAR(100)`], [`NOT NULL, UNIQUE`],
+  [`event_id`], [`INTEGER`], [`FK → EVENTS, PK`],
+  [`category_id`], [`INTEGER`], [`FK → CATEGORIES, PK`],
 )
+
 
 // ============================================================
 // 4. RELATIONSHIP SETS
