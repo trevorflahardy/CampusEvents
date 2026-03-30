@@ -165,10 +165,11 @@ The database is modeled around *five entity sets* connected by *four relationshi
 
 == ER Diagram
 
-The diagram below represents the entity-relationship model for CampusEvents. Entities are shown as labeled rectangles, and the relationships between them are annotated with their cardinality. A machine-readable version of this diagram is also available as `er_diagram.mermaid` in the project root.
+The diagram below represents the entity-relationship model for CampusEvents. Entities are shown as labeled rectangles, and the relationships between them are annotated with their cardinality. A machine-readable version of this diagram is also available as `schema_diagram.mermaid` in the report directory.
 
 #figure(
-  image("./schema_diagram.png", alt: "ER Diagram for CampusEvents"),
+  image("schema_diagram.png", alt: "ER Diagram for CampusEvents"),
+  caption: "ER Diagram for CampusEvents — showing entity sets, attributes, and relationships with cardinality.",
 )
 
 == Entity Sets & Attributes

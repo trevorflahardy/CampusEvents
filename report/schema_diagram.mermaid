@@ -1,0 +1,50 @@
+erDiagram
+
+    USERS {
+        int id PK "SERIAL auto-incremented"
+        varchar net_id UK "NOT NULL University NetID"
+        varchar name "NOT NULL"
+        varchar email UK "NOT NULL"
+        text password_hash "NOT NULL bcrypt-hashed"
+        enum role "admin or organizer or student DEFAULT student"
+        timestamp created_at "DEFAULT NOW()"
+    }
+
+    EVENTS {
+        int id PK "SERIAL auto-incremented"
+        varchar title "NOT NULL"
+        text description "NULLABLE"
+        varchar location "NOT NULL"
+        timestamp start_time "NOT NULL"
+        timestamp end_time "NOT NULL CHECK end_time greater than start_time"
+        int capacity "NOT NULL CHECK capacity greater than 0"
+        numeric ticket_price "DEFAULT 0.00 CHECK >= 0"
+        enum status "upcoming ongoing completed cancelled"
+        int organizer_id FK "REFERENCES USERS.id ON DELETE CASCADE"
+        timestamp created_at "DEFAULT NOW()"
+    }
+
+    CATEGORIES {
+        int id PK "SERIAL auto-incremented"
+        varchar name UK "NOT NULL e.g. Academic Music Sports"
+    }
+
+    EVENT_CATEGORIES {
+        int event_id PK "FK REFERENCES EVENTS.id ON DELETE CASCADE"
+        int category_id PK "FK REFERENCES CATEGORIES.id ON DELETE CASCADE"
+    }
+
+    TICKETS {
+        int id PK "SERIAL auto-incremented"
+        int user_id FK "REFERENCES USERS.id ON DELETE CASCADE"
+        int event_id FK "REFERENCES EVENTS.id ON DELETE CASCADE"
+        timestamp purchased_at "DEFAULT NOW()"
+        boolean checked_in "DEFAULT FALSE"
+        varchar confirmation_code UK "Unique alphanumeric code"
+    }
+
+    USERS ||--o{ EVENTS : "organizes"
+    USERS ||--o{ TICKETS : "books"
+    EVENTS ||--o{ TICKETS : "has"
+    EVENTS ||--o{ EVENT_CATEGORIES : "tagged with"
+    CATEGORIES ||--o{ EVENT_CATEGORIES : "applied to"
