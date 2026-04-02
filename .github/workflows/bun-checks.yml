@@ -4,13 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - "client/**"
-      - "server/**"
+      - "frontend/**"
+      - "backend/**"
       - ".github/workflows/bun-checks.yml"
   pull_request:
     paths:
-      - "client/**"
-      - "server/**"
+      - "frontend/**"
+      - "backend/**"
       - ".github/workflows/bun-checks.yml"
 
 jobs:
@@ -21,17 +21,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - package: client
+          - package: frontend
             script: lint
-          - package: client
+          - package: frontend
             script: typecheck
-          - package: client
+          - package: frontend
             script: format:check
-          - package: server
+          - package: backend
             script: lint
-          - package: server
+          - package: backend
             script: typecheck
-          - package: server
+          - package: backend
             script: format:check
 
     defaults:

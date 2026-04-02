@@ -4,22 +4,22 @@ on:
   push:
     branches: [main]
     paths:
-      - "client/**"
-      - "server/**"
+      - "frontend/**"
+      - "backend/**"
       - ".github/workflows/build-and-test.yml"
   pull_request:
     paths:
-      - "client/**"
-      - "server/**"
+      - "frontend/**"
+      - "backend/**"
       - ".github/workflows/build-and-test.yml"
 
 jobs:
-  client:
-    name: Client Build and Test
+  frontend:
+    name: Frontend Build and Test
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: client
+        working-directory: frontend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,12 +38,12 @@ jobs:
       - name: Test
         run: bun run test
 
-  server:
-    name: Server Build and Test
+  backend:
+    name: Backend Build and Test
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: server
+        working-directory: backend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
