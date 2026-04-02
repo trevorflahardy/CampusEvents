@@ -60,7 +60,7 @@ export default function MyTickets() {
         <div className="skeleton h-8 w-40 mb-8" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="glass rounded-2xl p-6">
+            <div key={i} className="bg-white rounded-xl border border-slate-200 p-6">
               <div className="skeleton h-5 w-1/3 mb-3" />
               <div className="skeleton h-4 w-1/2 mb-2" />
               <div className="skeleton h-4 w-1/4" />
@@ -76,13 +76,13 @@ export default function MyTickets() {
       <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-8">My Tickets</h1>
 
       {error && (
-        <div className="glass rounded-2xl p-4 mb-6 border-l-4 border-red-400">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6 border-l-4 border-red-400">
           <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
 
       {tickets.length === 0 ? (
-        <div className="glass rounded-3xl text-center py-20 px-8">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm text-center py-20 px-8">
           <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
@@ -100,7 +100,7 @@ export default function MyTickets() {
       ) : (
         <div className="space-y-4">
           {tickets.map((ticket) => (
-            <div key={ticket.ticketId} className="glass rounded-2xl p-6 hover-lift">
+            <div key={ticket.ticketId} className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 hover:border-slate-300 hover:shadow-md transition-all duration-200">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-3">
@@ -132,9 +132,9 @@ export default function MyTickets() {
                   </div>
 
                   {/* Confirmation */}
-                  <div className="glass-subtle rounded-xl px-4 py-3 inline-flex items-center gap-3">
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 inline-flex items-center gap-3">
                     <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Confirmation</span>
-                    <span className="font-mono text-lg font-bold text-gradient-blue">{ticket.confirmationCode}</span>
+                    <span className="font-mono text-lg font-bold text-indigo-600">{ticket.confirmationCode}</span>
                   </div>
 
                   {/* Check-in */}

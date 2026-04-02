@@ -64,7 +64,7 @@ export default function Navbar() {
       </span>
       <button
         onClick={handleLogout}
-        className="cursor-pointer glass rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-all duration-200"
+        className="cursor-pointer bg-slate-100 hover:bg-slate-200 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-all duration-200"
       >
         Logout
       </button>
@@ -89,7 +89,7 @@ export default function Navbar() {
   );
 
   return (
-    <nav className="sticky top-0 z-50 glass-heavy shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 cursor-pointer">

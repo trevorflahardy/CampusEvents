@@ -31,7 +31,7 @@ export default function EventCard({ event }: EventCardProps) {
   return (
     <Link
       to={`/events/${event.id}`}
-      className="cursor-pointer block glass rounded-2xl hover-lift overflow-hidden"
+      className="cursor-pointer block bg-white rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md transition-all duration-200 overflow-hidden"
     >
       <div className="p-6">
         <div className="flex items-start justify-between gap-3 mb-4">
@@ -63,7 +63,7 @@ export default function EventCard({ event }: EventCardProps) {
           <span className="text-xs text-slate-400 font-medium">
             by {event.organizerName}
           </span>
-          <span className="text-sm font-bold text-gradient">
+          <span className="text-sm text-indigo-600 font-bold">
             {formatPrice(event.ticketPrice)}
           </span>
         </div>

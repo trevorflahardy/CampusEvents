@@ -18,14 +18,9 @@ export default function Landing() {
   return (
     <div className="relative overflow-hidden">
       {/* Hero */}
-      <section className="relative px-4 sm:px-6 pt-32 pb-20 md:pt-44 md:pb-28 bg-hero">
-        {/* Animated orbs */}
-        <div className="absolute top-16 left-[15%] w-72 h-72 bg-indigo-400/20 rounded-full blur-3xl pointer-events-none animate-float" />
-        <div className="absolute top-32 right-[10%] w-96 h-96 bg-pink-400/15 rounded-full blur-3xl pointer-events-none animate-float-slow" />
-        <div className="absolute bottom-0 left-[40%] w-80 h-80 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none animate-float-delayed" />
-
+      <section className="relative px-4 sm:px-6 pt-32 pb-20 md:pt-44 md:pb-28 bg-gradient-to-b from-slate-50 via-white to-indigo-50/30">
         <div className="max-w-4xl mx-auto text-center relative">
-          <div className="inline-flex items-center gap-2 glass rounded-full px-5 py-2 mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm rounded-full px-5 py-2 mb-8 animate-fade-in">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
@@ -63,7 +58,7 @@ export default function Landing() {
             {!isAuthenticated && (
               <Link
                 to="/register"
-                className="cursor-pointer inline-flex items-center gap-2 glass-heavy font-bold px-8 py-4 rounded-2xl text-slate-700 hover:bg-white/90 transition-all duration-300 text-lg"
+                className="cursor-pointer inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm font-bold px-8 py-4 rounded-2xl text-slate-700 hover:shadow-md hover:border-slate-300 transition-all duration-200 text-lg"
               >
                 Create Account
               </Link>
@@ -76,7 +71,7 @@ export default function Landing() {
       {totalEvents > 0 && (
         <section className="px-4 sm:px-6 -mt-6 pb-16 relative z-10">
           <div className="max-w-3xl mx-auto">
-            <div className="glass-heavy rounded-3xl p-1.5 shadow-lg shadow-indigo-500/5">
+            <div className="bg-white border border-slate-200 shadow-lg rounded-3xl p-1.5">
               <div className="grid grid-cols-3 divide-x divide-slate-200/50">
                 {[
                   { value: totalEvents, label: "Active Events", color: "text-indigo-600" },
@@ -130,7 +125,7 @@ export default function Landing() {
                 desc: "Create events, track ticket sales, check in attendees, and manage everything from your dashboard.",
               },
             ].map((feature, i) => (
-              <div key={i} className={`${feature.glass} rounded-3xl p-8 hover-lift cursor-default`}>
+              <div key={i} className="bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 rounded-3xl p-8 cursor-default">
                 <div className={`w-12 h-12 rounded-2xl ${feature.iconBg} flex items-center justify-center mb-5 shadow-lg`}>
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {feature.icon}

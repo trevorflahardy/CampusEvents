@@ -64,7 +64,7 @@ export default function BrowseEvents() {
       </div>
 
       {/* Filter Bar */}
-      <div className="glass rounded-2xl p-5 mb-8">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +123,7 @@ export default function BrowseEvents() {
       </div>
 
       {error && (
-        <div className="glass rounded-2xl p-4 mb-6 border-l-4 border-red-400">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6 border-l-4 border-red-400">
           <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
@@ -131,7 +131,7 @@ export default function BrowseEvents() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="glass rounded-2xl p-6">
+            <div key={i} className="bg-white rounded-xl border border-slate-200 p-6">
               <div className="skeleton h-5 w-3/4 mb-4" />
               <div className="skeleton h-4 w-1/2 mb-2" />
               <div className="skeleton h-4 w-2/3 mb-6" />
@@ -140,7 +140,7 @@ export default function BrowseEvents() {
           ))}
         </div>
       ) : events.length === 0 ? (
-        <div className="glass rounded-3xl text-center py-20 px-8">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm text-center py-20 px-8">
           <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

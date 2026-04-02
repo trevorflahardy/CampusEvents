@@ -89,7 +89,7 @@ export default function AdminPanel() {
         <div className="flex gap-2 mb-6">
           {[1, 2, 3].map((i) => <div key={i} className="skeleton h-10 w-28 rounded-xl" />)}
         </div>
-        <div className="glass rounded-2xl p-6">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <div className="skeleton h-5 w-full mb-3" />
           <div className="skeleton h-5 w-full mb-3" />
           <div className="skeleton h-5 w-3/4" />
@@ -103,7 +103,7 @@ export default function AdminPanel() {
       <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-8">Admin Panel</h1>
 
       {error && (
-        <div className="glass rounded-2xl p-4 mb-6 border-l-4 border-red-400">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6 border-l-4 border-red-400">
           <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
@@ -116,8 +116,8 @@ export default function AdminPanel() {
             onClick={() => setActiveTab(tab.key)}
             className={`cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
               activeTab === tab.key
-                ? "btn-primary text-white"
-                : "glass text-slate-500 hover:text-slate-700 hover:bg-white/80"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
             }`}
           >
             {tab.label}
@@ -132,11 +132,11 @@ export default function AdminPanel() {
 
       {/* Users */}
       {activeTab === "users" && (
-        <div className="glass rounded-2xl overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-slate-400 border-b border-slate-200/60">
+              <thead className="bg-slate-50">
+                <tr className="text-left text-slate-400 border-b border-slate-200">
                   <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Name</th>
                   <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Email</th>
                   <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">NetID</th>
@@ -146,7 +146,7 @@ export default function AdminPanel() {
               </thead>
               <tbody className="divide-y divide-slate-100/60">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-white/40 transition-colors">
+                  <tr key={u.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center text-white text-xs font-semibold shrink-0">
@@ -179,11 +179,11 @@ export default function AdminPanel() {
 
       {/* Events */}
       {activeTab === "events" && (
-        <div className="glass rounded-2xl overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-slate-400 border-b border-slate-200/60">
+              <thead className="bg-slate-50">
+                <tr className="text-left text-slate-400 border-b border-slate-200">
                   <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Title</th>
                   <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Organizer</th>
                   <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Date</th>
@@ -193,7 +193,7 @@ export default function AdminPanel() {
               </thead>
               <tbody className="divide-y divide-slate-100/60">
                 {events.map((e) => (
-                  <tr key={e.id} className="hover:bg-white/40 transition-colors">
+                  <tr key={e.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 text-slate-900 font-medium">{e.title}</td>
                     <td className="px-6 py-4 text-slate-500">{e.organizerName}</td>
                     <td className="px-6 py-4 text-slate-400 text-xs">{formatDate(e.startTime)}</td>
