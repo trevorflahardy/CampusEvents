@@ -8,7 +8,6 @@ export default function BrowseEvents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Filters
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [from, setFrom] = useState("");
@@ -25,9 +24,7 @@ export default function BrowseEvents() {
       if (from) params.from = from;
       if (to) params.to = to;
       if (status) params.status = status;
-      const data = await api.getEvents(
-        Object.keys(params).length > 0 ? params : undefined,
-      );
+      const data = await api.getEvents(Object.keys(params).length > 0 ? params : undefined);
       setEvents(data);
     } catch {
       setError("Failed to load events.");
@@ -56,56 +53,57 @@ export default function BrowseEvents() {
   const hasFilters = search || categoryId || from || to || status;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="animate-fade-in">
+      <div className="flex items-end justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Upcoming Events</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Events</h1>
+          <p className="text-slate-400 mt-1 text-sm">
             {events.length} event{events.length !== 1 ? "s" : ""} found
           </p>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="glass rounded-2xl p-5 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-          <input
-            type="text"
-            placeholder="Search events..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-          />
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search events..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full input-glass rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400"
+            />
+          </div>
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+            className="cursor-pointer w-full input-glass rounded-xl px-4 py-2.5 text-sm text-slate-700"
           >
             <option value="">All Categories</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            placeholder="From"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+            className="w-full input-glass rounded-xl px-4 py-2.5 text-sm text-slate-700"
           />
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            placeholder="To"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+            className="w-full input-glass rounded-xl px-4 py-2.5 text-sm text-slate-700"
           />
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+            className="cursor-pointer w-full input-glass rounded-xl px-4 py-2.5 text-sm text-slate-700"
           >
             <option value="">All Statuses</option>
             <option value="upcoming">Upcoming</option>
@@ -117,31 +115,39 @@ export default function BrowseEvents() {
         {hasFilters && (
           <button
             onClick={clearFilters}
-            className="mt-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+            className="cursor-pointer mt-3 text-sm text-indigo-500 hover:text-violet-500 font-medium transition-colors"
           >
-            Clear Filters
+            Clear all filters
           </button>
         )}
       </div>
 
-      {/* Error */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 mb-6">
-          {error}
+        <div className="glass rounded-2xl p-4 mb-6 border-l-4 border-red-400">
+          <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
 
-      {/* Loading */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="text-gray-500">Loading events...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="glass rounded-2xl p-6">
+              <div className="skeleton h-5 w-3/4 mb-4" />
+              <div className="skeleton h-4 w-1/2 mb-2" />
+              <div className="skeleton h-4 w-2/3 mb-6" />
+              <div className="skeleton h-4 w-full" />
+            </div>
+          ))}
         </div>
       ) : events.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-xl text-gray-500 mb-2">No events found</p>
-          <p className="text-gray-400">
-            Try adjusting your filters or check back later.
-          </p>
+        <div className="glass rounded-3xl text-center py-20 px-8">
+          <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <p className="text-lg font-semibold text-slate-700 mb-1">No events found</p>
+          <p className="text-slate-400 text-sm">Try adjusting your filters or check back later.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

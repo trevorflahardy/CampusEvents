@@ -1,26 +1,15 @@
 import { useState, useEffect, type FormEvent } from "react";
-import {
-  api,
-  ApiError,
-  type User,
-  type Event,
-  type Category,
-  type PopularCategory,
-} from "../lib/api";
+import { api, ApiError, type User, type Event, type Category, type PopularCategory } from "../lib/api";
 
-const statusClasses: Record<string, string> = {
-  upcoming: "bg-green-100 text-green-800",
-  ongoing: "bg-blue-100 text-blue-800",
-  completed: "bg-gray-100 text-gray-800",
-  cancelled: "bg-red-100 text-red-800",
+const statusColors: Record<string, string> = {
+  upcoming: "bg-emerald-500/10 text-emerald-600",
+  ongoing: "bg-blue-500/10 text-blue-600",
+  completed: "bg-slate-500/10 text-slate-500",
+  cancelled: "bg-red-500/10 text-red-500",
 };
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 type Tab = "users" | "events" | "categories";
@@ -30,33 +19,21 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<User[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [popularCategories, setPopularCategories] = useState<
-    PopularCategory[]
-  >([]);
+  const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // New category form
   const [newCategoryName, setNewCategoryName] = useState("");
   const [categoryError, setCategoryError] = useState("");
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
     setLoading(true);
     try {
       const [u, e, c, pc] = await Promise.all([
-        api.getUsers(),
-        api.getEvents(),
-        api.getCategories(),
-        api.getPopularCategories(),
+        api.getUsers(), api.getEvents(), api.getCategories(), api.getPopularCategories(),
       ]);
-      setUsers(u);
-      setEvents(e);
-      setCategories(c);
-      setPopularCategories(pc);
+      setUsers(u); setEvents(e); setCategories(c); setPopularCategories(pc);
     } catch {
       setError("Failed to load data.");
     } finally {
@@ -67,13 +44,9 @@ export default function AdminPanel() {
   const handleRoleChange = async (userId: number, newRole: string) => {
     try {
       await api.updateUserRole(userId, newRole);
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === userId
-            ? { ...u, role: newRole as "admin" | "organizer" | "student" }
-            : u,
-        ),
-      );
+      setUsers((prev) => prev.map((u) =>
+        u.id === userId ? { ...u, role: newRole as "admin" | "organizer" | "student" } : u
+      ));
     } catch {
       setError("Failed to update role.");
     }
@@ -83,11 +56,7 @@ export default function AdminPanel() {
     if (!confirm("Cancel this event?")) return;
     try {
       await api.updateEvent(eventId, { status: "cancelled" });
-      setEvents((prev) =>
-        prev.map((e) =>
-          e.id === eventId ? { ...e, status: "cancelled" as const } : e,
-        ),
-      );
+      setEvents((prev) => prev.map((e) => e.id === eventId ? { ...e, status: "cancelled" as const } : e));
     } catch {
       setError("Failed to cancel event.");
     }
@@ -102,95 +71,104 @@ export default function AdminPanel() {
       setCategories((prev) => [...prev, cat]);
       setNewCategoryName("");
     } catch (err) {
-      if (err instanceof ApiError) {
-        setCategoryError(err.message);
-      } else {
-        setCategoryError("Failed to add category.");
-      }
+      if (err instanceof ApiError) setCategoryError(err.message);
+      else setCategoryError("Failed to add category.");
     }
   };
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: "users", label: "Users" },
-    { key: "events", label: "Events" },
-    { key: "categories", label: "Categories" },
+  const tabs: { key: Tab; label: string; count: number }[] = [
+    { key: "users", label: "Users", count: users.length },
+    { key: "events", label: "Events", count: events.length },
+    { key: "categories", label: "Categories", count: categories.length },
   ];
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-gray-500">Loading admin panel...</div>
+      <div className="animate-fade-in">
+        <div className="skeleton h-8 w-40 mb-8" />
+        <div className="flex gap-2 mb-6">
+          {[1, 2, 3].map((i) => <div key={i} className="skeleton h-10 w-28 rounded-xl" />)}
+        </div>
+        <div className="glass rounded-2xl p-6">
+          <div className="skeleton h-5 w-full mb-3" />
+          <div className="skeleton h-5 w-full mb-3" />
+          <div className="skeleton h-5 w-3/4" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin Panel</h1>
+    <div className="animate-fade-in">
+      <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-8">Admin Panel</h1>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 mb-6">
-          {error}
+        <div className="glass rounded-2xl p-4 mb-6 border-l-4 border-red-400">
+          <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 mb-6">
+      <div className="flex gap-2 mb-8">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+            className={`cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
               activeTab === tab.key
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "btn-primary text-white"
+                : "glass text-slate-500 hover:text-slate-700 hover:bg-white/80"
             }`}
           >
             {tab.label}
+            <span className={`rounded-full px-2 py-0.5 text-xs ${
+              activeTab === tab.key ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400"
+            }`}>
+              {tab.count}
+            </span>
           </button>
         ))}
       </div>
 
-      {/* Users Tab */}
+      {/* Users */}
       {activeTab === "users" && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="glass rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-gray-500">
-                  <th className="px-4 py-3 font-medium">Name</th>
-                  <th className="px-4 py-3 font-medium">Email</th>
-                  <th className="px-4 py-3 font-medium">NetID</th>
-                  <th className="px-4 py-3 font-medium">Role</th>
-                  <th className="px-4 py-3 font-medium">Created</th>
+              <thead>
+                <tr className="text-left text-slate-400 border-b border-slate-200/60">
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">NetID</th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Created</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100/60">
                 {users.map((u) => (
-                  <tr key={u.id}>
-                    <td className="px-4 py-3 text-gray-900 font-medium">
-                      {u.name}
+                  <tr key={u.id} className="hover:bg-white/40 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                          {u.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="font-medium text-slate-900">{u.name}</span>
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{u.email}</td>
-                    <td className="px-4 py-3 text-gray-600 font-mono">
-                      {u.netId}
-                    </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4 text-slate-500">{u.email}</td>
+                    <td className="px-6 py-4 font-mono text-slate-500 text-xs">{u.netId}</td>
+                    <td className="px-6 py-4">
                       <select
                         value={u.role}
-                        onChange={(e) =>
-                          handleRoleChange(u.id, e.target.value)
-                        }
-                        className="rounded border border-gray-300 px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                        className="cursor-pointer input-glass rounded-lg px-3 py-1.5 text-sm font-medium"
                       >
                         <option value="student">student</option>
                         <option value="organizer">organizer</option>
                         <option value="admin">admin</option>
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-gray-500">
-                      {formatDate(u.createdAt)}
-                    </td>
+                    <td className="px-6 py-4 text-slate-400 text-xs">{formatDate(u.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -199,44 +177,36 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* Events Tab */}
+      {/* Events */}
       {activeTab === "events" && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="glass rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-gray-500">
-                  <th className="px-4 py-3 font-medium">Title</th>
-                  <th className="px-4 py-3 font-medium">Organizer</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Action</th>
+              <thead>
+                <tr className="text-left text-slate-400 border-b border-slate-200/60">
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Title</th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Organizer</th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100/60">
                 {events.map((e) => (
-                  <tr key={e.id}>
-                    <td className="px-4 py-3 text-gray-900 font-medium">
-                      {e.title}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {e.organizerName}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {formatDate(e.startTime)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClasses[e.status]}`}
-                      >
+                  <tr key={e.id} className="hover:bg-white/40 transition-colors">
+                    <td className="px-6 py-4 text-slate-900 font-medium">{e.title}</td>
+                    <td className="px-6 py-4 text-slate-500">{e.organizerName}</td>
+                    <td className="px-6 py-4 text-slate-400 text-xs">{formatDate(e.startTime)}</td>
+                    <td className="px-6 py-4">
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColors[e.status]}`}>
                         {e.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4">
                       {e.status !== "cancelled" && (
                         <button
                           onClick={() => handleCancelEvent(e.id)}
-                          className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700"
+                          className="cursor-pointer rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/15 transition-colors"
                         >
                           Cancel
                         </button>
@@ -250,16 +220,13 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* Categories Tab */}
+      {/* Categories */}
       {activeTab === "categories" && (
         <div className="space-y-6">
-          {/* Add Category */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">
-              Add Category
-            </h2>
+          <div className="glass-heavy rounded-2xl p-6">
+            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Add Category</h2>
             {categoryError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 mb-3 text-sm">
+              <div className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-4 text-sm font-medium">
                 {categoryError}
               </div>
             )}
@@ -270,31 +237,25 @@ export default function AdminPanel() {
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 placeholder="Category name"
                 required
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                className="flex-1 input-glass rounded-xl px-4 py-2.5 text-sm"
               />
               <button
                 type="submit"
-                className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700"
+                className="cursor-pointer btn-primary text-white font-bold px-6 py-2.5 rounded-xl"
               >
                 Add
               </button>
             </form>
           </div>
 
-          {/* All Categories */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">
-              All Categories
-            </h2>
+          <div className="glass rounded-2xl p-6">
+            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">All Categories</h2>
             {categories.length === 0 ? (
-              <p className="text-gray-500 text-sm">No categories yet.</p>
+              <p className="text-slate-400 text-sm">No categories yet.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {categories.map((cat) => (
-                  <span
-                    key={cat.id}
-                    className="rounded-full bg-indigo-50 text-indigo-700 px-3 py-1.5 text-sm font-medium"
-                  >
+                  <span key={cat.id} className="rounded-full bg-indigo-500/8 text-indigo-600 border border-indigo-500/15 px-4 py-1.5 text-sm font-medium">
                     {cat.name}
                   </span>
                 ))}
@@ -302,26 +263,26 @@ export default function AdminPanel() {
             )}
           </div>
 
-          {/* Popular Categories */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">
-              Popular Categories
-            </h2>
+          <div className="glass rounded-2xl p-6">
+            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Popular Categories</h2>
             {popularCategories.length === 0 ? (
-              <p className="text-gray-500 text-sm">No data yet.</p>
+              <p className="text-slate-400 text-sm">No data yet.</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {popularCategories.map((pc) => (
-                  <div
-                    key={pc.categoryId}
-                    className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-                  >
-                    <span className="text-gray-900 font-medium">
-                      {pc.name}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {pc.eventCount} event{pc.eventCount !== 1 ? "s" : ""}
-                    </span>
+                  <div key={pc.categoryId} className="flex items-center justify-between py-3 border-b border-slate-100/60 last:border-0">
+                    <span className="text-slate-900 font-medium">{pc.name}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500 rounded-full"
+                          style={{ width: `${Math.min((pc.eventCount / Math.max(...popularCategories.map(p => p.eventCount))) * 100, 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-sm text-slate-400 font-medium tabular-nums w-12 text-right">
+                        {pc.eventCount}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -1,18 +1,12 @@
 import { useState, useEffect, type FormEvent } from "react";
-import {
-  api,
-  ApiError,
-  type Event,
-  type Category,
-  type Attendee,
-} from "../lib/api";
+import { api, ApiError, type Event, type Category, type Attendee } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
-const statusClasses: Record<string, string> = {
-  upcoming: "bg-green-100 text-green-800",
-  ongoing: "bg-blue-100 text-blue-800",
-  completed: "bg-gray-100 text-gray-800",
-  cancelled: "bg-red-100 text-red-800",
+const statusColors: Record<string, string> = {
+  upcoming: "bg-emerald-500/10 text-emerald-600",
+  ongoing: "bg-blue-500/10 text-blue-600",
+  completed: "bg-slate-500/10 text-slate-500",
+  cancelled: "bg-red-500/10 text-red-500",
 };
 
 function formatDate(dateStr: string): string {
@@ -35,7 +29,6 @@ export default function OrganizerDashboard() {
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Create event form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -44,10 +37,7 @@ export default function OrganizerDashboard() {
   const [capacity, setCapacity] = useState("");
   const [ticketPrice, setTicketPrice] = useState("");
 
-  // Attendees
-  const [attendeesMap, setAttendeesMap] = useState<
-    Record<number, Attendee[]>
-  >({});
+  const [attendeesMap, setAttendeesMap] = useState<Record<number, Attendee[]>>({});
   const [expandedEvent, setExpandedEvent] = useState<number | null>(null);
 
   const fetchEvents = async () => {
@@ -83,22 +73,13 @@ export default function OrganizerDashboard() {
         ticketPrice: ticketPrice || undefined,
         organizerId: user.id,
       });
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setLocation("");
-      setStartTime("");
-      setEndTime("");
-      setCapacity("");
-      setTicketPrice("");
+      setTitle(""); setDescription(""); setLocation("");
+      setStartTime(""); setEndTime(""); setCapacity(""); setTicketPrice("");
       setShowForm(false);
       await fetchEvents();
     } catch (err) {
-      if (err instanceof ApiError) {
-        setFormError(err.message);
-      } else {
-        setFormError("Failed to create event.");
-      }
+      if (err instanceof ApiError) setFormError(err.message);
+      else setFormError("Failed to create event.");
     } finally {
       setSubmitting(false);
     }
@@ -115,10 +96,7 @@ export default function OrganizerDashboard() {
   };
 
   const toggleAttendees = async (eventId: number) => {
-    if (expandedEvent === eventId) {
-      setExpandedEvent(null);
-      return;
-    }
+    if (expandedEvent === eventId) { setExpandedEvent(null); return; }
     setExpandedEvent(eventId);
     if (!attendeesMap[eventId]) {
       try {
@@ -142,197 +120,135 @@ export default function OrganizerDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-gray-500">Loading dashboard...</div>
+      <div className="animate-fade-in">
+        <div className="skeleton h-8 w-56 mb-8" />
+        <div className="space-y-4">
+          {[1, 2].map((i) => (
+            <div key={i} className="glass rounded-2xl p-6">
+              <div className="skeleton h-5 w-1/3 mb-3" />
+              <div className="skeleton h-4 w-1/2" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Organizer Dashboard
-        </h1>
+    <div className="animate-fade-in">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700"
+          className={`cursor-pointer rounded-xl px-5 py-2.5 font-semibold text-sm transition-all duration-200 ${
+            showForm
+              ? "glass text-slate-600 hover:bg-white/80"
+              : "btn-primary text-white"
+          }`}
         >
-          {showForm ? "Close Form" : "Create Event"}
+          {showForm ? "Close" : "Create Event"}
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 mb-6">
-          {error}
+        <div className="glass rounded-2xl p-4 mb-6 border-l-4 border-red-400">
+          <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
 
-      {/* Create Event Form */}
       {showForm && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            New Event
-          </h2>
+        <div className="glass-heavy rounded-3xl p-8 mb-8 shadow-[0_8px_40px_rgba(0,0,0,0.06)] animate-fade-in">
+          <h2 className="text-xl font-bold text-slate-900 mb-6">New Event</h2>
 
           {formError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 mb-4 text-sm">
+            <div className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-5 text-sm font-medium">
               {formError}
             </div>
           )}
 
-          <form onSubmit={handleCreateEvent} className="space-y-4">
+          <form onSubmit={handleCreateEvent} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                />
+                <label htmlFor="ev-title" className="block text-sm font-medium text-slate-700 mb-1.5">Title</label>
+                <input id="ev-title" type="text" required value={title} onChange={(e) => setTitle(e.target.value)}
+                  className="w-full input-glass rounded-xl px-4 py-2.5 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                />
+                <label htmlFor="ev-loc" className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
+                <input id="ev-loc" type="text" required value={location} onChange={(e) => setLocation(e.target.value)}
+                  className="w-full input-glass rounded-xl px-4 py-2.5 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Date/Time *
-                </label>
-                <input
-                  type="datetime-local"
-                  required
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                />
+                <label htmlFor="ev-start" className="block text-sm font-medium text-slate-700 mb-1.5">Start</label>
+                <input id="ev-start" type="datetime-local" required value={startTime} onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full input-glass rounded-xl px-4 py-2.5 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  End Date/Time *
-                </label>
-                <input
-                  type="datetime-local"
-                  required
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                />
+                <label htmlFor="ev-end" className="block text-sm font-medium text-slate-700 mb-1.5">End</label>
+                <input id="ev-end" type="datetime-local" required value={endTime} onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full input-glass rounded-xl px-4 py-2.5 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Capacity *
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  value={capacity}
-                  onChange={(e) => setCapacity(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                />
+                <label htmlFor="ev-cap" className="block text-sm font-medium text-slate-700 mb-1.5">Capacity</label>
+                <input id="ev-cap" type="number" required min="1" value={capacity} onChange={(e) => setCapacity(e.target.value)}
+                  className="w-full input-glass rounded-xl px-4 py-2.5 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ticket Price
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={ticketPrice}
-                  onChange={(e) => setTicketPrice(e.target.value)}
-                  placeholder="0.00 (Free)"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                />
+                <label htmlFor="ev-price" className="block text-sm font-medium text-slate-700 mb-1.5">Ticket Price</label>
+                <input id="ev-price" type="number" step="0.01" min="0" value={ticketPrice} onChange={(e) => setTicketPrice(e.target.value)}
+                  placeholder="0.00 (Free)" className="w-full input-glass rounded-xl px-4 py-2.5 text-sm" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-              />
+              <label htmlFor="ev-desc" className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
+              <textarea id="ev-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
+                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm" />
             </div>
-
-            {/* Category info */}
             {categories.length > 0 && (
-              <div className="text-xs text-gray-400">
-                Categories can be managed from the Admin panel.
-              </div>
+              <p className="text-xs text-slate-400">Categories can be managed from the Admin panel.</p>
             )}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="rounded-lg bg-indigo-600 px-6 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-            >
+            <button type="submit" disabled={submitting}
+              className="cursor-pointer btn-primary text-white font-bold px-8 py-3 rounded-xl">
               {submitting ? "Creating..." : "Create Event"}
             </button>
           </form>
         </div>
       )}
 
-      {/* My Events */}
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">My Events</h2>
+      <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">My Events</h2>
 
       {events.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="glass rounded-3xl text-center py-16 text-slate-400">
           You haven't created any events yet.
         </div>
       ) : (
         <div className="space-y-4">
           {events.map((event) => (
-            <div
-              key={event.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200"
-            >
-              <div className="p-5">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div key={event.id} className="glass rounded-2xl overflow-hidden">
+              <div className="p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {event.title}
-                      </h3>
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClasses[event.status]}`}
-                      >
+                      <h3 className="text-lg font-semibold text-slate-900">{event.title}</h3>
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[event.status]}`}>
                         {event.status}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {formatDate(event.startTime)} - {event.location}
+                    <div className="text-sm text-slate-400">
+                      {formatDate(event.startTime)} &middot; {event.location}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => toggleAttendees(event.id)}
-                      className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50"
+                      className="cursor-pointer glass rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:bg-white/80 transition-all"
                     >
-                      {expandedEvent === event.id
-                        ? "Hide Attendees"
-                        : "View Attendees"}
+                      {expandedEvent === event.id ? "Hide" : "Attendees"}
                     </button>
                     {event.status !== "cancelled" && (
                       <button
                         onClick={() => handleCancelEvent(event.id)}
-                        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                        className="cursor-pointer rounded-xl px-4 py-2 text-sm font-medium text-red-500 bg-red-500/10 hover:bg-red-500/15 transition-colors"
                       >
                         Cancel
                       </button>
@@ -341,61 +257,47 @@ export default function OrganizerDashboard() {
                 </div>
               </div>
 
-              {/* Attendees Table */}
               {expandedEvent === event.id && (
-                <div className="border-t border-gray-200 p-5">
+                <div className="border-t border-slate-200/60 p-6 animate-fade-in">
                   {!attendeesMap[event.id] ? (
-                    <div className="text-gray-500 text-sm">
-                      Loading attendees...
-                    </div>
+                    <div className="text-slate-400 text-sm">Loading attendees...</div>
                   ) : attendeesMap[event.id].length === 0 ? (
-                    <div className="text-gray-500 text-sm">
-                      No attendees yet.
-                    </div>
+                    <div className="text-slate-400 text-sm">No attendees yet.</div>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="text-left text-gray-500 border-b border-gray-200">
-                            <th className="pb-2 pr-4 font-medium">Name</th>
-                            <th className="pb-2 pr-4 font-medium">Email</th>
-                            <th className="pb-2 pr-4 font-medium">
-                              Confirmation
-                            </th>
-                            <th className="pb-2 pr-4 font-medium">
-                              Check-In
-                            </th>
-                            <th className="pb-2 font-medium">Action</th>
+                          <tr className="text-left text-slate-400">
+                            <th className="pb-3 pr-4 font-medium text-xs uppercase tracking-wider">Name</th>
+                            <th className="pb-3 pr-4 font-medium text-xs uppercase tracking-wider">Email</th>
+                            <th className="pb-3 pr-4 font-medium text-xs uppercase tracking-wider">Code</th>
+                            <th className="pb-3 pr-4 font-medium text-xs uppercase tracking-wider">Status</th>
+                            <th className="pb-3 font-medium text-xs uppercase tracking-wider">Action</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-slate-100/60">
                           {attendeesMap[event.id].map((att) => (
                             <tr key={att.ticketId}>
-                              <td className="py-2 pr-4 text-gray-900">
-                                {att.userName}
-                              </td>
-                              <td className="py-2 pr-4 text-gray-600">
-                                {att.userEmail}
-                              </td>
-                              <td className="py-2 pr-4 font-mono text-indigo-600">
-                                {att.confirmationCode}
-                              </td>
-                              <td className="py-2 pr-4">
+                              <td className="py-3 pr-4 text-slate-900 font-medium">{att.userName}</td>
+                              <td className="py-3 pr-4 text-slate-500">{att.userEmail}</td>
+                              <td className="py-3 pr-4 font-mono text-indigo-500 font-bold">{att.confirmationCode}</td>
+                              <td className="py-3 pr-4">
                                 {att.checkedIn ? (
-                                  <span className="text-green-600 font-medium">
+                                  <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
                                     Yes
                                   </span>
                                 ) : (
-                                  <span className="text-gray-400">No</span>
+                                  <span className="text-slate-400">No</span>
                                 )}
                               </td>
-                              <td className="py-2">
+                              <td className="py-3">
                                 {!att.checkedIn && (
                                   <button
-                                    onClick={() =>
-                                      handleCheckin(att.ticketId, event.id)
-                                    }
-                                    className="rounded bg-green-600 px-3 py-1 text-xs font-medium text-white hover:bg-green-700"
+                                    onClick={() => handleCheckin(att.ticketId, event.id)}
+                                    className="cursor-pointer rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600 shadow-sm transition-colors"
                                   >
                                     Check In
                                   </button>
