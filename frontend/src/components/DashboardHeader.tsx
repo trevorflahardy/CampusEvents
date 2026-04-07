@@ -100,7 +100,7 @@ export default function DashboardHeader({
 
         {/* Light / Dark mode toggle */}
         <button
-          onClick={toggle}
+          onClick={(e) => toggle(e)}
           className="cursor-pointer p-2 rounded-full hover:bg-white/50 dark:hover:bg-white/10 text-gray-500 dark:text-[#94a3b8] transition-colors"
           title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
           aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
