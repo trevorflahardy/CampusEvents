@@ -26,6 +26,15 @@ services:
       PORT: "3000"
     depends_on:
       - postgres
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/src
+          target: app/src
+          ignore:
+            - ./backend/node_modules/
+        - action: rebuild
+          path: ./backend/package.json
 
   frontend:
     build:
@@ -37,6 +46,7 @@ services:
       - "5173:5173"
     environment:
       VITE_API_URL: http://backend:3000
+      VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN}
     depends_on:
       - backend
     develop:
