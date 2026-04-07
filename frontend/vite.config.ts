@@ -6,7 +6,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   optimizeDeps: {
-    exclude: ["mapbox-gl"],
+    include: ["mapbox-gl"],
   },
   server: {
     proxy: {
