@@ -48,7 +48,7 @@ router.get("/", async (c) => {
   ] as const;
   const status =
     statusQuery &&
-      validStatuses.includes(statusQuery as (typeof validStatuses)[number])
+    validStatuses.includes(statusQuery as (typeof validStatuses)[number])
       ? (statusQuery as (typeof validStatuses)[number])
       : undefined;
   if (search) conditions.push(sql`${events.title} ILIKE ${"%" + search + "%"}`);
@@ -71,13 +71,19 @@ router.get("/", async (c) => {
         organizerId: events.organizerId,
         createdAt: events.createdAt,
         organizerName: users.name,
+        bannerUrl: events.bannerUrl,
+        latitude: events.latitude,
+        longitude: events.longitude,
       })
       .from(events)
       .innerJoin(users, eq(events.organizerId, users.id))
       .innerJoin(eventCategories, eq(events.id, eventCategories.eventId))
       .where(
         conditions.length > 0
-          ? and(...conditions, eq(eventCategories.categoryId, Number(categoryId)))
+          ? and(
+              ...conditions,
+              eq(eventCategories.categoryId, Number(categoryId)),
+            )
           : eq(eventCategories.categoryId, Number(categoryId)),
       )
       .orderBy(events.startTime);
@@ -96,6 +102,9 @@ router.get("/", async (c) => {
         organizerId: events.organizerId,
         createdAt: events.createdAt,
         organizerName: users.name,
+        bannerUrl: events.bannerUrl,
+        latitude: events.latitude,
+        longitude: events.longitude,
       })
       .from(events)
       .innerJoin(users, eq(events.organizerId, users.id))
@@ -108,14 +117,14 @@ router.get("/", async (c) => {
   const categoryRows =
     eventIds.length > 0
       ? await db
-        .select({
-          eventId: eventCategories.eventId,
-          id: categories.id,
-          name: categories.name,
-        })
-        .from(eventCategories)
-        .innerJoin(categories, eq(eventCategories.categoryId, categories.id))
-        .where(inArray(eventCategories.eventId, eventIds))
+          .select({
+            eventId: eventCategories.eventId,
+            id: categories.id,
+            name: categories.name,
+          })
+          .from(eventCategories)
+          .innerJoin(categories, eq(eventCategories.categoryId, categories.id))
+          .where(inArray(eventCategories.eventId, eventIds))
       : [];
 
   const categoryMap: Record<number, { id: number; name: string }[]> = {};
@@ -176,6 +185,9 @@ router.get("/:id", async (c) => {
       organizerId: events.organizerId,
       createdAt: events.createdAt,
       organizerName: users.name,
+      bannerUrl: events.bannerUrl,
+      latitude: events.latitude,
+      longitude: events.longitude,
       spotsRemaining: sql<number>`${events.capacity} - (SELECT count(*) FROM tickets WHERE tickets.event_id = ${events.id})`,
     })
     .from(events)
@@ -220,6 +232,8 @@ const createEventSchema = z.object({
     .optional()
     .default("0.00"),
   organizerId: z.number().int().positive(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 router.post(
@@ -255,6 +269,8 @@ const updateEventSchema = z.object({
     .optional(),
   organizerId: z.number().int().positive().optional(),
   status: z.enum(["cancelled"]).optional(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
 });
 
 router.patch(
@@ -305,6 +321,61 @@ router.patch(
       .returning();
     if (!updated.length) return c.json({ error: "Event not found" }, 404);
     return c.json(updated[0]);
+  },
+);
+
+// POST /api/events/:id/banner — upload a banner image (organizer/admin only)
+router.post(
+  "/:id/banner",
+  authMiddleware,
+  requireRole("organizer", "admin"),
+  async (c) => {
+    const id = Number(c.req.param("id"));
+    const userRole = c.get("userRole");
+    const userId = c.get("userId");
+
+    // Ownership check (admins bypass)
+    if (userRole !== "admin") {
+      const owned = await db
+        .select({ id: events.id })
+        .from(events)
+        .where(and(eq(events.id, id), eq(events.organizerId, userId)));
+      if (!owned.length) return c.json({ error: "Forbidden" }, 403);
+    }
+
+    const formData = await c.req.formData();
+    const file = formData.get("banner") as File | null;
+    if (!file) return c.json({ error: "No file provided" }, 400);
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!validTypes.includes(file.type)) {
+      return c.json(
+        { error: "Invalid file type. Use JPEG, PNG, WebP, or GIF." },
+        400,
+      );
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      return c.json({ error: "File too large. Max 25MB." }, 400);
+    }
+
+    const ext = file.name.split(".").pop() || "jpg";
+    const filename = `banner_${id}_${Date.now()}.${ext}`;
+    const { join } = await import("path");
+    const uploadsDir = join(import.meta.dir, "..", "..", "uploads");
+    const filepath = join(uploadsDir, filename);
+
+    const buffer = await file.arrayBuffer();
+    await Bun.write(filepath, buffer);
+
+    const bannerUrl = `/uploads/${filename}`;
+    const updated = await db
+      .update(events)
+      .set({ bannerUrl })
+      .where(eq(events.id, id))
+      .returning();
+
+    if (!updated.length) return c.json({ error: "Event not found" }, 404);
+    return c.json({ bannerUrl });
   },
 );
 

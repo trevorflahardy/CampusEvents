@@ -1,5 +1,6 @@
 const API_BASE = "/api";
 
+/** Custom error class for API responses with non-2xx status codes. */
 class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -8,6 +9,7 @@ class ApiError extends Error {
   }
 }
 
+/** Sends an authenticated JSON request to the API and returns the parsed response. */
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("token");
   const headers: Record<string, string> = {
@@ -74,6 +76,24 @@ export const api = {
       body: JSON.stringify({ categoryIds }),
     }),
   getEventTickets: (id: number) => request<Attendee[]>(`/events/${id}/tickets`),
+  uploadEventBanner: async (
+    eventId: number,
+    file: File,
+  ): Promise<{ bannerUrl: string }> => {
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("banner", file);
+    const res = await fetch(`${API_BASE}/events/${eventId}/banner`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: "Upload failed" }));
+      throw new ApiError(res.status, body.error || "Upload failed");
+    }
+    return res.json();
+  },
 
   // Tickets
   purchaseTicket: (userId: number, eventId: number) =>
@@ -129,6 +149,9 @@ export interface Event {
   organizerId: number;
   createdAt: string;
   organizerName: string;
+  bannerUrl: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   categories?: Category[];
 }
 
@@ -153,6 +176,8 @@ export interface CreateEventData {
   capacity: number;
   ticketPrice?: string;
   organizerId: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface Ticket {

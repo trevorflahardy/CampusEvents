@@ -1,7 +1,34 @@
-import { useState, useEffect, useCallback, type ReactNode } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  createContext,
+  type ReactNode,
+} from "react";
 import { api, type User } from "../lib/api";
-import { AuthContext } from "./auth-context";
 
+/** Shape of the authentication context exposed to consumers. */
+export interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (data: {
+    netId: string;
+    name: string;
+    email: string;
+    password: string;
+    role?: string;
+  }) => Promise<void>;
+  logout: () => void;
+  isAuthenticated: boolean;
+  isOrganizer: boolean;
+  isAdmin: boolean;
+}
+
+export const AuthContext = createContext<AuthContextType | null>(null);
+
+/** Provides authentication state and actions to the component tree. */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const initialToken = localStorage.getItem("token");
   const [user, setUser] = useState<User | null>(null);
