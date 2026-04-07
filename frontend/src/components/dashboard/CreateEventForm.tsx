@@ -147,7 +147,7 @@ export default function CreateEventForm({
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-8 pb-8 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-md"
+        className="fixed inset-0 bg-black/70 backdrop-blur-xl"
         onClick={onClose}
       />
 
