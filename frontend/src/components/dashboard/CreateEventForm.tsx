@@ -147,12 +147,12 @@ export default function CreateEventForm({
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-8 pb-8 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/60 backdrop-blur-md"
         onClick={onClose}
       />
 
       {/* Modal panel */}
-      <div className="relative w-full max-w-2xl mx-4 glass-heavy rounded-3xl p-8 animate-fade-in shadow-2xl">
+      <div className="relative z-10 w-full max-w-2xl mx-4 glass-heavy rounded-3xl p-8 animate-fade-in shadow-2xl">
         {/* Close button */}
         <button
           type="button"
