@@ -1,39 +1,12 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  type ReactNode,
-} from "react";
+import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { api, type User } from "../lib/api";
-
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: {
-    netId: string;
-    name: string;
-    email: string;
-    password: string;
-    role?: string;
-  }) => Promise<void>;
-  logout: () => void;
-  isAuthenticated: boolean;
-  isOrganizer: boolean;
-  isAdmin: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | null>(null);
+import { AuthContext } from "./auth-context";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const initialToken = localStorage.getItem("token");
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("token"),
-  );
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(initialToken);
+  const [loading, setLoading] = useState(!!initialToken);
 
   useEffect(() => {
     if (token) {
@@ -45,8 +18,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setToken(null);
         })
         .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
     }
   }, [token]);
 
@@ -103,10 +74,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth(): AuthContextType {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
 }

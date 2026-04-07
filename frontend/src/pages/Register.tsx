@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import { ApiError } from "../lib/api";
 
 export default function Register() {
@@ -44,8 +44,18 @@ export default function Register() {
       <div className="w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/25">
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            <svg
+              className="w-7 h-7 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+              />
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Create account</h1>
@@ -62,7 +72,10 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="netId" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="netId"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   NetID
                 </label>
                 <input
@@ -76,7 +89,10 @@ export default function Register() {
                 />
               </div>
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="role"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   Role
                 </label>
                 <select
@@ -91,7 +107,10 @@ export default function Register() {
               </div>
             </div>
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Full Name
               </label>
               <input
@@ -105,7 +124,10 @@ export default function Register() {
               />
             </div>
             <div>
-              <label htmlFor="reg-email" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="reg-email"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Email
               </label>
               <input
@@ -119,7 +141,10 @@ export default function Register() {
               />
             </div>
             <div>
-              <label htmlFor="reg-password" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="reg-password"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Password
               </label>
               <input
@@ -133,7 +158,10 @@ export default function Register() {
               />
             </div>
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="confirm-password"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Confirm Password
               </label>
               <input
@@ -156,14 +184,19 @@ export default function Register() {
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Creating account...
                 </span>
-              ) : "Create Account"}
+              ) : (
+                "Create Account"
+              )}
             </button>
           </form>
         </div>
 
         <p className="mt-6 text-center text-sm text-slate-400">
           Already have an account?{" "}
-          <Link to="/login" className="text-indigo-500 hover:text-violet-500 font-semibold transition-colors">
+          <Link
+            to="/login"
+            className="text-indigo-500 hover:text-violet-500 font-semibold transition-colors"
+          >
             Sign in
           </Link>
         </p>

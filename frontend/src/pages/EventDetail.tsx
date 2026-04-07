@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api, ApiError, type EventDetail as EventDetailType } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 const statusColors: Record<string, string> = {
   upcoming: "bg-emerald-50 text-emerald-700 border border-emerald-200",
@@ -151,7 +151,7 @@ function EditableField({
           setDraft(
             type === "datetime-local"
               ? new Date(e.target.value).toISOString()
-              : e.target.value
+              : e.target.value,
           )
         }
         onBlur={save}
@@ -224,7 +224,9 @@ export default function EventDetail() {
     setBookingSuccess("");
     try {
       const ticket = await api.purchaseTicket(user.id, event.id);
-      setBookingSuccess(`Ticket booked! Confirmation: ${ticket.confirmationCode}`);
+      setBookingSuccess(
+        `Ticket booked! Confirmation: ${ticket.confirmationCode}`,
+      );
       const updated = await api.getEvent(event.id);
       setEvent(updated);
     } catch (err) {
@@ -236,7 +238,8 @@ export default function EventDetail() {
   };
 
   const handleCancelEvent = async () => {
-    if (!event || !confirm("Are you sure you want to cancel this event?")) return;
+    if (!event || !confirm("Are you sure you want to cancel this event?"))
+      return;
     setCancelling(true);
     try {
       await api.updateEvent(event.id, { status: "cancelled" });
@@ -272,11 +275,23 @@ export default function EventDetail() {
       <div className="text-center py-20">
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-10 inline-block">
           <div className="w-14 h-14 rounded-xl bg-red-50 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            <svg
+              className="w-7 h-7 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
             </svg>
           </div>
-          <p className="text-slate-600 font-medium">{error || "Event not found."}</p>
+          <p className="text-slate-600 font-medium">
+            {error || "Event not found."}
+          </p>
         </div>
       </div>
     );
@@ -301,8 +316,18 @@ export default function EventDetail() {
         to="/events"
         className="cursor-pointer inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 font-medium mb-6 transition-colors"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M15 19l-7-7 7-7"
+          />
         </svg>
         Back to events
       </Link>
@@ -310,10 +335,22 @@ export default function EventDetail() {
       {/* Editor Banner */}
       {canEdit && (
         <div className="mb-4 flex items-center gap-2.5 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm text-indigo-700">
-          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          <svg
+            className="w-4 h-4 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+            />
           </svg>
-          <span className="font-medium">You can edit this event by clicking on any highlighted field.</span>
+          <span className="font-medium">
+            You can edit this event by clicking on any highlighted field.
+          </span>
         </div>
       )}
 
@@ -331,7 +368,9 @@ export default function EventDetail() {
               inputClassName="text-xl font-bold"
             />
           </h1>
-          <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${statusColors[event.status] || "bg-slate-100 text-slate-500 border border-slate-200"}`}>
+          <span
+            className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${statusColors[event.status] || "bg-slate-100 text-slate-500 border border-slate-200"}`}
+          >
             {event.status}
           </span>
         </div>
@@ -341,12 +380,24 @@ export default function EventDetail() {
           {/* Start Time */}
           <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-              <svg className="w-4.5 h-4.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg
+                className="w-4.5 h-4.5 text-indigo-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
             </div>
             <div className="min-w-0">
-              <div className="text-xs text-slate-400 font-medium mb-0.5">Start</div>
+              <div className="text-xs text-slate-400 font-medium mb-0.5">
+                Start
+              </div>
               <EditableField
                 value={event.startTime}
                 fieldName="startTime"
@@ -363,12 +414,24 @@ export default function EventDetail() {
           {/* End Time */}
           <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-              <svg className="w-4.5 h-4.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-4.5 h-4.5 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
             <div className="min-w-0">
-              <div className="text-xs text-slate-400 font-medium mb-0.5">End</div>
+              <div className="text-xs text-slate-400 font-medium mb-0.5">
+                End
+              </div>
               <EditableField
                 value={event.endTime}
                 fieldName="endTime"
@@ -385,13 +448,30 @@ export default function EventDetail() {
           {/* Location */}
           <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-              <svg className="w-4.5 h-4.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              <svg
+                className="w-4.5 h-4.5 text-emerald-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
               </svg>
             </div>
             <div className="min-w-0">
-              <div className="text-xs text-slate-400 font-medium mb-0.5">Location</div>
+              <div className="text-xs text-slate-400 font-medium mb-0.5">
+                Location
+              </div>
               <EditableField
                 value={event.location}
                 fieldName="location"
@@ -406,13 +486,27 @@ export default function EventDetail() {
           {/* Organizer (read-only always) */}
           <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-              <svg className="w-4.5 h-4.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              <svg
+                className="w-4.5 h-4.5 text-amber-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
               </svg>
             </div>
             <div className="min-w-0">
-              <div className="text-xs text-slate-400 font-medium mb-0.5">Organizer</div>
-              <div className="text-sm text-slate-700 font-medium truncate">{event.organizerName}</div>
+              <div className="text-xs text-slate-400 font-medium mb-0.5">
+                Organizer
+              </div>
+              <div className="text-sm text-slate-700 font-medium truncate">
+                {event.organizerName}
+              </div>
             </div>
           </div>
         </div>
@@ -421,7 +515,9 @@ export default function EventDetail() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-8 p-5 rounded-xl bg-slate-50 border border-slate-100">
           {/* Price */}
           <div className="shrink-0">
-            <div className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Ticket Price</div>
+            <div className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">
+              Ticket Price
+            </div>
             <EditableField
               value={event.ticketPrice}
               fieldName="ticketPrice"
@@ -455,7 +551,9 @@ export default function EventDetail() {
                   inputClassName="text-xs w-20"
                 />
               </div>
-              <span className={`text-sm font-semibold ${soldOut ? "text-red-500" : "text-emerald-600"}`}>
+              <span
+                className={`text-sm font-semibold ${soldOut ? "text-red-500" : "text-emerald-600"}`}
+              >
                 {soldOut ? "Sold Out" : `${event.spotsRemaining} remaining`}
               </span>
             </div>
@@ -471,13 +569,17 @@ export default function EventDetail() {
                 style={{ width: `${Math.min(capacityPercent, 100)}%` }}
               />
             </div>
-            <div className="text-xs text-slate-400 mt-1">{spotsUsed} / {event.capacity} spots filled</div>
+            <div className="text-xs text-slate-400 mt-1">
+              {spotsUsed} / {event.capacity} spots filled
+            </div>
           </div>
         </div>
 
         {/* Description */}
         <div className="mb-8">
-          <h2 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">Description</h2>
+          <h2 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">
+            Description
+          </h2>
           {event.description ? (
             <EditableField
               value={event.description}
@@ -507,10 +609,15 @@ export default function EventDetail() {
         {/* Categories */}
         {event.categories.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">Categories</h2>
+            <h2 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">
+              Categories
+            </h2>
             <div className="flex flex-wrap gap-2">
               {event.categories.map((cat) => (
-                <span key={cat.id} className="rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 px-3 py-1 text-sm font-medium">
+                <span
+                  key={cat.id}
+                  className="rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 px-3 py-1 text-sm font-medium"
+                >
                   {cat.name}
                 </span>
               ))}
@@ -536,8 +643,18 @@ export default function EventDetail() {
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+                    />
                   </svg>
                   Book Ticket
                 </span>
@@ -557,8 +674,18 @@ export default function EventDetail() {
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-4.5 h-4.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                   Cancel Event
                 </span>
@@ -570,16 +697,36 @@ export default function EventDetail() {
         {/* Feedback Messages */}
         {bookingSuccess && (
           <div className="mt-6 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl p-4 text-sm">
-            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-5 h-5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span className="font-medium">{bookingSuccess}</span>
           </div>
         )}
         {bookingError && (
           <div className="mt-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 text-sm">
-            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-5 h-5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span className="font-medium">{bookingError}</span>
           </div>

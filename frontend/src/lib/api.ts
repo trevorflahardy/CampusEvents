@@ -68,8 +68,12 @@ export const api = {
     }),
   deleteEvent: (id: number) =>
     request<{ success: boolean }>(`/events/${id}`, { method: "DELETE" }),
-  getEventTickets: (id: number) =>
-    request<Attendee[]>(`/events/${id}/tickets`),
+  setEventCategories: (eventId: number, categoryIds: number[]) =>
+    request<Category[]>(`/events/${eventId}/categories`, {
+      method: "PUT",
+      body: JSON.stringify({ categoryIds }),
+    }),
+  getEventTickets: (id: number) => request<Attendee[]>(`/events/${id}/tickets`),
 
   // Tickets
   purchaseTicket: (userId: number, eventId: number) =>
@@ -86,8 +90,7 @@ export const api = {
 
   // Categories
   getCategories: () => request<Category[]>("/categories"),
-  getPopularCategories: () =>
-    request<PopularCategory[]>("/categories/popular"),
+  getPopularCategories: () => request<PopularCategory[]>("/categories/popular"),
   createCategory: (name: string) =>
     request<Category>("/categories", {
       method: "POST",
@@ -126,6 +129,7 @@ export interface Event {
   organizerId: number;
   createdAt: string;
   organizerName: string;
+  categories?: Category[];
 }
 
 export interface EventDetail extends Event {

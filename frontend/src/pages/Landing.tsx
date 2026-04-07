@@ -1,14 +1,17 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { api, type EventStat } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 export default function Landing() {
   const { isAuthenticated } = useAuth();
   const [stats, setStats] = useState<EventStat[]>([]);
 
   useEffect(() => {
-    api.getEventStats().then(setStats).catch(() => {});
+    api
+      .getEventStats()
+      .then(setStats)
+      .catch(() => {});
   }, []);
 
   const totalEvents = stats.length;
@@ -27,7 +30,7 @@ export default function Landing() {
             </span>
             <span className="text-sm font-semibold text-slate-600">
               {totalEvents > 0
-                ? `${totalEvents} events live now`
+                ? `${totalEvents} active events`
                 : "Campus events platform"}
             </span>
           </div>
@@ -35,14 +38,12 @@ export default function Landing() {
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 animate-fade-in stagger-1 leading-[1.1]">
             Discover what's
             <br />
-            <span className="text-gradient">
-              happening on campus
-            </span>
+            <span className="text-gradient">happening on campus</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto mb-12 leading-relaxed animate-fade-in stagger-2">
-            Browse events, book tickets, and never miss out on campus life.
-            One platform for students, organizers, and administrators.
+            Browse events, book tickets, and never miss out on campus life. One
+            platform for students, organizers, and administrators.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in stagger-3">
@@ -51,8 +52,18 @@ export default function Landing() {
               className="cursor-pointer inline-flex items-center gap-2.5 btn-primary text-white font-bold px-8 py-4 rounded-2xl text-lg"
             >
               Browse Events
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
               </svg>
             </Link>
             {!isAuthenticated && (
@@ -74,13 +85,31 @@ export default function Landing() {
             <div className="bg-white border border-slate-200 shadow-lg rounded-3xl p-1.5">
               <div className="grid grid-cols-3 divide-x divide-slate-200/50">
                 {[
-                  { value: totalEvents, label: "Active Events", color: "text-indigo-600" },
-                  { value: totalTickets, label: "Tickets Sold", color: "text-violet-600" },
-                  { value: totalCapacity, label: "Total Capacity", color: "text-pink-600" },
+                  {
+                    value: totalEvents,
+                    label: "Active Events",
+                    color: "text-indigo-600",
+                  },
+                  {
+                    value: totalTickets,
+                    label: "Tickets Sold",
+                    color: "text-violet-600",
+                  },
+                  {
+                    value: totalCapacity,
+                    label: "Total Capacity",
+                    color: "text-pink-600",
+                  },
                 ].map((stat, i) => (
                   <div key={i} className="text-center py-7 px-4">
-                    <div className={`text-3xl sm:text-4xl font-extrabold ${stat.color}`}>{stat.value}</div>
-                    <div className="text-sm text-slate-400 mt-1 font-medium">{stat.label}</div>
+                    <div
+                      className={`text-3xl sm:text-4xl font-extrabold ${stat.color}`}
+                    >
+                      {stat.value}
+                    </div>
+                    <div className="text-sm text-slate-400 mt-1 font-medium">
+                      {stat.label}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -97,7 +126,8 @@ export default function Landing() {
               Everything you need
             </h2>
             <p className="text-lg text-slate-400 max-w-xl mx-auto">
-              A complete platform for managing campus events from discovery to check-in.
+              A complete platform for managing campus events from discovery to
+              check-in.
             </p>
           </div>
 
@@ -106,32 +136,65 @@ export default function Landing() {
               {
                 glass: "glass-blue",
                 iconBg: "bg-indigo-500",
-                icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />,
+                icon: (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                ),
                 title: "Discover Events",
                 desc: "Search by name, filter by category or date range, and find exactly what you're looking for on campus.",
               },
               {
                 glass: "glass-violet",
                 iconBg: "bg-violet-500",
-                icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />,
+                icon: (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+                  />
+                ),
                 title: "Book Instantly",
                 desc: "Reserve your spot with one click. Get a confirmation code and track all your bookings in one place.",
               },
               {
                 glass: "glass-emerald",
                 iconBg: "bg-emerald-500",
-                icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />,
+                icon: (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                ),
                 title: "Organize & Manage",
                 desc: "Create events, track ticket sales, check in attendees, and manage everything from your dashboard.",
               },
             ].map((feature, i) => (
-              <div key={i} className="bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 rounded-3xl p-8 cursor-default">
-                <div className={`w-12 h-12 rounded-2xl ${feature.iconBg} flex items-center justify-center mb-5 shadow-lg`}>
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div
+                key={i}
+                className="bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 rounded-3xl p-8 cursor-default"
+              >
+                <div
+                  className={`w-12 h-12 rounded-2xl ${feature.iconBg} flex items-center justify-center mb-5 shadow-lg`}
+                >
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     {feature.icon}
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{feature.title}</h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                  {feature.title}
+                </h3>
                 <p className="text-slate-500 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
@@ -142,11 +205,15 @@ export default function Landing() {
       {/* CTA */}
       <section className="px-4 sm:px-6 pb-28">
         <div className="max-w-4xl mx-auto">
-          <div className="relative rounded-3xl p-12 md:p-16 text-center overflow-hidden" style={{
-            background: "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(168,85,247,0.08) 50%, rgba(236,72,153,0.06) 100%)",
-            backdropFilter: "blur(40px)",
-            border: "1px solid rgba(139,92,246,0.15)",
-          }}>
+          <div
+            className="relative rounded-3xl p-12 md:p-16 text-center overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(168,85,247,0.08) 50%, rgba(236,72,153,0.06) 100%)",
+              backdropFilter: "blur(40px)",
+              border: "1px solid rgba(139,92,246,0.15)",
+            }}
+          >
             <div className="absolute -top-20 -right-20 w-60 h-60 bg-indigo-400/15 rounded-full blur-3xl pointer-events-none animate-float" />
             <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-pink-400/10 rounded-full blur-3xl pointer-events-none animate-float-slow" />
 
@@ -155,7 +222,8 @@ export default function Landing() {
                 Ready to get started?
               </h2>
               <p className="text-lg text-slate-500 mb-10 max-w-lg mx-auto">
-                Join CampusEvents today and stay connected with everything happening at your university.
+                Join CampusEvents today and stay connected with everything
+                happening at your university.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
