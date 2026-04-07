@@ -22,7 +22,7 @@ export default function DashboardHeader({
   const { theme, toggle } = useTheme();
 
   return (
-    <header className="sticky top-0 z-20 px-6 py-4 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.05)] shrink-0">
+    <header className="sticky top-0 z-20 px-6 py-4 flex items-center justify-between shrink-0">
       {/* Search bar */}
       <div className="relative w-full max-w-2xl">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
