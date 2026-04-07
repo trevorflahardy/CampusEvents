@@ -318,14 +318,12 @@ router.put(
     await db.delete(eventCategories).where(eq(eventCategories.eventId, id));
 
     if (parsed.data.categoryIds.length > 0) {
-      await db
-        .insert(eventCategories)
-        .values(
-          parsed.data.categoryIds.map((categoryId) => ({
-            eventId: id,
-            categoryId,
-          })),
-        );
+      await db.insert(eventCategories).values(
+        parsed.data.categoryIds.map((categoryId) => ({
+          eventId: id,
+          categoryId,
+        })),
+      );
     }
 
     const cats = await db
