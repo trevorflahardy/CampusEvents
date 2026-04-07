@@ -6,6 +6,7 @@ import {
   timestamp,
   boolean,
   numeric,
+  doublePrecision,
   pgEnum,
 } from "drizzle-orm/pg-core";
 
@@ -50,6 +51,8 @@ export const events = pgTable("events", {
     .references(() => users.id)
     .notNull(),
   bannerUrl: text("banner_url"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

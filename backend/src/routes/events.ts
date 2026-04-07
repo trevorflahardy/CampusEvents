@@ -72,6 +72,8 @@ router.get("/", async (c) => {
         createdAt: events.createdAt,
         organizerName: users.name,
         bannerUrl: events.bannerUrl,
+        latitude: events.latitude,
+        longitude: events.longitude,
       })
       .from(events)
       .innerJoin(users, eq(events.organizerId, users.id))
@@ -98,6 +100,8 @@ router.get("/", async (c) => {
         createdAt: events.createdAt,
         organizerName: users.name,
         bannerUrl: events.bannerUrl,
+        latitude: events.latitude,
+        longitude: events.longitude,
       })
       .from(events)
       .innerJoin(users, eq(events.organizerId, users.id))
@@ -179,6 +183,8 @@ router.get("/:id", async (c) => {
       createdAt: events.createdAt,
       organizerName: users.name,
       bannerUrl: events.bannerUrl,
+      latitude: events.latitude,
+      longitude: events.longitude,
       spotsRemaining: sql<number>`${events.capacity} - (SELECT count(*) FROM tickets WHERE tickets.event_id = ${events.id})`,
     })
     .from(events)
@@ -223,6 +229,8 @@ const createEventSchema = z.object({
     .optional()
     .default("0.00"),
   organizerId: z.number().int().positive(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 router.post(
@@ -258,6 +266,8 @@ const updateEventSchema = z.object({
     .optional(),
   organizerId: z.number().int().positive().optional(),
   status: z.enum(["cancelled"]).optional(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
 });
 
 router.patch(
@@ -338,8 +348,8 @@ router.post(
     if (!validTypes.includes(file.type)) {
       return c.json({ error: "Invalid file type. Use JPEG, PNG, WebP, or GIF." }, 400);
     }
-    if (file.size > 5 * 1024 * 1024) {
-      return c.json({ error: "File too large. Max 5MB." }, 400);
+    if (file.size > 25 * 1024 * 1024) {
+      return c.json({ error: "File too large. Max 25MB." }, 400);
     }
 
     const ext = file.name.split(".").pop() || "jpg";

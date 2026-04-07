@@ -58,6 +58,8 @@ CREATE TABLE events (
     status        event_status    NOT NULL DEFAULT 'upcoming',
     organizer_id  INTEGER         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     banner_url    TEXT,
+    latitude      DOUBLE PRECISION,
+    longitude     DOUBLE PRECISION,
     created_at    TIMESTAMP       NOT NULL DEFAULT NOW(),
 
     CONSTRAINT valid_time_range CHECK (end_time > start_time)
