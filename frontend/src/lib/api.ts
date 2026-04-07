@@ -1,5 +1,6 @@
 const API_BASE = "/api";
 
+/** Custom error class for API responses with non-2xx status codes. */
 class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -8,6 +9,7 @@ class ApiError extends Error {
   }
 }
 
+/** Sends an authenticated JSON request to the API and returns the parsed response. */
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("token");
   const headers: Record<string, string> = {

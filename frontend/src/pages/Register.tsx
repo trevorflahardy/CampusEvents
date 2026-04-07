@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { ApiError } from "../lib/api";
 
+/** Account registration page. Auto-logs in and redirects to dashboard on success. */
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { ApiError } from "../lib/api";
 
+/** Email/password login page. Redirects to dashboard on success. */
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
