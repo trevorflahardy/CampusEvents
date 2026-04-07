@@ -179,9 +179,7 @@ export default function BrowseEvents() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event, index) => (
-            <div key={event.id} className={`animate-fade-in ${index < 4 ? `stagger-${index + 1}` : ''}`}>
-              <EventCard event={event} />
-            </div>
+            <EventCard key={event.id} event={event} index={index} />
           ))}
         </div>
       )}
