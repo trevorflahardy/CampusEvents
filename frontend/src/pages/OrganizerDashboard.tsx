@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type FormEvent } from "react";
-import { api, ApiError, type Event, type Category, type Attendee } from "../lib/api";
+import { api, ApiError, type Event, type Category, type Attendee, type User } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
 /* ------------------------------------------------------------------ */
@@ -210,6 +210,15 @@ export default function OrganizerDashboard() {
   const [endTime, setEndTime] = useState("");
   const [capacity, setCapacity] = useState("");
   const [ticketPrice, setTicketPrice] = useState("");
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+
+  // per-event categories
+  const [eventCategoriesMap, setEventCategoriesMap] = useState<Record<number, Category[]>>({});
+  const [editingCategoriesFor, setEditingCategoriesFor] = useState<number | null>(null);
+  const [draftCategoryIds, setDraftCategoryIds] = useState<number[]>([]);
+
+  // organizers (for admin reassignment)
+  const [organizers, setOrganizers] = useState<User[]>([]);
 
   // attendees
   const [attendeesMap, setAttendeesMap] = useState<Record<number, Attendee[]>>({});
@@ -220,7 +229,19 @@ export default function OrganizerDashboard() {
   const fetchEvents = useCallback(async () => {
     try {
       const data = await api.getEvents();
-      setEvents(data.filter((e) => e.organizerId === user?.id));
+      const filtered = user?.role === "admin"
+        ? data
+        : data.filter((e) => e.organizerId === user?.id);
+      setEvents(filtered);
+      // Load categories for each event
+      const catMap: Record<number, Category[]> = {};
+      await Promise.all(
+        filtered.map(async (ev) => {
+          const detail = await api.getEvent(ev.id);
+          catMap[ev.id] = detail.categories;
+        }),
+      );
+      setEventCategoriesMap(catMap);
     } catch {
       setError("Failed to load events.");
     } finally {
@@ -231,7 +252,12 @@ export default function OrganizerDashboard() {
   useEffect(() => {
     api.getCategories().then(setCategories).catch(() => {});
     fetchEvents();
-  }, [fetchEvents]);
+    if (user?.role === "admin") {
+      api.getUsers().then((users) =>
+        setOrganizers(users.filter((u) => u.role === "organizer" || u.role === "admin"))
+      ).catch(() => {});
+    }
+  }, [fetchEvents, user]);
 
   /* ---------- inline save ---------- */
 
@@ -251,7 +277,7 @@ export default function OrganizerDashboard() {
     setFormError("");
     setSubmitting(true);
     try {
-      await api.createEvent({
+      const newEvent = await api.createEvent({
         title,
         description: description || undefined,
         location,
@@ -261,6 +287,9 @@ export default function OrganizerDashboard() {
         ticketPrice: ticketPrice || undefined,
         organizerId: user.id,
       });
+      if (selectedCategoryIds.length > 0) {
+        await api.setEventCategories(newEvent.id, selectedCategoryIds);
+      }
       setTitle("");
       setDescription("");
       setLocation("");
@@ -268,6 +297,7 @@ export default function OrganizerDashboard() {
       setEndTime("");
       setCapacity("");
       setTicketPrice("");
+      setSelectedCategoryIds([]);
       setShowForm(false);
       await fetchEvents();
     } catch (err) {
@@ -275,18 +305,6 @@ export default function OrganizerDashboard() {
       else setFormError("Failed to create event.");
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  /* ---------- cancel event ---------- */
-
-  const handleCancelEvent = async (eventId: number) => {
-    if (!confirm("Are you sure you want to cancel this event?")) return;
-    try {
-      await api.updateEvent(eventId, { status: "cancelled" });
-      await fetchEvents();
-    } catch {
-      setError("Failed to cancel event.");
     }
   };
 
@@ -518,7 +536,31 @@ export default function OrganizerDashboard() {
             </div>
 
             {categories.length > 0 && (
-              <p className="text-xs text-slate-400">Categories can be managed from the Admin panel.</p>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Categories</label>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() =>
+                        setSelectedCategoryIds((prev) =>
+                          prev.includes(cat.id)
+                            ? prev.filter((id) => id !== cat.id)
+                            : [...prev, cat.id],
+                        )
+                      }
+                      className={`cursor-pointer rounded-full px-3 py-1 text-sm font-medium border transition-colors ${
+                        selectedCategoryIds.includes(cat.id)
+                          ? "bg-indigo-600 text-white border-indigo-600"
+                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
 
             <button
@@ -535,7 +577,7 @@ export default function OrganizerDashboard() {
       {/* ---- events list ---- */}
       <div>
         <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
-          My Events
+          {user?.role === "admin" ? "All Events" : "My Events"}
         </h2>
 
         {events.length === 0 ? (
@@ -589,6 +631,24 @@ export default function OrganizerDashboard() {
                         {formatDate(event.startTime)} &ndash; {formatDate(event.endTime)}
                       </div>
 
+                      {/* organizer (admin can reassign) */}
+                      {user?.role === "admin" && (
+                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                          <span className="text-slate-400">Organizer:</span>
+                          <select
+                            value={event.organizerId}
+                            onChange={async (e) => {
+                              await handleInlineSave(event.id, { organizerId: Number(e.target.value) });
+                            }}
+                            className="cursor-pointer input-glass rounded-lg px-2 py-1 text-sm"
+                          >
+                            {organizers.map((org) => (
+                              <option key={org.id} value={org.id}>{org.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
                       {/* capacity + price row */}
                       <div className="flex items-center gap-4 text-sm pt-1">
                         <span className="flex items-center gap-1.5 text-slate-500">
@@ -632,6 +692,69 @@ export default function OrganizerDashboard() {
                           />
                         </div>
                       )}
+
+                      {/* categories */}
+                      <div className="flex flex-wrap gap-1.5 pt-2 items-center">
+                        {(eventCategoriesMap[event.id] || []).map((cat) => (
+                          <span key={cat.id} className="rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200 px-2.5 py-0.5 text-xs font-medium">
+                            {cat.name}
+                          </span>
+                        ))}
+                        {editingCategoriesFor !== event.id && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingCategoriesFor(event.id);
+                              setDraftCategoryIds((eventCategoriesMap[event.id] || []).map((c) => c.id));
+                            }}
+                            className="cursor-pointer rounded-full bg-slate-50 text-slate-400 border border-slate-200 px-2.5 py-0.5 text-xs font-medium hover:bg-slate-100 transition-colors"
+                          >
+                            + Edit
+                          </button>
+                        )}
+                      </div>
+                      {editingCategoriesFor === event.id && (
+                        <div className="flex flex-wrap gap-2 pt-1 items-center">
+                          {categories.map((cat) => (
+                            <button
+                              key={cat.id}
+                              type="button"
+                              onClick={() =>
+                                setDraftCategoryIds((prev) =>
+                                  prev.includes(cat.id)
+                                    ? prev.filter((id) => id !== cat.id)
+                                    : [...prev, cat.id],
+                                )
+                              }
+                              className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                                draftCategoryIds.includes(cat.id)
+                                  ? "bg-indigo-600 text-white border-indigo-600"
+                                  : "bg-white text-slate-500 border-slate-200"
+                              }`}
+                            >
+                              {cat.name}
+                            </button>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await api.setEventCategories(event.id, draftCategoryIds);
+                              setEditingCategoriesFor(null);
+                              await fetchEvents();
+                            }}
+                            className="cursor-pointer rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingCategoriesFor(null)}
+                            className="cursor-pointer text-xs text-slate-400 hover:text-slate-600"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* right: action buttons */}
@@ -642,14 +765,28 @@ export default function OrganizerDashboard() {
                       >
                         {expandedEvent === event.id ? "Hide Attendees" : "Attendees"}
                       </button>
-                      {event.status !== "cancelled" && (
-                        <button
-                          onClick={() => handleCancelEvent(event.id)}
-                          className="cursor-pointer rounded-xl px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      )}
+                      <select
+                        value={event.status}
+                        onChange={async (e) => {
+                          const newStatus = e.target.value;
+                          if (newStatus === "cancelled" && !confirm("Are you sure you want to cancel this event?")) {
+                            e.target.value = event.status;
+                            return;
+                          }
+                          try {
+                            await api.updateEvent(event.id, { status: newStatus as Event["status"] });
+                            await fetchEvents();
+                          } catch {
+                            setError("Failed to update status.");
+                          }
+                        }}
+                        className="cursor-pointer input-glass rounded-xl px-3 py-2 text-sm font-medium"
+                      >
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
                     </div>
                   </div>
                 </div>

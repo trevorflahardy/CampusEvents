@@ -35,6 +35,26 @@ router.get("/:id", async (c) => {
   return c.json(safe);
 });
 
+// PATCH /api/users/:id — update user role (admin only)
+const updateUserSchema = z.object({
+  role: z.enum(["admin", "organizer", "student"]),
+});
+
+router.patch("/:id", authMiddleware, requireRole("admin"), async (c) => {
+  const id = Number(c.req.param("id"));
+  const body = await c.req.json();
+  const parsed = updateUserSchema.safeParse(body);
+  if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
+  const updated = await db
+    .update(users)
+    .set({ role: parsed.data.role })
+    .where(eq(users.id, id))
+    .returning();
+  if (!updated.length) return c.json({ error: "User not found" }, 404);
+  const { passwordHash: _, ...safe } = updated[0];
+  return c.json(safe);
+});
+
 // POST /api/users — register a new user with Zod validation
 const registerUserSchema = z.object({
   netId: z

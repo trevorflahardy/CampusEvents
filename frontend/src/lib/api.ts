@@ -68,6 +68,11 @@ export const api = {
     }),
   deleteEvent: (id: number) =>
     request<{ success: boolean }>(`/events/${id}`, { method: "DELETE" }),
+  setEventCategories: (eventId: number, categoryIds: number[]) =>
+    request<Category[]>(`/events/${eventId}/categories`, {
+      method: "PUT",
+      body: JSON.stringify({ categoryIds }),
+    }),
   getEventTickets: (id: number) =>
     request<Attendee[]>(`/events/${id}/tickets`),
 

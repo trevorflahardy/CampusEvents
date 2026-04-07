@@ -52,16 +52,6 @@ export default function AdminPanel() {
     }
   };
 
-  const handleCancelEvent = async (eventId: number) => {
-    if (!confirm("Cancel this event?")) return;
-    try {
-      await api.updateEvent(eventId, { status: "cancelled" });
-      setEvents((prev) => prev.map((e) => e.id === eventId ? { ...e, status: "cancelled" as const } : e));
-    } catch {
-      setError("Failed to cancel event.");
-    }
-  };
-
   const handleAddCategory = async (e: FormEvent) => {
     e.preventDefault();
     setCategoryError("");
@@ -203,14 +193,28 @@ export default function AdminPanel() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      {e.status !== "cancelled" && (
-                        <button
-                          onClick={() => handleCancelEvent(e.id)}
-                          className="cursor-pointer rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/15 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      )}
+                      <select
+                        value={e.status}
+                        onChange={async (ev) => {
+                          const newStatus = ev.target.value;
+                          if (newStatus === "cancelled" && !confirm("Cancel this event?")) {
+                            ev.target.value = e.status;
+                            return;
+                          }
+                          try {
+                            await api.updateEvent(e.id, { status: newStatus as Event["status"] });
+                            setEvents((prev) => prev.map((ev) => ev.id === e.id ? { ...ev, status: newStatus as Event["status"] } : ev));
+                          } catch {
+                            setError("Failed to update status.");
+                          }
+                        }}
+                        className="cursor-pointer input-glass rounded-lg px-2 py-1.5 text-sm font-medium"
+                      >
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
                     </td>
                   </tr>
                 ))}

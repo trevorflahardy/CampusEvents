@@ -17,6 +17,19 @@ import {
 
 const router = new Hono<AuthEnv>();
 
+// Auto-compute event status from dates (cancelled is always preserved)
+function computeStatus(
+  stored: "upcoming" | "ongoing" | "completed" | "cancelled",
+  startTime: Date,
+  endTime: Date,
+  now: Date,
+): "upcoming" | "ongoing" | "completed" | "cancelled" {
+  if (stored === "cancelled") return "cancelled";
+  if (now >= endTime) return "completed";
+  if (now >= startTime) return "ongoing";
+  return "upcoming";
+}
+
 // Q1 + Q10: GET /api/events — list upcoming events with organizer name, optional date filtering
 router.get("/", async (c) => {
   const from = c.req.query("from");
@@ -92,12 +105,18 @@ router.get("/", async (c) => {
   }
 
   const rows = await query;
-  return c.json(rows);
+  const now = new Date();
+  const enriched = rows.map((row) => ({
+    ...row,
+    status: computeStatus(row.status, new Date(row.startTime), new Date(row.endTime), now),
+  }));
+  return c.json(enriched);
 });
 
 // Q2: GET /api/events/stats — ticket count per event (GROUP BY + COUNT)
 // IMPORTANT: This route MUST be defined before /:id to avoid matching "stats" as an id
 router.get("/stats", async (c) => {
+  const now = new Date();
   const rows = await db
     .select({
       eventId: events.id,
@@ -107,6 +126,10 @@ router.get("/stats", async (c) => {
     })
     .from(events)
     .leftJoin(tickets, eq(events.id, tickets.eventId))
+    .where(and(
+      sql`${events.status} != 'cancelled'`,
+      gte(events.endTime, now),
+    ))
     .groupBy(events.id, events.title, events.capacity);
   return c.json(rows);
 });
@@ -138,6 +161,13 @@ router.get("/:id", async (c) => {
 
   if (!rows.length) return c.json({ error: "Event not found" }, 404);
 
+  const now = new Date();
+  const row = rows[0];
+  const computed = {
+    ...row,
+    status: computeStatus(row.status, new Date(row.startTime), new Date(row.endTime), now),
+  };
+
   // Also fetch categories for this event
   const eventCats = await db
     .select({ id: categories.id, name: categories.name })
@@ -145,7 +175,7 @@ router.get("/:id", async (c) => {
     .innerJoin(eventCategories, eq(categories.id, eventCategories.categoryId))
     .where(eq(eventCategories.eventId, id));
 
-  return c.json({ ...rows[0], categories: eventCats });
+  return c.json({ ...computed, categories: eventCats });
 });
 
 // POST /api/events — create event with Zod validation
@@ -156,7 +186,7 @@ const createEventSchema = z.object({
   startTime: z.string().transform((s) => new Date(s)),
   endTime: z.string().transform((s) => new Date(s)),
   capacity: z.number().int().positive(),
-  ticketPrice: z.string().optional().default("0.00"),
+  ticketPrice: z.union([z.string(), z.number()]).transform((v) => String(v)).optional().default("0.00"),
   organizerId: z.number().int().positive(),
 });
 
@@ -182,7 +212,8 @@ const updateEventSchema = z.object({
     .transform((s) => new Date(s))
     .optional(),
   capacity: z.number().int().positive().optional(),
-  ticketPrice: z.string().optional(),
+  ticketPrice: z.union([z.string(), z.number()]).transform((v) => String(v)).optional(),
+  organizerId: z.number().int().positive().optional(),
   status: z.enum(["upcoming", "ongoing", "completed", "cancelled"]).optional(),
 });
 
@@ -225,6 +256,35 @@ router.get("/:id/tickets", authMiddleware, requireRole("organizer", "admin"), as
     .innerJoin(users, eq(tickets.userId, users.id))
     .where(eq(tickets.eventId, id));
   return c.json(rows);
+});
+
+// PUT /api/events/:id/categories — replace all categories for an event
+const setCategoriesSchema = z.object({
+  categoryIds: z.array(z.number().int().positive()),
+});
+
+router.put("/:id/categories", authMiddleware, requireRole("organizer", "admin"), async (c) => {
+  const id = Number(c.req.param("id"));
+  const body = await c.req.json();
+  const parsed = setCategoriesSchema.safeParse(body);
+  if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
+
+  // Delete existing associations then insert new ones
+  await db.delete(eventCategories).where(eq(eventCategories.eventId, id));
+
+  if (parsed.data.categoryIds.length > 0) {
+    await db.insert(eventCategories).values(
+      parsed.data.categoryIds.map((categoryId) => ({ eventId: id, categoryId })),
+    );
+  }
+
+  const cats = await db
+    .select({ id: categories.id, name: categories.name })
+    .from(categories)
+    .innerJoin(eventCategories, eq(categories.id, eventCategories.categoryId))
+    .where(eq(eventCategories.eventId, id));
+
+  return c.json(cats);
 });
 
 export default router;

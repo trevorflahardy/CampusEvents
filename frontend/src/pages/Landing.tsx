@@ -27,7 +27,7 @@ export default function Landing() {
             </span>
             <span className="text-sm font-semibold text-slate-600">
               {totalEvents > 0
-                ? `${totalEvents} events live now`
+                ? `${totalEvents} active events`
                 : "Campus events platform"}
             </span>
           </div>
