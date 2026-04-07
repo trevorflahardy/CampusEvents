@@ -129,6 +129,7 @@ export interface Event {
   organizerId: number;
   createdAt: string;
   organizerName: string;
+  categories?: Category[];
 }
 
 export interface EventDetail extends Event {

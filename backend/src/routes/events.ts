@@ -8,7 +8,7 @@ import {
   eventCategories,
   categories,
 } from "../db/schema";
-import { eq, sql, and, gte, lte } from "drizzle-orm";
+import { eq, sql, and, gte, lte, inArray } from "drizzle-orm";
 import { authMiddleware, requireRole, type AuthEnv } from "../middleware/auth";
 
 const router = new Hono<AuthEnv>();
@@ -30,7 +30,7 @@ function computeStatus(
 router.get("/", async (c) => {
   const from = c.req.query("from");
   const to = c.req.query("to");
-  const status = c.req.query("status");
+  const statusQuery = c.req.query("status");
   const search = c.req.query("search");
   const categoryId = c.req.query("categoryId");
 
@@ -46,14 +46,11 @@ router.get("/", async (c) => {
     "completed",
     "cancelled",
   ] as const;
-  if (
-    status &&
-    validStatuses.includes(status as (typeof validStatuses)[number])
-  ) {
-    conditions.push(
-      eq(events.status, status as (typeof validStatuses)[number]),
-    );
-  }
+  const status =
+    statusQuery &&
+      validStatuses.includes(statusQuery as (typeof validStatuses)[number])
+      ? (statusQuery as (typeof validStatuses)[number])
+      : undefined;
   if (search) conditions.push(sql`${events.title} ILIKE ${"%" + search + "%"}`);
 
   // Base query: Q1 — SELECT + JOIN with users for organizer name
@@ -80,10 +77,7 @@ router.get("/", async (c) => {
       .innerJoin(eventCategories, eq(events.id, eventCategories.eventId))
       .where(
         conditions.length > 0
-          ? and(
-              ...conditions,
-              eq(eventCategories.categoryId, Number(categoryId)),
-            )
+          ? and(...conditions, eq(eventCategories.categoryId, Number(categoryId)))
           : eq(eventCategories.categoryId, Number(categoryId)),
       )
       .orderBy(events.startTime);
@@ -110,16 +104,39 @@ router.get("/", async (c) => {
   }
 
   const rows = await query;
+  const eventIds = rows.map((row) => row.id);
+  const categoryRows =
+    eventIds.length > 0
+      ? await db
+        .select({
+          eventId: eventCategories.eventId,
+          id: categories.id,
+          name: categories.name,
+        })
+        .from(eventCategories)
+        .innerJoin(categories, eq(eventCategories.categoryId, categories.id))
+        .where(inArray(eventCategories.eventId, eventIds))
+      : [];
+
+  const categoryMap: Record<number, { id: number; name: string }[]> = {};
+  for (const row of categoryRows) {
+    if (!categoryMap[row.eventId]) categoryMap[row.eventId] = [];
+    categoryMap[row.eventId].push({ id: row.id, name: row.name });
+  }
+
   const now = new Date();
-  const enriched = rows.map((row) => ({
-    ...row,
-    status: computeStatus(
-      row.status,
-      new Date(row.startTime),
-      new Date(row.endTime),
-      now,
-    ),
-  }));
+  const enriched = rows
+    .map((row) => ({
+      ...row,
+      status: computeStatus(
+        row.status,
+        new Date(row.startTime),
+        new Date(row.endTime),
+        now,
+      ),
+      categories: categoryMap[row.id] ?? [],
+    }))
+    .filter((row) => (status ? row.status === status : true));
   return c.json(enriched);
 });
 
@@ -237,7 +254,7 @@ const updateEventSchema = z.object({
     .transform((v) => String(v))
     .optional(),
   organizerId: z.number().int().positive().optional(),
-  status: z.enum(["upcoming", "ongoing", "completed", "cancelled"]).optional(),
+  status: z.enum(["cancelled"]).optional(),
 });
 
 router.patch(
@@ -246,9 +263,41 @@ router.patch(
   requireRole("organizer", "admin"),
   async (c) => {
     const id = Number(c.req.param("id"));
+    if (!Number.isInteger(id) || id <= 0) {
+      return c.json({ error: "Invalid event id" }, 400);
+    }
+
+    const userRole = c.get("userRole");
+    const userId = c.get("userId");
+
     const body = await c.req.json();
     const parsed = updateEventSchema.safeParse(body);
     if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
+
+    if (parsed.data.organizerId !== undefined && userRole !== "admin") {
+      return c.json({ error: "Only admins can reassign organizer" }, 403);
+    }
+
+    if (parsed.data.status && parsed.data.status !== "cancelled") {
+      return c.json(
+        {
+          error:
+            "Status is computed from event dates; only cancellation can be set manually",
+        },
+        400,
+      );
+    }
+
+    if (userRole !== "admin") {
+      const owned = await db
+        .select({ id: events.id })
+        .from(events)
+        .where(and(eq(events.id, id), eq(events.organizerId, userId)));
+      if (!owned.length) {
+        return c.json({ error: "Forbidden" }, 403);
+      }
+    }
+
     const updated = await db
       .update(events)
       .set(parsed.data)
@@ -310,21 +359,41 @@ router.put(
   requireRole("organizer", "admin"),
   async (c) => {
     const id = Number(c.req.param("id"));
+    if (!Number.isInteger(id) || id <= 0) {
+      return c.json({ error: "Invalid event id" }, 400);
+    }
+
+    const userRole = c.get("userRole");
+    const userId = c.get("userId");
+
+    if (userRole !== "admin") {
+      const owned = await db
+        .select({ id: events.id })
+        .from(events)
+        .where(and(eq(events.id, id), eq(events.organizerId, userId)));
+      if (!owned.length) {
+        return c.json({ error: "Forbidden" }, 403);
+      }
+    }
+
     const body = await c.req.json();
     const parsed = setCategoriesSchema.safeParse(body);
     if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
 
-    // Delete existing associations then insert new ones
-    await db.delete(eventCategories).where(eq(eventCategories.eventId, id));
+    const categoryIds = [...new Set(parsed.data.categoryIds)];
 
-    if (parsed.data.categoryIds.length > 0) {
-      await db.insert(eventCategories).values(
-        parsed.data.categoryIds.map((categoryId) => ({
-          eventId: id,
-          categoryId,
-        })),
-      );
-    }
+    await db.transaction(async (tx) => {
+      await tx.delete(eventCategories).where(eq(eventCategories.eventId, id));
+
+      if (categoryIds.length > 0) {
+        await tx.insert(eventCategories).values(
+          categoryIds.map((categoryId) => ({
+            eventId: id,
+            categoryId,
+          })),
+        );
+      }
+    });
 
     const cats = await db
       .select({ id: categories.id, name: categories.name })

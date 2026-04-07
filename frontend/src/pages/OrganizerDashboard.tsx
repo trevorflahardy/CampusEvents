@@ -256,14 +256,10 @@ export default function OrganizerDashboard() {
           ? data
           : data.filter((e) => e.organizerId === user?.id);
       setEvents(filtered);
-      // Load categories for each event
       const catMap: Record<number, Category[]> = {};
-      await Promise.all(
-        filtered.map(async (ev) => {
-          const detail = await api.getEvent(ev.id);
-          catMap[ev.id] = detail.categories;
-        }),
-      );
+      for (const ev of filtered) {
+        catMap[ev.id] = ev.categories ?? [];
+      }
       setEventCategoriesMap(catMap);
     } catch {
       setError("Failed to load events.");
@@ -745,9 +741,15 @@ export default function OrganizerDashboard() {
                           <select
                             value={event.organizerId}
                             onChange={async (e) => {
-                              await handleInlineSave(event.id, {
-                                organizerId: Number(e.target.value),
-                              });
+                              const nextOrganizerId = Number(e.target.value);
+                              try {
+                                await handleInlineSave(event.id, {
+                                  organizerId: nextOrganizerId,
+                                });
+                              } catch {
+                                setError("Failed to reassign organizer.");
+                                e.target.value = String(event.organizerId);
+                              }
                             }}
                             className="cursor-pointer input-glass rounded-lg px-2 py-1 text-sm"
                           >
@@ -866,12 +868,16 @@ export default function OrganizerDashboard() {
                           <button
                             type="button"
                             onClick={async () => {
-                              await api.setEventCategories(
-                                event.id,
-                                draftCategoryIds,
-                              );
-                              setEditingCategoriesFor(null);
-                              await fetchEvents();
+                              try {
+                                await api.setEventCategories(
+                                  event.id,
+                                  draftCategoryIds,
+                                );
+                                setEditingCategoriesFor(null);
+                                await fetchEvents();
+                              } catch {
+                                setError("Failed to save categories.");
+                              }
                             }}
                             className="cursor-pointer rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
                           >
@@ -898,35 +904,30 @@ export default function OrganizerDashboard() {
                           ? "Hide Attendees"
                           : "Attendees"}
                       </button>
-                      <select
-                        value={event.status}
-                        onChange={async (e) => {
-                          const newStatus = e.target.value;
-                          if (
-                            newStatus === "cancelled" &&
-                            !confirm(
-                              "Are you sure you want to cancel this event?",
-                            )
-                          ) {
-                            e.target.value = event.status;
-                            return;
-                          }
-                          try {
-                            await api.updateEvent(event.id, {
-                              status: newStatus as Event["status"],
-                            });
-                            await fetchEvents();
-                          } catch {
-                            setError("Failed to update status.");
-                          }
-                        }}
-                        className="cursor-pointer input-glass rounded-xl px-3 py-2 text-sm font-medium"
-                      >
-                        <option value="upcoming">Upcoming</option>
-                        <option value="ongoing">Ongoing</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
+                      {event.status !== "cancelled" && (
+                        <button
+                          onClick={async () => {
+                            if (
+                              !confirm(
+                                "Are you sure you want to cancel this event?",
+                              )
+                            ) {
+                              return;
+                            }
+                            try {
+                              await api.updateEvent(event.id, {
+                                status: "cancelled",
+                              });
+                              await fetchEvents();
+                            } catch {
+                              setError("Failed to cancel event.");
+                            }
+                          }}
+                          className="cursor-pointer rounded-xl bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+                        >
+                          Cancel Event
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -38,6 +38,9 @@ const updateUserSchema = z.object({
 
 router.patch("/:id", authMiddleware, requireRole("admin"), async (c) => {
   const id = Number(c.req.param("id"));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({ error: "Invalid user id" }, 400);
+  }
   const body = await c.req.json();
   const parsed = updateUserSchema.safeParse(body);
   if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);

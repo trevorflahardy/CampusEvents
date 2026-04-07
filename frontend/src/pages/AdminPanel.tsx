@@ -266,42 +266,37 @@ export default function AdminPanel() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <select
-                        value={e.status}
-                        onChange={async (ev) => {
-                          const newStatus = ev.target.value;
-                          if (
-                            newStatus === "cancelled" &&
-                            !confirm("Cancel this event?")
-                          ) {
-                            ev.target.value = e.status;
-                            return;
-                          }
-                          try {
-                            await api.updateEvent(e.id, {
-                              status: newStatus as Event["status"],
-                            });
-                            setEvents((prev) =>
-                              prev.map((ev) =>
-                                ev.id === e.id
-                                  ? {
-                                      ...ev,
-                                      status: newStatus as Event["status"],
-                                    }
-                                  : ev,
-                              ),
-                            );
-                          } catch {
-                            setError("Failed to update status.");
-                          }
-                        }}
-                        className="cursor-pointer input-glass rounded-lg px-2 py-1.5 text-sm font-medium"
-                      >
-                        <option value="upcoming">Upcoming</option>
-                        <option value="ongoing">Ongoing</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
+                      {e.status !== "cancelled" ? (
+                        <button
+                          onClick={async () => {
+                            if (!confirm("Cancel this event?")) return;
+                            try {
+                              await api.updateEvent(e.id, {
+                                status: "cancelled",
+                              });
+                              setEvents((prev) =>
+                                prev.map((ev) =>
+                                  ev.id === e.id
+                                    ? {
+                                        ...ev,
+                                        status: "cancelled",
+                                      }
+                                    : ev,
+                                ),
+                              );
+                            } catch {
+                              setError("Failed to cancel event.");
+                            }
+                          }}
+                          className="cursor-pointer rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-400 font-medium">
+                          No actions
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
