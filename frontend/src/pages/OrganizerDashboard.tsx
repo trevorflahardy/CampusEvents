@@ -189,7 +189,7 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon }: StatCardProps) {
   return (
-    <div className="glass-heavy rounded-3xl p-6 flex justify-between items-center animate-fade-in">
+    <div className="glass rounded-3xl p-6 flex justify-between items-center animate-fade-in">
       <div>
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
           {label}
@@ -454,7 +454,7 @@ export default function OrganizerDashboard() {
 
       {/* ---- error banner ---- */}
       {error && (
-        <div role="alert" className="glass-heavy rounded-2xl p-4 border-l-4 border-l-red-400 mb-6 animate-fade-in">
+        <div role="alert" className="glass rounded-2xl p-4 border-l-4 border-l-red-400 mb-6 animate-fade-in">
           <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
@@ -531,7 +531,7 @@ export default function OrganizerDashboard() {
 
       {/* ---- create event form (managers only) ---- */}
       {isManager && showForm && (
-        <div className="glass-heavy rounded-2xl p-8 mb-8 animate-fade-in">
+        <div className="glass rounded-2xl p-8 mb-8 animate-fade-in">
           <h2 className="text-xl font-bold text-slate-900 mb-6">New Event</h2>
 
           {formError && (
@@ -1165,7 +1165,7 @@ export default function OrganizerDashboard() {
           {/* ---- Right sidebar: Upcoming This Week + Quick Actions ---- */}
           <aside className="hidden xl:flex flex-col gap-6 w-80 shrink-0">
             {/* Upcoming This Week */}
-            <div className="glass-heavy rounded-2xl p-6">
+            <div className="glass rounded-2xl p-6">
               <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
                 Upcoming This Week
               </h3>
@@ -1208,7 +1208,7 @@ export default function OrganizerDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div className="glass-heavy rounded-2xl p-6">
+            <div className="glass rounded-2xl p-6">
               <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
                 Quick Actions
               </h3>
