@@ -60,10 +60,7 @@ export default function MyTickets() {
         <div className="skeleton h-8 w-40 mb-8" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="glass-heavy rounded-2xl p-6"
-            >
+            <div key={i} className="glass-heavy rounded-2xl p-6">
               <div className="skeleton h-5 w-1/3 mb-3" />
               <div className="skeleton h-4 w-1/2 mb-2" />
               <div className="skeleton h-4 w-1/4" />
@@ -110,7 +107,7 @@ export default function MyTickets() {
             Browse events and book your first ticket!
           </p>
           <Link
-            to="/events"
+            to="/dashboard"
             className="cursor-pointer inline-flex items-center gap-2 btn-primary text-white font-bold px-6 py-2.5 rounded-full transition-all duration-200"
           >
             Browse Events
@@ -128,6 +125,7 @@ export default function MyTickets() {
                   <div className="flex items-center gap-3 mb-3">
                     <Link
                       to={`/events/${ticket.eventId}`}
+                      state={{ from: "dashboard" }}
                       className="cursor-pointer text-lg font-semibold text-slate-900 hover:text-accent transition-colors truncate"
                     >
                       {ticket.eventTitle}

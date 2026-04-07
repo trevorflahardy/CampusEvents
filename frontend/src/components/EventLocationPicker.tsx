@@ -43,7 +43,10 @@ export default function EventLocationPicker({
   // Close suggestions on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setShowSuggestions(false);
       }
     };
@@ -97,7 +100,7 @@ export default function EventLocationPicker({
       mapInstanceRef.current = null;
       markerRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update marker position when pin changes
@@ -117,15 +120,21 @@ export default function EventLocationPicker({
     }
     try {
       const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${TOKEN}&country=us&limit=5&language=en`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${TOKEN}&country=us&limit=5&language=en`,
       );
       const data = await res.json();
       setSuggestions(
-        (data.features || []).map((f: { id: string; place_name: string; center: [number, number] }) => ({
-          id: f.id,
-          place_name: f.place_name,
-          center: f.center,
-        }))
+        (data.features || []).map(
+          (f: {
+            id: string;
+            place_name: string;
+            center: [number, number];
+          }) => ({
+            id: f.id,
+            place_name: f.place_name,
+            center: f.center,
+          }),
+        ),
       );
       setShowSuggestions(true);
     } catch {
@@ -149,7 +158,11 @@ export default function EventLocationPicker({
     setShowSuggestions(false);
     setSuggestions([]);
 
-    mapInstanceRef.current?.flyTo({ center: [lng, lat], zoom: 15, duration: 800 });
+    mapInstanceRef.current?.flyTo({
+      center: [lng, lat],
+      zoom: 15,
+      duration: 800,
+    });
     if (markerRef.current) {
       markerRef.current.setLngLat([lng, lat]);
       markerRef.current.getElement().style.display = "";
@@ -161,25 +174,50 @@ export default function EventLocationPicker({
       {/* Address search input */}
       <div ref={wrapperRef} className="relative">
         <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
           </svg>
           <input
             type="text"
             value={searchInput}
             onChange={(e) => handleInputChange(e.target.value)}
-            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+            onFocus={() => {
+              if (suggestions.length > 0) setShowSuggestions(true);
+            }}
             placeholder="Search for an address..."
             className="w-full input-glass rounded-xl pl-9 pr-4 py-2.5 text-sm"
           />
           {searchInput && (
             <button
               type="button"
-              onClick={() => { handleInputChange(""); setSuggestions([]); }}
+              onClick={() => {
+                handleInputChange("");
+                setSuggestions([]);
+              }}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           )}
@@ -195,9 +233,23 @@ export default function EventLocationPicker({
                   onClick={() => handleSelect(s)}
                   className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-[#1a4f3b]/8 dark:hover:bg-white/5 transition-colors cursor-pointer flex items-start gap-2"
                 >
-                  <svg className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <svg
+                    className="w-4 h-4 text-slate-400 shrink-0 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
                   </svg>
                   <span>{s.place_name}</span>
                 </button>
@@ -215,18 +267,24 @@ export default function EventLocationPicker({
           style={{ height: 260 }}
         />
       ) : (
-        <div className="rounded-xl overflow-hidden glass-subtle flex items-center justify-center text-sm text-slate-400" style={{ height: 120 }}>
+        <div
+          className="rounded-xl overflow-hidden glass-subtle flex items-center justify-center text-sm text-slate-400"
+          style={{ height: 120 }}
+        >
           Map unavailable — set VITE_MAPBOX_TOKEN in .env
         </div>
       )}
 
       {pinVisible ? (
         <p className="text-xs text-slate-400">
-          Pin at {markerLat.toFixed(5)}, {markerLng.toFixed(5)} — drag to adjust.
+          Pin at {markerLat.toFixed(5)}, {markerLng.toFixed(5)} — drag to
+          adjust.
         </p>
       ) : (
         <p className="text-xs text-slate-400">
-          {TOKEN ? "Search an address above to drop a pin, or type a location label freely." : "Enter a location name above."}
+          {TOKEN
+            ? "Search an address above to drop a pin, or type a location label freely."
+            : "Enter a location name above."}
         </p>
       )}
     </div>

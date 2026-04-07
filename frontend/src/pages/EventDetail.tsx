@@ -7,8 +7,14 @@
  *
  * Composed from sub-components in `components/event/`.
  */
-import { useState, useEffect, useRef, useCallback, type ChangeEvent } from "react";
-import { useParams, Link } from "react-router-dom";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  type ChangeEvent,
+} from "react";
+import { useParams, useLocation } from "react-router-dom";
 import { api, ApiError, type EventDetail as EventDetailType } from "../lib/api";
 import { useAuth } from "../context/useAuth";
 import {
@@ -26,7 +32,9 @@ import {
  */
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const { user, isAuthenticated } = useAuth();
+  const cameFromEvents = (location.state as { from?: string } | null)?.from === "events";
   const [event, setEvent] = useState<EventDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -62,9 +70,12 @@ export default function EventDetail() {
   /** Check if the current student user already has a ticket for this event. */
   useEffect(() => {
     if (!user || !event || user.role !== "student") return;
-    api.getUserTickets(user.id).then((tickets) => {
-      setHasRegistered(tickets.some((t) => t.eventId === event.id));
-    }).catch(() => {});
+    api
+      .getUserTickets(user.id)
+      .then((tickets) => {
+        setHasRegistered(tickets.some((t) => t.eventId === event.id));
+      })
+      .catch(() => {});
   }, [user, event]);
 
   /** Handles uploading a new banner image for the event. */
@@ -148,31 +159,10 @@ export default function EventDetail() {
 
   return (
     <div className="bg-mesh min-h-full animate-fade-in">
-      {/* Back Link */}
-      <div className="max-w-6xl mx-auto px-4 md:px-8 pt-6 pb-4">
-        <Link
-          to="/events"
-          className="cursor-pointer inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#1a4f3b] font-medium transition-colors"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Back to events
-        </Link>
-      </div>
-
       {/* Hero Section */}
       <EventHeroSection
+        backTo={cameFromEvents ? "/events" : "/dashboard"}
+        backLabel={cameFromEvents ? "Back to events" : "Back to dashboard"}
         event={event}
         canEdit={canEdit}
         editMode={editMode}

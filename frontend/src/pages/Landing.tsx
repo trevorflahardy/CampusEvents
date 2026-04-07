@@ -46,14 +46,14 @@ export default function Landing() {
 
           <div className="flex items-center gap-3">
             <Link
-              to="/events"
+              to="/dashboard"
               className="cursor-pointer text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors px-3 py-2 rounded-lg hover:bg-white/40"
             >
               Events
             </Link>
             {isAuthenticated ? (
               <Link
-                to="/events"
+                to="/dashboard"
                 className="cursor-pointer btn-primary text-sm font-semibold px-5 py-2 rounded-full"
               >
                 Dashboard
@@ -106,7 +106,7 @@ export default function Landing() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in stagger-3">
             <Link
-              to="/events"
+              to="/dashboard"
               className="cursor-pointer inline-flex items-center gap-2.5 btn-primary font-bold px-8 py-4 rounded-full text-lg"
             >
               Browse Events
@@ -275,7 +275,7 @@ export default function Landing() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
-                  to="/events"
+                  to="/dashboard"
                   className="cursor-pointer inline-flex items-center gap-2 btn-primary font-bold px-8 py-4 rounded-full text-lg"
                 >
                   Explore Events

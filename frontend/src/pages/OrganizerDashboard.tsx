@@ -73,8 +73,12 @@ export default function OrganizerDashboard() {
     {},
   );
   const [expandedEvent, setExpandedEvent] = useState<number | null>(null);
-  const [cancellingEventId, setCancellingEventId] = useState<number | null>(null);
-  const [checkingInTicketId, setCheckingInTicketId] = useState<number | null>(null);
+  const [cancellingEventId, setCancellingEventId] = useState<number | null>(
+    null,
+  );
+  const [checkingInTicketId, setCheckingInTicketId] = useState<number | null>(
+    null,
+  );
 
   /* ---------- data fetching ---------- */
 
@@ -104,7 +108,9 @@ export default function OrganizerDashboard() {
   useEffect(() => {
     if (showForm) {
       document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = ""; };
+      return () => {
+        document.body.style.overflow = "";
+      };
     }
   }, [showForm]);
 
@@ -267,7 +273,10 @@ export default function OrganizerDashboard() {
   if (loading) return <LoadingSkeleton />;
 
   /** Closes the form modal and resets fields. */
-  const closeForm = () => { setShowForm(false); resetForm(); };
+  const closeForm = () => {
+    setShowForm(false);
+    resetForm();
+  };
 
   /* ---------- render ---------- */
 
@@ -278,16 +287,16 @@ export default function OrganizerDashboard() {
         onSearchChange={setSearchQuery}
         actions={
           isManager ? (
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className={`cursor-pointer rounded-full px-5 py-2.5 font-semibold text-sm transition-all duration-200 ${
-              showForm
-                ? "btn-secondary"
-                : "bg-accent text-white shadow-sm hover:bg-accent-dark hover:shadow-[0_6px_24px_rgba(26,79,59,0.4)] hover:-translate-y-px active:translate-y-0"
-            }`}
-          >
-            {showForm ? "Close" : "+ Create Event"}
-          </button>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className={`cursor-pointer rounded-full px-5 py-2.5 font-semibold text-sm transition-all duration-200 ${
+                showForm
+                  ? "btn-secondary"
+                  : "bg-accent text-white shadow-sm hover:bg-accent-dark hover:shadow-[0_6px_24px_rgba(26,79,59,0.4)] hover:-translate-y-px active:translate-y-0"
+              }`}
+            >
+              {showForm ? "Close" : "+ Create Event"}
+            </button>
           ) : undefined
         }
       />
@@ -297,78 +306,83 @@ export default function OrganizerDashboard() {
         <div className="flex gap-8 p-8">
           {/* ---- Left: main content ---- */}
           <div className="flex-1 min-w-0">
+            {/* ---- error banner ---- */}
+            {error && (
+              <div
+                role="alert"
+                className="glass rounded-2xl p-4 border-l-4 border-l-red-400 mb-6 animate-fade-in"
+              >
+                <p className="text-red-600 text-sm font-medium">{error}</p>
+              </div>
+            )}
 
-      {/* ---- error banner ---- */}
-      {error && (
-        <div role="alert" className="glass rounded-2xl p-4 border-l-4 border-l-red-400 mb-6 animate-fade-in">
-          <p className="text-red-600 text-sm font-medium">{error}</p>
-        </div>
-      )}
+            {/* ---- Stats grid ---- */}
+            <StatsGrid
+              isManager={isManager}
+              totalEvents={totalEvents}
+              upcomingCount={upcomingCount}
+              totalAttendees={totalAttendees}
+              events={events}
+            />
 
-      {/* ---- Stats grid ---- */}
-      <StatsGrid
-        isManager={isManager}
-        totalEvents={totalEvents}
-        upcomingCount={upcomingCount}
-        totalAttendees={totalAttendees}
-        events={events}
-      />
+            {/* ---- create event modal (managers only) ---- */}
+            {isManager && showForm && (
+              <CreateEventForm
+                formError={formError}
+                submitting={submitting}
+                title={title}
+                description={description}
+                location={location}
+                startTime={startTime}
+                endTime={endTime}
+                capacity={capacity}
+                ticketPrice={ticketPrice}
+                selectedCategoryIds={selectedCategoryIds}
+                pinLat={pinLat}
+                pinLng={pinLng}
+                bannerPreview={bannerPreview}
+                categories={categories}
+                onTitleChange={setTitle}
+                onDescriptionChange={setDescription}
+                onLocationChange={setLocation}
+                onStartTimeChange={setStartTime}
+                onEndTimeChange={setEndTime}
+                onCapacityChange={setCapacity}
+                onTicketPriceChange={setTicketPrice}
+                onSelectedCategoryIdsChange={setSelectedCategoryIds}
+                onPinLatChange={setPinLat}
+                onPinLngChange={setPinLng}
+                onBannerSelect={handleBannerSelect}
+                onBannerRemove={() => {
+                  setBannerFile(null);
+                  setBannerPreview(null);
+                }}
+                onSubmit={handleCreateEvent}
+                onClose={closeForm}
+              />
+            )}
 
-      {/* ---- create event modal (managers only) ---- */}
-      {isManager && showForm && (
-        <CreateEventForm
-          formError={formError}
-          submitting={submitting}
-          title={title}
-          description={description}
-          location={location}
-          startTime={startTime}
-          endTime={endTime}
-          capacity={capacity}
-          ticketPrice={ticketPrice}
-          selectedCategoryIds={selectedCategoryIds}
-          pinLat={pinLat}
-          pinLng={pinLng}
-          bannerPreview={bannerPreview}
-          categories={categories}
-          onTitleChange={setTitle}
-          onDescriptionChange={setDescription}
-          onLocationChange={setLocation}
-          onStartTimeChange={setStartTime}
-          onEndTimeChange={setEndTime}
-          onCapacityChange={setCapacity}
-          onTicketPriceChange={setTicketPrice}
-          onSelectedCategoryIdsChange={setSelectedCategoryIds}
-          onPinLatChange={setPinLat}
-          onPinLngChange={setPinLng}
-          onBannerSelect={handleBannerSelect}
-          onBannerRemove={() => { setBannerFile(null); setBannerPreview(null); }}
-          onSubmit={handleCreateEvent}
-          onClose={closeForm}
-        />
-      )}
-
-      {/* ---- Section heading + events grid ---- */}
-      <EventsGrid
-        filteredEvents={filteredEvents}
-        isManager={isManager}
-        isAdmin={isAdmin}
-        isOrganizer={isOrganizer}
-        searchQuery={searchQuery}
-        eventCategoriesMap={eventCategoriesMap}
-        attendeesMap={attendeesMap}
-        expandedEvent={expandedEvent}
-        cancellingEventId={cancellingEventId}
-        checkingInTicketId={checkingInTicketId}
-        user={user}
-        organizers={organizers}
-        onToggleAttendees={toggleAttendees}
-        onCancelEvent={handleCancelEvent}
-        onCheckin={handleCheckin}
-        onCreateEvent={() => setShowForm(true)}
-      />
-
-          </div>{/* end left column */}
+            {/* ---- Section heading + events grid ---- */}
+            <EventsGrid
+              filteredEvents={filteredEvents}
+              isManager={isManager}
+              isAdmin={isAdmin}
+              isOrganizer={isOrganizer}
+              searchQuery={searchQuery}
+              eventCategoriesMap={eventCategoriesMap}
+              attendeesMap={attendeesMap}
+              expandedEvent={expandedEvent}
+              cancellingEventId={cancellingEventId}
+              checkingInTicketId={checkingInTicketId}
+              user={user}
+              organizers={organizers}
+              onToggleAttendees={toggleAttendees}
+              onCancelEvent={handleCancelEvent}
+              onCheckin={handleCheckin}
+              onCreateEvent={() => setShowForm(true)}
+            />
+          </div>
+          {/* end left column */}
 
           {/* ---- Right sidebar ---- */}
           <DashboardSidebar
@@ -376,9 +390,10 @@ export default function OrganizerDashboard() {
             isManager={isManager}
             onCreateEvent={() => setShowForm(true)}
           />
-
-        </div>{/* end flex row */}
-      </div>{/* end scrollable area */}
+        </div>
+        {/* end flex row */}
+      </div>
+      {/* end scrollable area */}
     </div>
   );
 }

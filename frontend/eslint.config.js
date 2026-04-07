@@ -20,7 +20,17 @@ export default defineConfig([
       globals: globals.browser,
     },
     rules: {
-      "max-lines": ["warn", { max: 300, skipBlankLines: true, skipComments: true }],
+      "react-refresh/only-export-components": [
+        "warn",
+        {
+          allowConstantExport: true,
+          allowExportNames: ["useTheme", "useAuth", "cropBannerImage"],
+        },
+      ],
+      "max-lines": [
+        "warn",
+        { max: 300, skipBlankLines: true, skipComments: true },
+      ],
     },
   },
 ]);

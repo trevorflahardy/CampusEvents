@@ -37,8 +37,12 @@ export default function AdminPanel() {
   const [error, setError] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [categoryError, setCategoryError] = useState("");
-  const [cancellingEventId, setCancellingEventId] = useState<number | null>(null);
-  const [changingRoleUserId, setChangingRoleUserId] = useState<number | null>(null);
+  const [cancellingEventId, setCancellingEventId] = useState<number | null>(
+    null,
+  );
+  const [changingRoleUserId, setChangingRoleUserId] = useState<number | null>(
+    null,
+  );
   const [addingCategory, setAddingCategory] = useState(false);
 
   useEffect(() => {
@@ -131,7 +135,10 @@ export default function AdminPanel() {
       </h1>
 
       {error && (
-        <div role="alert" className="glass-heavy rounded-2xl p-4 mb-6 border-l-4 border-red-400">
+        <div
+          role="alert"
+          className="glass-heavy rounded-2xl p-4 mb-6 border-l-4 border-red-400"
+        >
           <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
@@ -335,7 +342,10 @@ export default function AdminPanel() {
               Add Category
             </h2>
             {categoryError && (
-              <div role="alert" className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-4 text-sm font-medium">
+              <div
+                role="alert"
+                className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-4 text-sm font-medium"
+              >
                 {categoryError}
               </div>
             )}

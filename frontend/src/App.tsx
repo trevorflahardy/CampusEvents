@@ -34,7 +34,8 @@ function AppLayout() {
     };
     const base = "CampusEvents";
     const pageTitle = titles[location.pathname] || "Page";
-    document.title = location.pathname === "/" ? base : `${pageTitle} - ${base}`;
+    document.title =
+      location.pathname === "/" ? base : `${pageTitle} - ${base}`;
 
     // Move focus to main content for screen readers
     if (mainRef.current) {
@@ -45,7 +46,11 @@ function AppLayout() {
   return (
     <div className="min-h-screen bg-mesh">
       {!isStandalone && <Navbar />}
-      <div ref={mainRef} tabIndex={-1} className={`outline-none ${isStandalone ? "" : "md:ml-64"}`}>
+      <div
+        ref={mainRef}
+        tabIndex={-1}
+        className={`outline-none ${isStandalone ? "" : "md:ml-64"}`}
+      >
         <Routes>
           {/* Standalone pages — no sidebar */}
           <Route path="/" element={<Landing />} />

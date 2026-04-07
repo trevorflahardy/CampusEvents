@@ -28,7 +28,9 @@ export default function LocationEditModal({
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, []);
 
   const handleSave = async () => {
@@ -55,15 +57,28 @@ export default function LocationEditModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-xl" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/70 backdrop-blur-xl"
+        onClick={onClose}
+      />
       <div className="relative z-10 w-full max-w-xl glass-heavy rounded-3xl p-6 animate-fade-in shadow-2xl">
         <button
           type="button"
           onClick={onClose}
           className="absolute top-4 right-4 w-8 h-8 rounded-full glass-subtle flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
@@ -80,7 +95,10 @@ export default function LocationEditModal({
           onLocationTextChange={setLocation}
           pinLat={pinLat}
           pinLng={pinLng}
-          onPinChange={(lat, lng) => { setPinLat(lat); setPinLng(lng); }}
+          onPinChange={(lat, lng) => {
+            setPinLat(lat);
+            setPinLng(lng);
+          }}
         />
 
         <div className="flex gap-3 mt-5">

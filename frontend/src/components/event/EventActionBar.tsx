@@ -89,9 +89,7 @@ export default function EventActionBar({
             <span
               className={`text-sm font-semibold ${soldOut ? "text-red-500" : "text-emerald-600"}`}
             >
-              {soldOut
-                ? "Sold Out"
-                : `${event.spotsRemaining} remaining`}
+              {soldOut ? "Sold Out" : `${event.spotsRemaining} remaining`}
             </span>
           </div>
           <div className="w-full bg-slate-200/70 rounded-full h-3 overflow-hidden">
@@ -144,19 +142,31 @@ export default function EventActionBar({
               )}
             </button>
           )}
-          {hasRegistered && userRole === "student" && event.status !== "cancelled" && (
-            <button
-              disabled
-              className="btn-primary font-bold px-8 py-3 rounded-full opacity-50 cursor-not-allowed"
-            >
-              <span className="flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Already Registered
-              </span>
-            </button>
-          )}
+          {hasRegistered &&
+            userRole === "student" &&
+            event.status !== "cancelled" && (
+              <button
+                disabled
+                className="btn-primary font-bold px-8 py-3 rounded-full opacity-50 cursor-not-allowed"
+              >
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Already Registered
+                </span>
+              </button>
+            )}
           {soldOut && !hasRegistered && event.status !== "cancelled" && (
             <span className="badge badge-danger font-semibold text-sm px-4 py-2">
               Sold Out
@@ -176,8 +186,18 @@ export default function EventActionBar({
           onClick={onEnterEditMode}
           className="cursor-pointer inline-flex items-center gap-2 rounded-xl border border-brand-light bg-brand-glow px-4 py-2.5 text-sm text-[#1a4f3b] font-medium hover:bg-[#1a4f3b]/10 transition-colors"
         >
-          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          <svg
+            className="w-4 h-4 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+            />
           </svg>
           Edit Event
         </button>
@@ -185,10 +205,22 @@ export default function EventActionBar({
       {editMode && (
         <div className="flex items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm">
           <div className="flex items-center gap-2 text-amber-700">
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            <svg
+              className="w-4 h-4 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              />
             </svg>
-            <span className="font-medium">Editing mode — click any field to edit it.</span>
+            <span className="font-medium">
+              Editing mode — click any field to edit it.
+            </span>
           </div>
           <button
             onClick={onExitEditMode}

@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 
 type Theme = "light" | "dark";
 
@@ -30,7 +36,7 @@ function blobPolygon(
     // Gentle low-frequency waves for smooth, rounded blob edges
     const wobble =
       1 +
-      0.10 * Math.sin(angle * 2 + seed) +
+      0.1 * Math.sin(angle * 2 + seed) +
       0.07 * Math.sin(angle * 3 + seed * 1.7) +
       0.04 * Math.cos(angle * 4 + seed * 0.6);
     const r = baseRadius * wobble;

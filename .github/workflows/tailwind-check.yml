@@ -1,0 +1,48 @@
+name: Tailwind CSS Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**/*.css"
+      - "frontend/**/*.tsx"
+      - "frontend/**/*.ts"
+      - "frontend/package.json"
+      - ".github/workflows/tailwind-check.yml"
+  pull_request:
+    paths:
+      - "frontend/**/*.css"
+      - "frontend/**/*.tsx"
+      - "frontend/**/*.ts"
+      - "frontend/package.json"
+      - ".github/workflows/tailwind-check.yml"
+
+jobs:
+  tailwind:
+    name: Tailwind CSS Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Tailwind CSS
+        run: bunx @tailwindcss/cli -i src/index.css -o /tmp/tailwind-out.css --minify
+
+      - name: Verify output is non-empty
+        run: |
+          if [ ! -s /tmp/tailwind-out.css ]; then
+            echo "::error::Tailwind CSS produced empty output"
+            exit 1
+          fi
+          echo "Tailwind CSS compiled successfully ($(wc -c < /tmp/tailwind-out.css) bytes)"

@@ -1,4 +1,10 @@
-import { useState, useEffect, useCallback, createContext, type ReactNode } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  createContext,
+  type ReactNode,
+} from "react";
 import { api, type User } from "../lib/api";
 
 /** Shape of the authentication context exposed to consumers. */

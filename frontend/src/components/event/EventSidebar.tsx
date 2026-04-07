@@ -50,7 +50,10 @@ export default function EventSidebar({
           onClick={() => editMode && setShowLocationModal(true)}
           title={editMode ? "Click to edit location" : undefined}
         >
-          <EventMapPreview latitude={event.latitude} longitude={event.longitude} />
+          <EventMapPreview
+            latitude={event.latitude}
+            longitude={event.longitude}
+          />
           {editMode && (
             <div className="absolute inset-0 rounded-2xl bg-black/0 group-hover/map:bg-black/20 transition-colors flex items-center justify-center">
               <span className="opacity-0 group-hover/map:opacity-100 transition-opacity bg-black/50 text-white text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">

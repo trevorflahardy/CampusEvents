@@ -48,7 +48,7 @@ router.get("/", async (c) => {
   ] as const;
   const status =
     statusQuery &&
-      validStatuses.includes(statusQuery as (typeof validStatuses)[number])
+    validStatuses.includes(statusQuery as (typeof validStatuses)[number])
       ? (statusQuery as (typeof validStatuses)[number])
       : undefined;
   if (search) conditions.push(sql`${events.title} ILIKE ${"%" + search + "%"}`);
@@ -80,7 +80,10 @@ router.get("/", async (c) => {
       .innerJoin(eventCategories, eq(events.id, eventCategories.eventId))
       .where(
         conditions.length > 0
-          ? and(...conditions, eq(eventCategories.categoryId, Number(categoryId)))
+          ? and(
+              ...conditions,
+              eq(eventCategories.categoryId, Number(categoryId)),
+            )
           : eq(eventCategories.categoryId, Number(categoryId)),
       )
       .orderBy(events.startTime);
@@ -114,14 +117,14 @@ router.get("/", async (c) => {
   const categoryRows =
     eventIds.length > 0
       ? await db
-        .select({
-          eventId: eventCategories.eventId,
-          id: categories.id,
-          name: categories.name,
-        })
-        .from(eventCategories)
-        .innerJoin(categories, eq(eventCategories.categoryId, categories.id))
-        .where(inArray(eventCategories.eventId, eventIds))
+          .select({
+            eventId: eventCategories.eventId,
+            id: categories.id,
+            name: categories.name,
+          })
+          .from(eventCategories)
+          .innerJoin(categories, eq(eventCategories.categoryId, categories.id))
+          .where(inArray(eventCategories.eventId, eventIds))
       : [];
 
   const categoryMap: Record<number, { id: number; name: string }[]> = {};
@@ -346,7 +349,10 @@ router.post(
 
     const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!validTypes.includes(file.type)) {
-      return c.json({ error: "Invalid file type. Use JPEG, PNG, WebP, or GIF." }, 400);
+      return c.json(
+        { error: "Invalid file type. Use JPEG, PNG, WebP, or GIF." },
+        400,
+      );
     }
     if (file.size > 25 * 1024 * 1024) {
       return c.json({ error: "File too large. Max 25MB." }, 400);

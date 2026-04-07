@@ -76,7 +76,10 @@ export const api = {
       body: JSON.stringify({ categoryIds }),
     }),
   getEventTickets: (id: number) => request<Attendee[]>(`/events/${id}/tickets`),
-  uploadEventBanner: async (eventId: number, file: File): Promise<{ bannerUrl: string }> => {
+  uploadEventBanner: async (
+    eventId: number,
+    file: File,
+  ): Promise<{ bannerUrl: string }> => {
     const token = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("banner", file);

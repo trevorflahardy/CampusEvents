@@ -7,11 +7,7 @@
  * @module dashboard/CreateEventForm
  */
 
-import {
-  useRef,
-  type FormEvent,
-  type ChangeEvent,
-} from "react";
+import { useRef, type FormEvent, type ChangeEvent } from "react";
 import type { Category } from "../../lib/api";
 import EventLocationPicker from "../EventLocationPicker";
 
@@ -74,7 +70,10 @@ export function cropBannerImage(file: File): Promise<File> {
       const srcH = img.naturalHeight;
       const srcAspect = srcW / srcH;
 
-      let sx = 0, sy = 0, sw = srcW, sh = srcH;
+      let sx = 0,
+        sy = 0,
+        sw = srcW,
+        sh = srcH;
       if (srcAspect > BANNER_ASPECT) {
         sw = srcH * BANNER_ASPECT;
         sx = (srcW - sw) / 2;
@@ -95,7 +94,11 @@ export function cropBannerImage(file: File): Promise<File> {
       canvas.toBlob(
         (blob) => {
           if (!blob) return reject(new Error("Crop failed"));
-          resolve(new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), { type: "image/webp" }));
+          resolve(
+            new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), {
+              type: "image/webp",
+            }),
+          );
         },
         "image/webp",
         0.85,
@@ -159,15 +162,28 @@ export default function CreateEventForm({
           onClick={onClose}
           className="absolute top-4 right-4 w-8 h-8 rounded-full glass-subtle flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
         <h2 className="text-xl font-bold text-slate-900 mb-6">New Event</h2>
 
         {formError && (
-          <div role="alert" className="glass-subtle border-l-4 border-l-red-400 text-red-600 dark:text-red-400 rounded-xl p-3 mb-5 text-sm font-medium">
+          <div
+            role="alert"
+            className="glass-subtle border-l-4 border-l-red-400 text-red-600 dark:text-red-400 rounded-xl p-3 mb-5 text-sm font-medium"
+          >
             {formError}
           </div>
         )}
@@ -217,17 +233,32 @@ export default function CreateEventForm({
                 onClick={() => bannerInputRef.current?.click()}
                 className="cursor-pointer w-full aspect-[3/1] rounded-xl border-2 border-dashed border-slate-300/50 dark:border-white/10 hover:border-[#1a4f3b]/30 dark:hover:border-emerald-400/20 transition-colors flex flex-col items-center justify-center gap-2 text-slate-400"
               >
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"
+                  />
                 </svg>
-                <span className="text-xs font-medium">Click to upload banner (auto-cropped to 3:1)</span>
+                <span className="text-xs font-medium">
+                  Click to upload banner (auto-cropped to 3:1)
+                </span>
               </button>
             )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label htmlFor="ev-title" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="ev-title"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Title
               </label>
               <input
@@ -240,7 +271,10 @@ export default function CreateEventForm({
               />
             </div>
             <div>
-              <label htmlFor="ev-start" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="ev-start"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Start
               </label>
               <input
@@ -253,7 +287,10 @@ export default function CreateEventForm({
               />
             </div>
             <div>
-              <label htmlFor="ev-end" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="ev-end"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 End
               </label>
               <input
@@ -266,7 +303,10 @@ export default function CreateEventForm({
               />
             </div>
             <div>
-              <label htmlFor="ev-cap" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="ev-cap"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Capacity
               </label>
               <input
@@ -280,7 +320,10 @@ export default function CreateEventForm({
               />
             </div>
             <div>
-              <label htmlFor="ev-price" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="ev-price"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Ticket Price
               </label>
               <input
@@ -305,12 +348,18 @@ export default function CreateEventForm({
               onLocationTextChange={onLocationChange}
               pinLat={pinLat}
               pinLng={pinLng}
-              onPinChange={(lat, lng) => { onPinLatChange(lat); onPinLngChange(lng); }}
+              onPinChange={(lat, lng) => {
+                onPinLatChange(lat);
+                onPinLngChange(lng);
+              }}
             />
           </div>
 
           <div>
-            <label htmlFor="ev-desc" className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label
+              htmlFor="ev-desc"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
               Description
             </label>
             <textarea

@@ -38,7 +38,7 @@ export default function EventDetailError({ error }: EventDetailErrorProps) {
           {error || "Event not found."}
         </p>
         <Link
-          to="/events"
+          to="/dashboard"
           className="cursor-pointer inline-flex items-center gap-1.5 text-sm text-[#1a4f3b] hover:text-[#2b5c50] font-medium transition-colors"
         >
           <svg
@@ -54,7 +54,7 @@ export default function EventDetailError({ error }: EventDetailErrorProps) {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Back to events
+          Back to dashboard
         </Link>
       </div>
     </div>
