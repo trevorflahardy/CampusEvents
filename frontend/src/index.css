@@ -31,22 +31,50 @@ body {
   background-color: #dce8f0;
   background-image:
     /* Upper-left: brand emerald bloom */
-    radial-gradient(ellipse 70% 55% at 5% 68%, rgba(16, 185, 129, 0.24) 0%, transparent 65%),
+    radial-gradient(
+      ellipse 70% 55% at 5% 68%,
+      rgba(16, 185, 129, 0.24) 0%,
+      transparent 65%
+    ),
     /* Upper-right: sky blue — contrast to emerald for rich glass blur */
-    radial-gradient(ellipse 65% 50% at 93% 12%, rgba(56, 189, 248, 0.26) 0%, transparent 60%),
+    radial-gradient(
+        ellipse 65% 50% at 93% 12%,
+        rgba(56, 189, 248, 0.26) 0%,
+        transparent 60%
+      ),
     /* Lower-center: soft violet — depth and luxury */
-    radial-gradient(ellipse 55% 40% at 50% 96%, rgba(167, 139, 250, 0.18) 0%, transparent 55%),
+    radial-gradient(
+        ellipse 55% 40% at 50% 96%,
+        rgba(167, 139, 250, 0.18) 0%,
+        transparent 55%
+      ),
     /* Center: warm white bloom — keeps it airy and light */
-    radial-gradient(ellipse 60% 50% at 52% 38%, rgba(255, 255, 255, 0.55) 0%, transparent 55%);
+    radial-gradient(
+        ellipse 60% 50% at 52% 38%,
+        rgba(255, 255, 255, 0.55) 0%,
+        transparent 55%
+      );
   background-attachment: fixed;
 }
 
 .bg-hero {
   background-color: #e2edf5;
   background-image:
-    radial-gradient(ellipse 65% 50% at 18% 30%, rgba(16, 185, 129, 0.20) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 45% at 82% 18%, rgba(56, 189, 248, 0.18) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 58% 72%, rgba(167, 139, 250, 0.14) 0%, transparent 50%);
+    radial-gradient(
+      ellipse 65% 50% at 18% 30%,
+      rgba(16, 185, 129, 0.2) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 82% 18%,
+      rgba(56, 189, 248, 0.18) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 58% 72%,
+      rgba(167, 139, 250, 0.14) 0%,
+      transparent 50%
+    );
 }
 
 /* ─── Liquid Glass ─── */
@@ -63,7 +91,7 @@ body {
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.08),
     0 1px 4px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.90),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
     inset 0 -1px 0 rgba(0, 0, 0, 0.04);
 }
 
@@ -86,7 +114,7 @@ body {
 .glass-subtle {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.60) 0%,
+    rgba(255, 255, 255, 0.6) 0%,
     rgba(255, 255, 255, 0.38) 100%
   );
   backdrop-filter: blur(12px) saturate(160%);
@@ -94,7 +122,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.52);
   box-shadow:
     0 2px 12px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.80);
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 /* Colored glass accents */
@@ -129,7 +157,7 @@ body {
   );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.70);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 12px;
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.07),
@@ -146,7 +174,7 @@ body {
   );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.70);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 12px;
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.07),
@@ -160,9 +188,9 @@ body {
 }
 
 .card-interactive:hover {
-  border-color: rgba(255, 255, 255, 0.90);
+  border-color: rgba(255, 255, 255, 0.9);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.10),
+    0 12px 40px rgba(0, 0, 0, 0.1),
     0 3px 8px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.98),
     inset 0 -1px 0 rgba(0, 0, 0, 0.02);
@@ -491,13 +519,29 @@ select:focus-visible {
   background-color: #080c0f;
   background-image:
     /* Upper-left: brand emerald bloom */
-    radial-gradient(ellipse 75% 55% at 8% 65%, rgba(16, 185, 129, 0.30) 0%, transparent 65%),
+    radial-gradient(
+      ellipse 75% 55% at 8% 65%,
+      rgba(16, 185, 129, 0.3) 0%,
+      transparent 65%
+    ),
     /* Upper-right: indigo/violet contrast */
-    radial-gradient(ellipse 65% 50% at 90% 20%, rgba(99, 102, 241, 0.22) 0%, transparent 60%),
+    radial-gradient(
+        ellipse 65% 50% at 90% 20%,
+        rgba(99, 102, 241, 0.22) 0%,
+        transparent 60%
+      ),
     /* Lower-center: deep teal accent */
-    radial-gradient(ellipse 50% 40% at 52% 90%, rgba(20, 184, 166, 0.16) 0%, transparent 55%),
+    radial-gradient(
+        ellipse 50% 40% at 52% 90%,
+        rgba(20, 184, 166, 0.16) 0%,
+        transparent 55%
+      ),
     /* Mid-right: dark emerald anchor */
-    radial-gradient(ellipse 40% 35% at 78% 58%, rgba(6, 78, 59, 0.20) 0%, transparent 50%);
+    radial-gradient(
+        ellipse 40% 35% at 78% 58%,
+        rgba(6, 78, 59, 0.2) 0%,
+        transparent 50%
+      );
   background-attachment: fixed;
 }
 
@@ -518,9 +562,9 @@ select:focus-visible {
   );
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.50),
+    0 8px 32px rgba(0, 0, 0, 0.5),
     0 0 48px rgba(16, 185, 129, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.13),
     inset 0 -1px 0 rgba(0, 0, 0, 0.18);
@@ -531,11 +575,11 @@ select:focus-visible {
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.08) 0%,
-    rgba(0, 0, 0, 0.20) 100%
+    rgba(0, 0, 0, 0.2) 100%
   );
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.45),
     0 0 64px rgba(16, 185, 129, 0.05),
@@ -596,7 +640,7 @@ select:focus-visible {
 .dark .card-interactive:hover {
   border-color: rgba(52, 211, 153, 0.25);
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.40),
+    0 8px 24px rgba(0, 0, 0, 0.4),
     0 0 32px rgba(16, 185, 129, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
