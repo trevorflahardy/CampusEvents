@@ -445,39 +445,39 @@ select:focus-visible {
 
 /* ─── Dark Mode ─── */
 
-/* Background: deep dark green-black with subtle radial green halos */
+/* Background: deep neutral dark with barely-there cool-gray halos */
 .dark .bg-mesh {
-  background-color: #121816;
+  background-color: #0f1012;
   background-image:
-    radial-gradient(circle at 15% 50%, rgba(20, 50, 45, 0.4), transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(15, 40, 35, 0.4), transparent 50%);
+    radial-gradient(circle at 15% 50%, rgba(30, 35, 45, 0.35), transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(25, 28, 38, 0.3), transparent 50%);
   background-attachment: fixed;
 }
 
-/* Sidebar / header glass panel — barely-there dark overlay */
+/* Sidebar / header glass panel — frosted dark gray */
 .dark .glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.25);
 }
 
 /* Cards / content containers */
 .dark .glass-heavy {
-  background: rgba(255, 255, 255, 0.01);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* Secondary sections / backgrounds */
 .dark .glass-subtle {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* Inputs */
