@@ -754,10 +754,10 @@ export default function EventDetail() {
               </div>
             </div>
 
-            {/* Categories Section */}
+            {/* Categories — bare, no glass block */}
             {event.categories.length > 0 && (
-              <div className="glass-heavy rounded-2xl p-6 animate-fade-in stagger-3">
-                <h2 className="text-xs font-semibold text-slate-800 uppercase tracking-wider mb-3">
+              <div className="px-1 animate-fade-in stagger-4">
+                <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
                   Categories
                 </h2>
                 <div className="flex flex-wrap gap-2">

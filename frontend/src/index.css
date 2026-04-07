@@ -28,51 +28,73 @@ body {
 /* ─── Backgrounds ─── */
 
 .bg-mesh {
-  background-color: #eef3f7;
+  background-color: #dce8f0;
   background-image:
-    radial-gradient(at 0% 0%, rgba(26, 79, 59, 0.07) 0px, transparent 55%),
-    radial-gradient(at 100% 0%, rgba(200, 230, 216, 0.55) 0px, transparent 50%),
-    radial-gradient(at 80% 70%, rgba(180, 210, 235, 0.4) 0px, transparent 55%),
-    radial-gradient(at 20% 85%, rgba(210, 228, 240, 0.45) 0px, transparent 50%),
-    radial-gradient(at 55% 45%, rgba(230, 240, 248, 0.3) 0px, transparent 60%);
+    /* Upper-left: brand emerald bloom */
+    radial-gradient(ellipse 70% 55% at 5% 68%, rgba(16, 185, 129, 0.24) 0%, transparent 65%),
+    /* Upper-right: sky blue — contrast to emerald for rich glass blur */
+    radial-gradient(ellipse 65% 50% at 93% 12%, rgba(56, 189, 248, 0.26) 0%, transparent 60%),
+    /* Lower-center: soft violet — depth and luxury */
+    radial-gradient(ellipse 55% 40% at 50% 96%, rgba(167, 139, 250, 0.18) 0%, transparent 55%),
+    /* Center: warm white bloom — keeps it airy and light */
+    radial-gradient(ellipse 60% 50% at 52% 38%, rgba(255, 255, 255, 0.55) 0%, transparent 55%);
   background-attachment: fixed;
 }
 
 .bg-hero {
-  background-color: #f8fafc;
+  background-color: #e2edf5;
   background-image:
-    radial-gradient(at 20% 30%, rgba(26, 79, 59, 0.1) 0px, transparent 50%),
-    radial-gradient(at 80% 20%, rgba(43, 92, 80, 0.08) 0px, transparent 50%),
-    radial-gradient(at 60% 70%, rgba(47, 109, 86, 0.06) 0px, transparent 50%);
+    radial-gradient(ellipse 65% 50% at 18% 30%, rgba(16, 185, 129, 0.20) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 82% 18%, rgba(56, 189, 248, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 58% 72%, rgba(167, 139, 250, 0.14) 0%, transparent 50%);
 }
 
 /* ─── Liquid Glass ─── */
 
 .glass {
-  background: rgba(250, 250, 250, 0.6);
-  backdrop-filter: blur(20px) saturate(100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(255, 255, 255, 0.52) 100%
+  );
+  backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(230, 232, 240, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.65);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    0 1px 2px rgba(0, 0, 0, 0.02);
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.90),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.04);
 }
 
 .glass-heavy {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(24px) saturate(50%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.62) 100%
+  );
+  backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid rgba(226, 232, 240, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.72);
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    0 1px 2px rgba(0, 0, 0, 0.03);
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
 }
 
 .glass-subtle {
-  background: rgba(255, 255, 255, 0.55);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.60) 0%,
+    rgba(255, 255, 255, 0.38) 100%
+  );
   backdrop-filter: blur(12px) saturate(160%);
   -webkit-backdrop-filter: blur(12px) saturate(160%);
-  border: 1px solid rgba(226, 232, 240, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.80);
 }
 
 /* Colored glass accents */
@@ -100,25 +122,37 @@ body {
 /* ─── Cards ─── */
 
 .card {
-  background: rgba(255, 255, 255, 0.88);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(255, 255, 255, 0.68) 100%
+  );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(226, 232, 240, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.70);
   border-radius: 12px;
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    0 1px 2px rgba(0, 0, 0, 0.03);
+    0 4px 20px rgba(0, 0, 0, 0.07),
+    0 1px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
 }
 
 .card-interactive {
-  background: rgba(255, 255, 255, 0.88);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(255, 255, 255, 0.68) 100%
+  );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(226, 232, 240, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.70);
   border-radius: 12px;
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    0 1px 2px rgba(0, 0, 0, 0.03);
+    0 4px 20px rgba(0, 0, 0, 0.07),
+    0 1px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -126,10 +160,12 @@ body {
 }
 
 .card-interactive:hover {
-  border-color: rgba(226, 232, 240, 0.9);
+  border-color: rgba(255, 255, 255, 0.90);
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.1),
-    0 2px 4px rgba(0, 0, 0, 0.04);
+    0 12px 40px rgba(0, 0, 0, 0.10),
+    0 3px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.02);
 }
 
 /* ─── Inputs ─── */
@@ -445,39 +481,81 @@ select:focus-visible {
 
 /* ─── Dark Mode ─── */
 
-/* Background: deep neutral dark with barely-there cool-gray halos */
+/*
+ * Background: deep near-black base with large color orbs.
+ * Glassmorphism only works when there's multi-color depth behind the panels
+ * for backdrop-filter blur() to sample. Brand emerald + indigo + teal orbs
+ * create that depth while staying on-brand.
+ */
 .dark .bg-mesh {
-  background-color: #0f1012;
+  background-color: #080c0f;
   background-image:
-    radial-gradient(circle at 15% 50%, rgba(30, 35, 45, 0.35), transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(25, 28, 38, 0.3), transparent 50%);
+    /* Upper-left: brand emerald bloom */
+    radial-gradient(ellipse 75% 55% at 8% 65%, rgba(16, 185, 129, 0.30) 0%, transparent 65%),
+    /* Upper-right: indigo/violet contrast */
+    radial-gradient(ellipse 65% 50% at 90% 20%, rgba(99, 102, 241, 0.22) 0%, transparent 60%),
+    /* Lower-center: deep teal accent */
+    radial-gradient(ellipse 50% 40% at 52% 90%, rgba(20, 184, 166, 0.16) 0%, transparent 55%),
+    /* Mid-right: dark emerald anchor */
+    radial-gradient(ellipse 40% 35% at 78% 58%, rgba(6, 78, 59, 0.20) 0%, transparent 50%);
   background-attachment: fixed;
 }
 
-/* Sidebar / header glass panel — frosted dark gray */
+/*
+ * Apple liquid glass recipe:
+ * - Gradient fill (not flat alpha) to suggest directional light
+ * - saturate() in backdrop-filter so orb colors bleed through richly
+ * - inset 0 1px 0 for the top-edge specular rim (the "glass edge" highlight)
+ * - outer shadow for depth separation from the background
+ */
+
+/* Sidebar / header */
 .dark .glass {
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(0, 0, 0, 0.18) 100%
+  );
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.50),
+    0 0 48px rgba(16, 185, 129, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
 }
 
 /* Cards / content containers */
 .dark .glass-heavy {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(0, 0, 0, 0.20) 100%
+  );
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 0 64px rgba(16, 185, 129, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14);
 }
 
 /* Secondary sections / backgrounds */
 .dark .glass-subtle {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(0, 0, 0, 0.14) 100%
+  );
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* Inputs */
@@ -507,15 +585,20 @@ select:focus-visible {
 
 /* Cards (generic) */
 .dark .card {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(0, 0, 0, 0.18) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.09);
 }
 
 .dark .card-interactive:hover {
-  border-color: rgba(52, 211, 153, 0.2);
+  border-color: rgba(52, 211, 153, 0.25);
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.3),
-    0 1px 3px rgba(0, 0, 0, 0.2);
+    0 8px 24px rgba(0, 0, 0, 0.40),
+    0 0 32px rgba(16, 185, 129, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* Primary button: emerald-tinted glass on dark bg */
