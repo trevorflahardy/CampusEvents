@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { api, type Event, type Category } from "../lib/api";
 import EventCard from "../components/EventCard";
+import DashboardHeader from "../components/DashboardHeader";
 
 export default function BrowseEvents() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -58,7 +59,14 @@ export default function BrowseEvents() {
   const hasFilters = search || categoryId || from || to || status;
 
   return (
-    <div className="bg-mesh min-h-full animate-fade-in">
+    <div className="flex flex-col h-screen overflow-hidden animate-fade-in">
+      <DashboardHeader
+        searchQuery={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search events..."
+      />
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
       <div className="flex items-end justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
@@ -72,29 +80,7 @@ export default function BrowseEvents() {
 
       {/* Filter Bar */}
       <div className="glass-heavy rounded-2xl p-5 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-          <div className="relative">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search events..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full input-glass rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400"
-            />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
@@ -194,6 +180,8 @@ export default function BrowseEvents() {
           ))}
         </div>
       )}
+        </div>{/* end max-w-7xl */}
+      </div>{/* end overflow-y-auto */}
     </div>
   );
 }

@@ -107,17 +107,17 @@ export default function Navbar() {
 
         {/* User Profile */}
         {isAuthenticated && user ? (
-          <div className="flex items-center gap-3 mb-10 px-2 mt-4">
-            <div className="w-11 h-11 rounded-full bg-[#1a4f3b] flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0">
+          <div className="flex items-center gap-3 mb-8 px-2 mt-3">
+            <div className="w-10 h-10 rounded-full bg-[#1a4f3b] flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
               {user.name?.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <h2 className="font-semibold text-lg leading-tight truncate">{user.name}</h2>
-              <p className="text-xs text-slate-500 capitalize">{user.role}</p>
+              <h2 className="font-semibold text-sm leading-tight truncate">{user.name}</h2>
+              <p className="text-[11px] text-slate-500 capitalize">{user.role}</p>
             </div>
           </div>
         ) : (
-          <div className="mb-10 mt-4 px-2">
+          <div className="mb-8 mt-3 px-2">
             <p className="text-sm text-slate-500">Welcome, Guest</p>
           </div>
         )}
