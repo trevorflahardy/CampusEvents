@@ -4,582 +4,146 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Student Attendee App</title>
+    <title>Ethereal Campus Dashboard</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <style data-purpose="custom-styles">
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
       body {
-        background: radial-gradient(
-          circle at 20% 0%,
-          #908276 0%,
-          #5c5d63 40%,
-          #25272c 80%,
-          #1b1c20 100%
-        );
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-          Arial, sans-serif;
-        color: #ffffff;
-        padding-bottom: 80px; /* Space for bottom nav */
-      }
-      .glass-card {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: #1a1c23;
-      }
-      .glass-input {
-        background: rgba(255, 255, 255, 0.6);
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-      }
-      .tag-community {
-        background-color: #c8e6c9;
-        color: #2e7d32;
-      }
-      .tag-social {
-        background-color: #b2dfdb;
-        color: #00695c;
-      }
-      .tag-sports {
-        background-color: #dcedc8;
-        color: #33691e;
-      }
-      .btn-grab {
-        background-color: #2b5c50;
-        color: white;
-      }
-      .btn-remind {
-        background-color: #2b5c50;
-        color: white;
-        opacity: 0.9;
+        font-family: "Inter", sans-serif;
+        background-color: #121816;
+        color: #e2e8f0;
+        min-height: 100vh;
+        display: flex;
+        background-image:
+          radial-gradient(
+            circle at 15% 50%,
+            rgba(20, 50, 45, 0.4),
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 85% 30%,
+            rgba(15, 40, 35, 0.4),
+            transparent 50%
+          );
       }
 
-      /* Hide scrollbar for horizontal scroll */
-      .hide-scrollbar::-webkit-scrollbar {
-        display: none;
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
       }
-      .hide-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
-    </style>
-    <style>
-      body {
-        min-height: max(884px, 100dvh);
+
+      .glass-input {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #e2e8f0 !important;
+      }
+
+      .glass-input:focus {
+        outline: none !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+      }
+
+      .text-muted {
+        color: #94a3b8;
+      }
+
+      .tag-community {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .tag-social {
+        background-color: #e0e7ff;
+        color: #3730a3;
+      }
+      .tag-sports {
+        background-color: #dcfce7;
+        color: #166534;
+      }
+
+      .btn-primary {
+        background-color: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.3);
+        transition: all 0.2s;
+      }
+      .btn-primary:hover {
+        background-color: rgba(16, 185, 129, 0.3);
+      }
+
+      /* Custom Scrollbar for sidebar and recommended list if they get too long */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
       }
     </style>
   </head>
-  <body class="antialiased min-h-screen relative">
-    <!-- BEGIN: Main Content Container -->
-    <main class="p-4 space-y-6 max-w-md mx-auto relative z-10">
-      <!-- BEGIN: Header Section -->
-      <header class="glass-card rounded-2xl p-3 flex items-center shadow-sm">
+  <body class="overflow-hidden">
+    <!-- BEGIN: Sidebar -->
+    <aside
+      class="w-64 flex-shrink-0 border-r border-white/5 py-8 px-6 flex flex-col z-10"
+    >
+      <!-- User Profile Header -->
+      <div class="flex items-center space-x-3 mb-10">
         <img
           alt="Alex Chen"
-          class="w-12 h-12 rounded-full object-cover mr-4 border-2 border-white/50"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOvRwNg31g_4u4AIqABb_VDyxWZOLDoHwFOVUVxEdu1bdiMemASTUJ4PWO7WI0aOGQclq8gqfph7SL85psRXyX_y498N57MSCwxgwBG4PE0KM0yCBXnpsMkwRlY1eWSuDzX8EMyPZEvqkYhrMEN2hX77fDiPUP7UhPHMkjx5DIsu-WdAcZhW5YdDpBmxAVftoVlu-ui3UKQ3TOwFrm7okmOTQ3Z8w2T86W_AwlLX2OH1diVhevnOA1pLN533We6ylgsmqHrIQpg4Q"
+          class="w-10 h-10 rounded-full object-cover ring-2 ring-white/10"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzBTNv-dxuxqTFCv3GpuTrLHSauFu38Lr0Jl7vULBI7uVnseh545qz7kPOcxHPwxXqlTdqHj38a8OF0sP9i-WyOGv88UIEJQHn-6XnrGMAOd-AWu0KURCLmaMHhHdZXMqoXgtJijdUOd8D0pprZjEJjVzcuQyinz6pDzQNfaDn98SWBmeBccIBIusggAvbHiCkdeFSdpANuGntyV3wOGW-i9Bz1xeDrHYmEKw1A7q2ALrm15VxDXDK_wddwgkJfvtHBEdemvO7SLk"
         />
         <div>
-          <h1 class="text-xl font-semibold leading-tight text-gray-900">
-            Alex Chen
-          </h1>
-          <p class="text-sm text-gray-600">Student</p>
+          <h2 class="text-sm font-semibold text-white">Alex Chen</h2>
+          <p class="text-xs text-muted">Student</p>
         </div>
-      </header>
-      <!-- END: Header Section -->
-      <!-- BEGIN: Search Bar -->
-      <div class="glass-card rounded-xl p-2 shadow-sm">
-        <div class="relative flex items-center">
+      </div>
+      <!-- Navigation Menu -->
+      <nav class="flex-1 space-y-2">
+        <a
+          class="flex items-center space-x-3 px-4 py-2.5 rounded-xl bg-[#212d28] text-white font-medium"
+          href="#"
+        >
           <svg
-            class="w-5 h-5 text-gray-500 absolute left-3"
+            class="w-5 h-5 text-emerald-400"
             fill="none"
             stroke="currentColor"
             viewbox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
             ></path>
           </svg>
-          <input
-            class="glass-input w-full pl-10 pr-4 py-2 rounded-lg text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50 border-none"
-            placeholder="Search events, venues, or tags..."
-            type="text"
-          />
-        </div>
-      </div>
-      <!-- END: Search Bar -->
-      <!-- BEGIN: Stats Row -->
-      <div class="flex space-x-3 overflow-x-auto hide-scrollbar pb-2">
-        <!-- Stat 1 -->
-        <div
-          class="glass-card rounded-xl p-4 flex-shrink-0 w-36 shadow-sm flex flex-col justify-between relative"
-        >
-          <p
-            class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
-          >
-            Upcoming Tickets
-          </p>
-          <div class="flex items-end justify-between">
-            <span class="text-3xl font-bold text-gray-900 leading-none">3</span>
-            <div class="bg-green-100 p-1.5 rounded-full">
-              <svg
-                class="w-4 h-4 text-green-700"
-                fill="currentColor"
-                viewbox="0 0 20 20"
-              >
-                <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"></path>
-                <path
-                  clip-rule="evenodd"
-                  d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"
-                  fill-rule="evenodd"
-                ></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-        <!-- Stat 2 -->
-        <div
-          class="glass-card rounded-xl p-4 flex-shrink-0 w-36 shadow-sm flex flex-col justify-between relative"
-        >
-          <p
-            class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
-          >
-            Events Attended
-          </p>
-          <div class="flex items-end justify-between">
-            <span class="text-3xl font-bold text-gray-900 leading-none"
-              >12</span
-            >
-            <div class="bg-blue-100 p-1.5 rounded-full">
-              <svg
-                class="w-4 h-4 text-blue-700"
-                fill="currentColor"
-                viewbox="0 0 20 20"
-              >
-                <path
-                  d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"
-                ></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-        <!-- Stat 3 -->
-        <div
-          class="glass-card rounded-xl p-4 flex-shrink-0 w-36 shadow-sm flex flex-col justify-between relative"
-        >
-          <p
-            class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
-          >
-            Points Earned
-          </p>
-          <div class="flex items-end justify-between">
-            <span class="text-3xl font-bold text-gray-900 leading-none"
-              >450</span
-            >
-            <div class="bg-yellow-100 p-1.5 rounded-full">
-              <svg
-                class="w-4 h-4 text-yellow-700"
-                fill="currentColor"
-                viewbox="0 0 20 20"
-              >
-                <path
-                  clip-rule="evenodd"
-                  d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z"
-                  fill-rule="evenodd"
-                ></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- END: Stats Row -->
-      <!-- BEGIN: Student Attendee Events -->
-      <section>
-        <div class="flex justify-between items-end mb-4">
-          <h2 class="text-2xl font-bold text-white tracking-wide">
-            Student Attendee
-          </h2>
-          <a
-            class="text-sm text-gray-300 hover:text-white flex items-center"
-            href="#"
-            >View All
-            <svg
-              class="w-4 h-4 ml-1"
-              fill="none"
-              stroke="currentColor"
-              viewbox="0 0 24 24"
-            >
-              <path
-                d="M9 5l7 7-7 7"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-              ></path></svg
-          ></a>
-        </div>
-        <div class="space-y-4">
-          <!-- Event Card 1 -->
-          <div
-            class="glass-card rounded-2xl overflow-hidden flex flex-col shadow-md"
-          >
-            <div class="relative h-32 w-full">
-              <img
-                alt="Pottery Workshop"
-                class="w-full h-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD16PiPiMulsruJ5Z0IUQSGVer9qNOWhoi7gyNNxl2G4PbdSD7ObAL87sIoQGosTo-jsWBF1YH0xN4cinrRQ-csPl00qG9hWVZp6YEfAKh13QZkscIWixabDaVK26tRjNSTvJPvFGu0fScNXvbBn_bWHBKOnlCpT1WisskVjBLEzS3nOFJ-1VHBg_jpTj6yI3zG3cfV7jOFgqC6fV3xxGCvDKH84Li-ncR2BhFwtYbooMSfmItDiBrCVoT-kzMsszyFOPp912aaAz4"
-              />
-              <span
-                class="absolute top-2 left-2 tag-community text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wider"
-                >Community</span
-              >
-            </div>
-            <div class="p-4">
-              <h3 class="font-bold text-lg text-gray-900 leading-tight mb-1">
-                Workshops: Pottery &amp; Sculpting
-              </h3>
-              <div class="flex text-sm text-gray-600 mb-3 space-x-3">
-                <span class="flex items-center"
-                  ><svg
-                    class="w-4 h-4 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewbox="0 0 24 24"
-                  >
-                    <path
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                  Jun 21</span
-                >
-                <span class="flex items-center"
-                  ><svg
-                    class="w-4 h-4 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewbox="0 0 24 24"
-                  >
-                    <path
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    ></path>
-                    <path
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                  4 PM, Art Studio</span
-                >
-              </div>
-              <div class="flex justify-between items-center mt-2">
-                <div class="flex -space-x-2">
-                  <img
-                    alt="Attendee"
-                    class="w-8 h-8 rounded-full border-2 border-white"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWPGXoupQvUsXhbTGNdPSu0mQp4p7cUzyceJb4pYqmk4RImTxqaxYW10Fl0WH3LH046ZCWnGhQgnet9Jl0MsTsiS4fEuZ6v-IkcnuP6H9BhQjlbbsSguv9R8Ik1BlDf7rJZCtEisMkKyFRO6zbzgp4tHbSMOR0Hkq50La9ONGNoHfCEMTMgQdlLNeuN93B8VL6hCTawaPtEVDEDNlqwp7qdxjywvL6regviT160KFKcxg4E6YWTPLoywpPCnLCugU_HeC8rre7AV4"
-                  />
-                  <img
-                    alt="Attendee"
-                    class="w-8 h-8 rounded-full border-2 border-white"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuA13f68GcmrRobzBaJPHSdSKZa7buahUa9Kz48Q5Ld4XV0nclvQdBLhAufVWZ1r7EQ2JV-cMKYqKDReBky2G7ugemA5pxv8yHuxJeR1HTvxGoIL7pf3HFWw1m6yyw6XoQnada87Cjv0CWUHId-0nTWick3WZ5lp5uhtj1TZoUAFpY4MEQCXxHf95LkDZqz7RkQYAYKl1pEyt1jv-1IrXSBiVg3zleddVFZLLrQykXsGH5HCWuxSeVeILks51-5ZppA4mGERCw2liSY"
-                  />
-                  <div
-                    class="w-8 h-8 rounded-full border-2 border-white bg-green-800 text-white flex items-center justify-center text-xs font-bold z-10"
-                  >
-                    +12
-                  </div>
-                </div>
-                <button
-                  class="btn-grab px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm"
-                >
-                  Grab Ticket
-                </button>
-              </div>
-            </div>
-          </div>
-          <!-- Event Card 2 -->
-          <div
-            class="glass-card rounded-2xl overflow-hidden flex flex-col shadow-md"
-          >
-            <div class="relative h-32 w-full">
-              <img
-                alt="Social Mixer"
-                class="w-full h-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4wFL4icx-KvwooNEeNtU6qIaVmruk1OtbslSeRoI4Byc4ekYsaYEmeDkGghZwtklPFglfqjANdb5Q-5sJ6Dauu51xKloLwoEciG6EjodBLsoO7kayLrkjy5KAyNq_P0b1TE9gJkbxxLMLJqR9Y_eO9KOB3uk0YQLuuBTUrcK0kUS867IIPc4HZRkLZ-SQc6SQ30JhFdnVUYmpDALMUu9JI0K8x---h29fMSagJy3BJgsa1IizF2Es3ARlYxh4fS47Q4fo7TRfy08"
-              />
-              <span
-                class="absolute top-2 left-2 tag-social text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wider"
-                >Social</span
-              >
-            </div>
-            <div class="p-4">
-              <h3 class="font-bold text-lg text-gray-900 leading-tight mb-1">
-                Social Mixer: Rooftop Gathering
-              </h3>
-              <div class="flex text-sm text-gray-600 mb-3 space-x-3">
-                <span class="flex items-center"
-                  ><svg
-                    class="w-4 h-4 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewbox="0 0 24 24"
-                  >
-                    <path
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                  Jul 12</span
-                >
-                <span class="flex items-center"
-                  ><svg
-                    class="w-4 h-4 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewbox="0 0 24 24"
-                  >
-                    <path
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    ></path>
-                    <path
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                  7 PM, Student Union</span
-                >
-              </div>
-              <div class="flex justify-between items-center mt-2">
-                <div class="flex -space-x-2">
-                  <img
-                    alt="Attendee"
-                    class="w-8 h-8 rounded-full border-2 border-white"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKKkNiIVibp-QtHO6CqKBQZlomIWZRywgPdQMyG-RTojWess1_-D7ziPsIsiCotszKLzha-E6FrtR52xEj1Oja-zZEA7vJU30DOGh-sKGBoFa5P9rdH0SoI8WXjzXLq9DT-J5YHX_CP0abrPeWzz1RmAD0GG6UtBcHEguM6EgUEO37XMKt16csp-UtZ3S6guciOXP9x7Zh759UTDqlmcllfW3kH6FrqLtAJf0g8iORKw9Me5nMhzPgSm9Li1-QLARrC1tlnpgDPyY"
-                  />
-                  <img
-                    alt="Attendee"
-                    class="w-8 h-8 rounded-full border-2 border-white"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYMhHsm0VcSdsLg1UaFmJWbLqZ4G1iuxfVBpNP6hUcLqqzqfc8qrskVvEjvP-t-wEA7RhcawULHGOXQle98rLMeBuReYxFPy861uzexY19yoZdj-6jF2hwAG29urhIkOotn29mCmx2JPhpDrSqOkJiepuGigd-d03NdhUXGHVsbU0ViA-xFUbi775psrd8XdKt7kUBeWkL9wRUkx9ZloRImw6T38W2QipbIYSx51YSf5R4UG6Y_elzcUJsQfF6U0X8H0AAHofFKiA"
-                  />
-                  <div
-                    class="w-8 h-8 rounded-full border-2 border-white bg-green-800 text-white flex items-center justify-center text-xs font-bold z-10"
-                  >
-                    +43
-                  </div>
-                </div>
-                <button
-                  class="btn-remind px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm"
-                >
-                  Remind Me
-                </button>
-              </div>
-            </div>
-          </div>
-          <!-- Event Card 3 -->
-          <div
-            class="glass-card rounded-2xl overflow-hidden flex flex-col shadow-md"
-          >
-            <div class="relative h-32 w-full">
-              <img
-                alt="Intramural Soccer"
-                class="w-full h-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqxLGxFzY8pZJmB0h6RkTMngBaL4EsG9fsE8UxMOCJuC2G6_N-h0cFjeKIn2TtogQiP9NtzhyZ7sPayfAVN5amgbNyqARiB7_oXWSXI42TR4_pcvbx4SQWLre0Z4lEfxw_iapsFf26ev8MwQ_4AWnGJ1f6qsAyr5RpDdYGoHFfjw71Mk2ZKld83-0uA-3bO0CuL18vPjPbdfDIwJMS-Ty5xB2XmIboc1DR41ure3dp3OZN3lRSPVtZ7nOrci9xed5MUVZfX3a75aA"
-              />
-              <span
-                class="absolute top-2 left-2 tag-sports text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wider"
-                >Sports</span
-              >
-            </div>
-            <div class="p-4">
-              <h3 class="font-bold text-lg text-gray-900 leading-tight mb-1">
-                Sports: Intramural Soccer
-              </h3>
-              <div class="flex text-sm text-gray-600 mb-3 space-x-3">
-                <span class="flex items-center"
-                  ><svg
-                    class="w-4 h-4 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewbox="0 0 24 24"
-                  >
-                    <path
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                  Aug 5</span
-                >
-                <span class="flex items-center"
-                  ><svg
-                    class="w-4 h-4 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewbox="0 0 24 24"
-                  >
-                    <path
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    ></path>
-                    <path
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                    ></path>
-                  </svg>
-                  5 PM, East Field</span
-                >
-              </div>
-              <div class="flex justify-between items-center mt-2">
-                <div class="flex -space-x-2">
-                  <img
-                    alt="Attendee"
-                    class="w-8 h-8 rounded-full border-2 border-white"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAm_Sv_kJIn0SzWY75kWz5VDlFuGvdoAQ1MzXl0VSJ55P0e_JBwQIqD9kGMzbpiCteqWYk0n-duAQvzdAC7zutDjsb5Q5LeA3DasY-jyLkZm4sEvROkmBaT36ywqZWGbCDqg6vm7JdpUqDaF1NUnydp-npe36zVBp5zIjEDEDtBNXHv5SJVRGy2v9FS6pydwA-bZnd3IXpqlZbcczYup_ozKRDcdsC3dx0CaXW1ojhvwXGcZQrOlSdxcLhO60Q7uS6cyE4g8pg1vc"
-                  />
-                  <img
-                    alt="Attendee"
-                    class="w-8 h-8 rounded-full border-2 border-white"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxBOV3OJum-nkZoJGX1i08FiwRw-S4aNN02UjYVapvsuwjuQfttyiWx8Lq5bduVLGreCsqJJ5y_tSmeAKNJVXS-QAuvQ-3y9SZ6oHt59nTx_iZp7G5yGHzxfxSBQERPrQcwHpigjLPvZXBbB9v70Te09vL4uXRLm8TsnwOS-s2LaTk3H7tZIdQgsZu410zx76pwGktMToLqER4SzXglwPAth7GqOctmiPViXJ6RBGQw18XsZtqENZB72hfisAfwgOkZO3VxPYvkXE"
-                  />
-                  <div
-                    class="w-8 h-8 rounded-full border-2 border-white bg-green-800 text-white flex items-center justify-center text-xs font-bold z-10"
-                  >
-                    +28
-                  </div>
-                </div>
-                <button
-                  class="btn-grab px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm"
-                >
-                  Grab Ticket
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- END: Student Attendee Events -->
-      <!-- BEGIN: Recommended for You -->
-      <section class="mt-8 mb-4">
-        <div class="flex justify-between items-end mb-4">
-          <h2 class="text-xl font-bold text-white tracking-wide">
-            Recommended for You
-          </h2>
-          <a
-            class="text-sm text-gray-300 hover:text-white flex items-center"
-            href="#"
-            >View All
-            <svg
-              class="w-4 h-4 ml-1"
-              fill="none"
-              stroke="currentColor"
-              viewbox="0 0 24 24"
-            >
-              <path
-                d="M9 5l7 7-7 7"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-              ></path></svg
-          ></a>
-        </div>
-        <div class="flex space-x-3 overflow-x-auto hide-scrollbar pb-2">
-          <!-- Rec Card 1 -->
-          <div
-            class="glass-card rounded-xl p-2 flex items-center space-x-3 min-w-[180px] shadow-sm"
-          >
-            <img
-              alt="Chess Club"
-              class="w-12 h-12 rounded-lg object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFwL5pNaNPqOJ3k-f9Gc51LZRvpHGn1KsqSFG_z5tbU9vA4xYjV2JWDri4QBvvg2lKEWG8VW83RiRsaYvdDffmgTOoaTnvE9VG1x6jQqQZBboHyyB_S2pc4nyL9An-0EAhGSTIhz2o61mV905vfxtTMZXWq5DdZKeuIxojIND-TgRYd0gIBuvE9eUdPNtw6Hv6q773DElfNPIHB0GRZnW7FeOv4e8Lb8JMTUvn6-pyXVO1MPG_7UIyDVb7H4YHFS8WEIdk5aYzSxY"
-            />
-            <div>
-              <h4 class="text-sm font-bold text-gray-900 leading-tight">
-                Chess Club Meetup
-              </h4>
-              <p class="text-xs text-gray-600">Wed 19<br />6 PM</p>
-            </div>
-          </div>
-          <!-- Rec Card 2 -->
-          <div
-            class="glass-card rounded-xl p-2 flex items-center space-x-3 min-w-[180px] shadow-sm"
-          >
-            <img
-              alt="Yoga at Sunset"
-              class="w-12 h-12 rounded-lg object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBs5WdZviIsqxWEXDEBQAhdvYPp7og9LhHSMEX5yO3xqVD5jXJDvCnWMnwyKJGqRSW-AyrzF_4Lf1jKvUrroiiIBZcqftBNqDmeShVWIucGnT1XhI6OIRndVygkKblzD8lcqlXPwfpHPGvtqJN8TPjwEF35FQc72W2CVd4fI-PjL2gy6WmDTkwR1nmsZ4VOp2aSCA2Bk-fvsf9ZtX2j1tONEK5Pnk7iopsyuTnUAPmYgm4TnDxeYPC0OTYCctWRRvu9KYbBrHazxoE"
-            />
-            <div>
-              <h4 class="text-sm font-bold text-gray-900 leading-tight">
-                Yoga at Sunset
-              </h4>
-              <p class="text-xs text-gray-600">Thu 20<br />7 PM</p>
-            </div>
-          </div>
-          <!-- Rec Card 3 -->
-          <div
-            class="glass-card rounded-xl p-2 flex items-center space-x-3 min-w-[180px] shadow-sm"
-          >
-            <img
-              alt="Career Fair"
-              class="w-12 h-12 rounded-lg object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfoIifv0c8JzJ_1qamoMY2Ir5YZmhbK8r4jVfCm3C8MNgqAGwDAoXw0MQptr8f_cV7FiG7c6Lv5ecp5CpSXgMSBLmqSZcl6uTdr2WLWMj96cdLaMFUgpChFWLHYmWUCr8kBrLX4WQKuYQoeX-zG1Hx4TXiywHSiNyEf8miRAbw9Qste72Rb2y1P0sa6Trth4G63cVQCgfs_rTYkFyGz5QT2DqXeZ2CzDDT1cSEjqjlXEe8RnomKaphO-KLJFiRHuZm3DE9w33fif0"
-            />
-            <div>
-              <h4 class="text-sm font-bold text-gray-900 leading-tight">
-                Career Fair
-              </h4>
-              <p class="text-xs text-gray-600">Fri 21<br />10 AM</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- END: Recommended for You -->
-    </main>
-    <!-- END: Main Content Container -->
-    <!-- BEGIN: Bottom Navigation -->
-    <nav
-      class="fixed bottom-0 w-full max-w-md left-1/2 transform -translate-x-1/2 p-4 z-50"
-    >
-      <div
-        class="glass-card rounded-full flex justify-between items-center px-6 py-3 shadow-lg bg-white/90"
-      >
-        <a class="flex flex-col items-center text-green-800" href="#">
-          <svg class="w-6 h-6 mb-1" fill="currentColor" viewbox="0 0 20 20">
-            <path
-              d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"
-            ></path>
-          </svg>
-          <span class="text-xs font-semibold">Home</span>
+          <span>Dashboard</span>
         </a>
         <a
-          class="flex flex-col items-center text-gray-500 hover:text-gray-900"
+          class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-muted hover:bg-white/5 hover:text-white transition-colors"
           href="#"
         >
           <svg
-            class="w-6 h-6 mb-1"
+            class="w-5 h-5"
             fill="none"
             stroke="currentColor"
             viewbox="0 0 24 24"
@@ -591,14 +155,14 @@
               stroke-width="2"
             ></path>
           </svg>
-          <span class="text-xs font-medium">Events</span>
+          <span>Events</span>
         </a>
         <a
-          class="flex flex-col items-center text-gray-500 hover:text-gray-900"
+          class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-muted hover:bg-white/5 hover:text-white transition-colors"
           href="#"
         >
           <svg
-            class="w-6 h-6 mb-1"
+            class="w-5 h-5"
             fill="none"
             stroke="currentColor"
             viewbox="0 0 24 24"
@@ -610,25 +174,659 @@
               stroke-width="2"
             ></path>
           </svg>
-          <span class="text-xs font-medium">My Tickets</span>
+          <span>My Tickets</span>
         </a>
         <a
-          class="flex flex-col items-center text-gray-500 hover:text-gray-900"
+          class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-muted hover:bg-white/5 hover:text-white transition-colors"
           href="#"
         >
-          <div
-            class="w-6 h-6 mb-1 rounded-full bg-gray-300 overflow-hidden border border-gray-400"
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewbox="0 0 24 24"
           >
-            <img
-              alt="Profile"
-              class="w-full h-full object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbgdJokFUecua0ONWh95hkn63rVm8kIhLuglUnBWAaRVtLBmbGJtpEFGwof35TGR85bgY23tpLqU1Gn3Nm-hy29FFip9L7GCL_n8-1L6eVhuNNemhOu1ZT03C2CK-nKnuvTrlxumO0rwoLMUxpAzwbUSgV9AdaLufxxglbCpP8D2cJFNNSgqSR-i1X_bqyPUOitdXtyDUBk6yEbNBwJ_o-4EPoTt1RP9e1ivdheT3c96cFuR5Jta5yfivkqRxHBkEWMyY0LZJr0sI"
-            />
-          </div>
-          <span class="text-xs font-medium">Profile</span>
+            <path
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            ></path>
+          </svg>
+          <span>Admin</span>
         </a>
+        <a
+          class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-muted hover:bg-white/5 hover:text-white transition-colors"
+          href="#"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewbox="0 0 24 24"
+          >
+            <path
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            ></path>
+          </svg>
+          <span>Profile</span>
+        </a>
+      </nav>
+    </aside>
+    <!-- END: Sidebar -->
+    <!-- BEGIN: Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto px-8 py-6">
+      <!-- BEGIN: Top Bar -->
+      <header class="flex items-center justify-between mb-8 z-10">
+        <!-- Search Bar -->
+        <div class="relative w-full max-w-2xl">
+          <div
+            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+          >
+            <svg
+              class="h-5 w-5 text-muted"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+              ></path>
+            </svg>
+          </div>
+          <input
+            class="glass-input w-full pl-11 pr-4 py-3 rounded-2xl text-sm placeholder-muted focus:ring-0"
+            placeholder="Search events, venues, or tags..."
+            type="text"
+          />
+        </div>
+        <!-- Right Actions -->
+        <div class="flex items-center space-x-4 ml-6">
+          <button
+            class="p-2 rounded-full hover:bg-white/10 text-muted transition-colors"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+              ></path>
+            </svg>
+          </button>
+          <button
+            class="p-2 rounded-full hover:bg-white/10 text-muted transition-colors"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewbox="0 0 24 24"
+            >
+              <path
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+              ></path>
+              <path
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+              ></path>
+            </svg>
+          </button>
+          <img
+            alt="Profile"
+            class="w-9 h-9 rounded-full object-cover ring-2 ring-emerald-500/50"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzz53pDXrh_tgbPMsbKKmATIpWbvzrx9BBXWsPVzXgDiRsCeNU1evKo5eAayXEdBc15gKiBLFOF513xT0E4ROVFvKrpwLYPHE3gqTU1eOJ07yIDohYO6Lc1D5GcJjBIwXsgRBkZG7Db3i2WD3Xw8WbySthSVwMqbqeJToAqP60_FCSz95UNtGoCLTdes15XWpjS4HEiIjZYQnPRzJytCIe2JZjLcTINo3dOkXX0SI5dgx8Hag1MAcZweNLmXMx8H--rKPueknOIUw"
+          />
+        </div>
+      </header>
+      <!-- END: Top Bar -->
+      <div class="flex space-x-6">
+        <!-- BEGIN: Left Column (Stats & Dashboard) -->
+        <div class="flex-1 flex flex-col">
+          <!-- Stats Row -->
+          <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="glass-card p-5 flex items-center justify-between">
+              <div>
+                <p
+                  class="text-xs font-semibold text-muted tracking-wider uppercase mb-1"
+                >
+                  Upcoming Tickets
+                </p>
+                <h3 class="text-3xl font-bold text-white">3</h3>
+              </div>
+              <div
+                class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-emerald-400"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewbox="0 0 24 24"
+                >
+                  <path
+                    d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+            <div class="glass-card p-5 flex items-center justify-between">
+              <div>
+                <p
+                  class="text-xs font-semibold text-muted tracking-wider uppercase mb-1"
+                >
+                  Events Attended
+                </p>
+                <h3 class="text-3xl font-bold text-white">12</h3>
+              </div>
+              <div
+                class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-emerald-400"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewbox="0 0 24 24"
+                >
+                  <path
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+            <div class="glass-card p-5 flex items-center justify-between">
+              <div>
+                <p
+                  class="text-xs font-semibold text-muted tracking-wider uppercase mb-1"
+                >
+                  Points Earned
+                </p>
+                <h3 class="text-3xl font-bold text-white">450</h3>
+              </div>
+              <div
+                class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-emerald-400"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewbox="0 0 24 24"
+                >
+                  <path
+                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Dashboard Section Header -->
+          <div class="flex justify-between items-end mb-6">
+            <div>
+              <h1 class="text-2xl font-semibold text-white mb-1">
+                Student Attendee
+              </h1>
+              <p class="text-sm text-muted">Event Dashboard</p>
+            </div>
+            <a
+              class="text-sm text-muted hover:text-white flex items-center"
+              href="#"
+              >View All
+              <svg
+                class="w-4 h-4 ml-1"
+                fill="none"
+                stroke="currentColor"
+                viewbox="0 0 24 24"
+              >
+                <path
+                  d="M9 5l7 7-7 7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                ></path></svg
+            ></a>
+          </div>
+          <!-- Event Cards Grid -->
+          <div class="grid grid-cols-2 gap-6 pb-6">
+            <!-- Event Card 1 -->
+            <div
+              class="glass-card overflow-hidden flex flex-col group relative"
+            >
+              <div class="relative h-48 w-full">
+                <img
+                  alt="Pottery Workshop"
+                  class="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuACRJN1cx7qS2DsQvylhKr2QExtAMZAkBrDy7JdQ_NtTeSvGImGyKam_hqjuC2T42UGKXRxTyaoMOR6GDb_P3Z-msqrHUadFWOHzaQaRIuL8o_o3xwc-GiZI3fxufSPXWoBn9OwCg3EXA6QySyCHKbYDXjABkOfjPK41kYiT1qwu6x-tOnKFiYI-xZivhVQVX7DpyzAg0pZUgzm8Re_7K6ErV2DlAbkiO0AAetG8RJTpGcM47oQYMenPmGFxcLSE-go4sNHzxZI7FI"
+                />
+                <span
+                  class="absolute top-4 left-4 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md tag-community"
+                  >Community</span
+                >
+              </div>
+              <div
+                class="p-5 flex-1 flex flex-col justify-between bg-black/20 backdrop-blur-md"
+              >
+                <div>
+                  <h3 class="text-lg font-medium text-white mb-2 leading-tight">
+                    Workshops: Pottery &amp; Sculpting
+                  </h3>
+                  <div
+                    class="flex items-center text-xs text-muted space-x-4 mb-4"
+                  >
+                    <span class="flex items-center"
+                      ><svg
+                        class="w-3.5 h-3.5 mr-1.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewbox="0 0 24 24"
+                      >
+                        <path
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                        ></path>
+                      </svg>
+                      Jun 21</span
+                    >
+                    <span class="flex items-center"
+                      ><svg
+                        class="w-3.5 h-3.5 mr-1.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewbox="0 0 24 24"
+                      >
+                        <path
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                        ></path>
+                        <path
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                        ></path>
+                      </svg>
+                      4 PM, Art Studio</span
+                    >
+                  </div>
+                </div>
+                <div class="flex items-center justify-between mt-auto pt-2">
+                  <div class="flex -space-x-2">
+                    <img
+                      alt=""
+                      class="w-7 h-7 rounded-full border-2 border-[#1c2526]"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzG1X5kivhgZBTl8sPWQN0fVG-2zN1NRafd4lX7PfCxgTSPoMspVMb6IBusS9hsDplh0jawLnPeu73N_pBHvi6kAITzgcPJ-ZnR5P2OUmHV53H9FW6e_DwaEFTPIetdM6d7qjFSLNmUCGIeGRUK-Bi7KUvBivyofuJboxhUIDJXPc8mrWq5UNybgyvUBgajXnw0hDC-RVsej4_7NVA9ZQqux9FQnQ0QG32lQK6aMUiCXjX6OmYT03h1SZFo0p-AE6jRRszs3cPGuI"
+                    />
+                    <img
+                      alt=""
+                      class="w-7 h-7 rounded-full border-2 border-[#1c2526]"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJ-IErTeni5ARPqjGt915HLdccR2MM5Fb6K6xtUPPj9DpfcBZX1tJ356Ezv6rV7Q3FjC33yTXxm9JQgQ50Zgmbf-Wkt8bPkC3nj5gAAixBjXyI9NawaUQOqdh2vajCqQqcZvqhiIS0mQqoCYlf742jZQanJbwK0z_wTcrjdhw0xqewxsfCWwRHuV39flMBW9S8ql8NgsjYOfmkKuNQh3mwchXFJz88Zp5ivZGdsw15F08GOm0UM9Hv1Tn4YZWUgghyvTxuoKYapQk"
+                    />
+                    <div
+                      class="w-7 h-7 rounded-full border-2 border-[#1c2526] bg-emerald-900/80 text-[10px] flex items-center justify-center text-emerald-300 font-medium"
+                    >
+                      +13
+                    </div>
+                  </div>
+                  <button
+                    class="btn-primary text-xs font-medium px-4 py-2 rounded-full"
+                  >
+                    Grab Ticket
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Event Card 2 -->
+            <div
+              class="glass-card overflow-hidden flex flex-col group relative"
+            >
+              <div class="relative h-48 w-full">
+                <img
+                  alt="Social Mixer"
+                  class="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEMk93sK-WgHNd4fPuYacZWB5eJjVZI5aiuJt1t01dsD4Ub0JVPZsDkPBCUNSkAlXyONZqUSGtXczqWmlSXPeE10HJE2c1VYHNNp4eLSD54J4hjOlv6ggRZ_QgmQlpho1AuQ8ELmO0rRxb0wsfgzhbwSJM3-arPWmGUBU2NuLxB3kNwTABRQhVxV_w5Ksmhpz8ximYUSfVu8oug2D3PiN4idk5uGgb_A4b1O_8rE_h6LD1KPSvgi9C94I5_CcX4gkCs-tDdYcwnLA"
+                />
+                <span
+                  class="absolute top-4 left-4 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md tag-social"
+                  >Social</span
+                >
+              </div>
+              <div
+                class="p-5 flex-1 flex flex-col justify-between bg-black/20 backdrop-blur-md"
+              >
+                <div>
+                  <h3 class="text-lg font-medium text-white mb-2 leading-tight">
+                    Social Mixer: Rooftop Gathering
+                  </h3>
+                  <div
+                    class="flex items-center text-xs text-muted space-x-4 mb-4"
+                  >
+                    <span class="flex items-center"
+                      ><svg
+                        class="w-3.5 h-3.5 mr-1.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewbox="0 0 24 24"
+                      >
+                        <path
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                        ></path>
+                      </svg>
+                      Jul 12</span
+                    >
+                    <span class="flex items-center"
+                      ><svg
+                        class="w-3.5 h-3.5 mr-1.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewbox="0 0 24 24"
+                      >
+                        <path
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                        ></path>
+                        <path
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                        ></path>
+                      </svg>
+                      7 PM, Student Union</span
+                    >
+                  </div>
+                </div>
+                <div class="flex items-center justify-between mt-auto pt-2">
+                  <div class="flex -space-x-2">
+                    <img
+                      alt=""
+                      class="w-7 h-7 rounded-full border-2 border-[#1c2526]"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQM_pIddjZ7S2qy-60XuhS_rcJjidaP1NHFFQ_gVynv89GiYaozSjk87E88aBZKGqGHRYqEicFmpM8FsY5Rv1ODNixMQRjhEPtkLL9QE7RReFfSaMT8wPrbVGvxR6ucdy18EjF5pl5oJc0TceIIXIvCya5JNPJ9e25BjnTuATt_WKiTTHwcAfE4VevQ-6_iuqiONA18CuSDvnoWuEE1tGkrFRGYwQBoLvSAmVgGu2TOXuHf5J4muNAWD44Ug4fvDU0qJwyIhsLG2Y"
+                    />
+                    <img
+                      alt=""
+                      class="w-7 h-7 rounded-full border-2 border-[#1c2526]"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXXtvHM1WNURgyJ-M1C6AoPSon5d5s-AJppB2boBIkDFCNqiNHSaDHSibvbO9DcJKNUC_24ex1XojjEyFT_vLULho5fEv8gRBpntSwEGVU4CNXTo70QrPeKzwOW1HoH7TG20d_y8Wdjb-u2ZBQKpcgINF5JnLDJ-xKl2BIWd2X8Du3ZBteLoB722RKVwEZPTmTXWFYO8u2DQE2shV4k9D6kZHnzkTZhS4-rpoSaWumVUETudM-qOVKKxyIvpK2AQvDy6R2vM_IEQw"
+                    />
+                    <div
+                      class="w-7 h-7 rounded-full border-2 border-[#1c2526] bg-emerald-900/80 text-[10px] flex items-center justify-center text-emerald-300 font-medium"
+                    >
+                      +43
+                    </div>
+                  </div>
+                  <button
+                    class="btn-primary text-xs font-medium px-4 py-2 rounded-full"
+                  >
+                    Remind Me
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Event Card 3 -->
+            <div
+              class="glass-card overflow-hidden flex flex-col group relative"
+            >
+              <div class="relative h-48 w-full">
+                <img
+                  alt="Intramural Soccer"
+                  class="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGj4vPwEbHiS3N6W9o7rujURoNLGi71-vPW3GQ2u79SXD3J9khJvJQvovqKPD8dYLxOqZFFyUztr3OAB_lNk9vZtrP2IZ2lMsDNODwiTGkiHfFdmxidkQnmxnl2xxLjl1ssRDkWfyHhtHY5rhM0Ooc8SZpclcMlX25JZC2xb1dNEXfrNw3XFStPUz24rKMMm6Qoinkn4Pou_Fyw85ouV0K9IkXxGnjidok54B35FN42FglfWtHnieq_Xf_zgtmUZ3jMFk1nbHukkM"
+                />
+                <span
+                  class="absolute top-4 left-4 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md tag-sports"
+                  >Sports</span
+                >
+              </div>
+              <!-- Bottom part missing in screenshot, inferred design -->
+              <div
+                class="p-5 flex-1 flex flex-col justify-between bg-black/20 backdrop-blur-md hidden"
+              ></div>
+            </div>
+            <!-- Event Card 4 (Placeholder based on layout) -->
+            <div
+              class="glass-card overflow-hidden flex flex-col group relative bg-black/20 backdrop-blur-md p-5"
+            >
+              <div>
+                <h3 class="text-lg font-medium text-white mb-2 leading-tight">
+                  Sports: Intramural Soccer
+                </h3>
+                <div
+                  class="flex items-center text-xs text-muted space-x-4 mb-4"
+                >
+                  <span class="flex items-center"
+                    ><svg
+                      class="w-3.5 h-3.5 mr-1.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewbox="0 0 24 24"
+                    >
+                      <path
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                      ></path>
+                    </svg>
+                    Aug 5</span
+                  >
+                  <span class="flex items-center"
+                    ><svg
+                      class="w-3.5 h-3.5 mr-1.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewbox="0 0 24 24"
+                    >
+                      <path
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                      ></path>
+                      <path
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                      ></path>
+                    </svg>
+                    5 PM, East Field</span
+                  >
+                </div>
+              </div>
+              <div class="flex items-center justify-between mt-auto pt-2">
+                <div class="flex -space-x-2">
+                  <img
+                    alt=""
+                    class="w-7 h-7 rounded-full border-2 border-[#1c2526]"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfPEm1d0IfPWuGhKRbJrW9Y2FkyfgoDhq6S6wgRU3OJEj131ZvjGV18k2iRPBtgSHH7-oMBAOHNA3Wo22Hh1JgxMMJksFndaiMiY9qEqw75omeoT5tQXBtfrVkYAZkLKJc9EvSdpU_JkHduf3_--TiAHFXo1gRikm66vyZQLzi6t23w0vvAskS0lV14YuYKiBXRKjfbqmE2pSZ8xiKXfpLIPfkimzcGkLObuXBWK-fmfTlb8BtCNKF27CGPMyeDI7bcTbw56AHSPA"
+                  />
+                  <img
+                    alt=""
+                    class="w-7 h-7 rounded-full border-2 border-[#1c2526]"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0RO97XhrR4pAXjJPIwvI1q5sZJtEkjk0CrQmsODAMAj3Zt_7qcmDZ9wa9Ybn4Unkmm55kn0vR1RTcwOq4sqqAv-z3VGgdAdp3-7EElc2PUNIXNTeeIplmXCP-P7Vi6R8PepRt-QOlzPeGxFtvTXwl9IiVLBrWPjH4ycenADy4IXGmNKMS2XYGjwdo7YQckkDebP21bu6hP4v6ApYNpA-2FixC6QI0JAmEjOe6Y5HKYknGJVA0n3cQw0mX8BpzUfz-3z2t91UK1R4"
+                  />
+                  <div
+                    class="w-7 h-7 rounded-full border-2 border-[#1c2526] bg-emerald-900/80 text-[10px] flex items-center justify-center text-emerald-300 font-medium"
+                  >
+                    +28
+                  </div>
+                </div>
+                <button
+                  class="btn-primary text-xs font-medium px-4 py-2 rounded-full"
+                >
+                  Grab Ticket
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END: Left Column -->
+        <!-- BEGIN: Right Column (Recommended List) -->
+        <aside class="w-80 flex-shrink-0">
+          <div class="glass-card p-5 h-full flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-lg font-semibold text-white">
+                Recommended for You
+              </h2>
+              <button class="text-muted hover:text-white">
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewbox="0 0 24 24"
+                >
+                  <path
+                    d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+            <div class="flex-1 space-y-4 overflow-y-auto pr-2">
+              <!-- Rec Item 1 -->
+              <div
+                class="flex items-center p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group"
+              >
+                <img
+                  alt="Chess Club"
+                  class="w-14 h-14 rounded-lg object-cover mr-4"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCyOyzh8Tfu_EBxtocif3EG57AUgyzuS_JweD9cU07MVmc3Ms3oCE5gF561D8SvEZUhoqt1EyMyM0osuYwiVTdVi7fGXrR5bEIUEqWma0JOPDrwI_i88zqlN8gxVlp6B3RmKRXZtLe2vgQgG2fr0MuSKoiBmXOXkm4aejx1oA5j4xRU73mHcytP-0v9Bfb2NfBGDxoL3WdsoUVU0ipsjGjVB_5N72BTEU6TCW-Zk3YQoxBLq5YL8Cy78pR1FXnv6tqC9u9_S3Wtcc"
+                />
+                <div class="flex-1">
+                  <h4
+                    class="text-sm font-medium text-white mb-1 group-hover:text-emerald-300 transition-colors"
+                  >
+                    Chess Club Meetup ♟️
+                  </h4>
+                  <p class="text-xs text-muted flex flex-col">
+                    <span>Wed 19</span>
+                    <span>6 PM</span>
+                  </p>
+                </div>
+              </div>
+              <!-- Rec Item 2 -->
+              <div
+                class="flex items-center p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group"
+              >
+                <img
+                  alt="Yoga"
+                  class="w-14 h-14 rounded-lg object-cover mr-4"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmNhiVrta2fTCR-78Tzvx2ucLC2LDkBw-Sk5T4YyGxURPjhB6ge3eUwDQa95dl5FV8kuxbOjIHk3JYAHWRRGB-Zkc801E4k5_s1eLT1YCDGOU8mWZslPQVXkEeSM8tc2M3wT4SCtXuM9VvNGlzwkvkJQozpQ0cQGjr-trhchPHe9NYGlBdF-dx7u3oeuhiG6DLdzDJshm9hlDBCz-ctdkgE-116P_WOf4KYfKBmeBRF5wJPMf8QNJATg_NcIEyxXugRDvwrkcq1gk"
+                />
+                <div class="flex-1">
+                  <h4
+                    class="text-sm font-medium text-white mb-1 group-hover:text-emerald-300 transition-colors"
+                  >
+                    Yoga at Sunset
+                  </h4>
+                  <p class="text-xs text-muted flex flex-col">
+                    <span>Thu 20</span>
+                    <span>7 PM</span>
+                  </p>
+                </div>
+              </div>
+              <!-- Rec Item 3 -->
+              <div
+                class="flex items-center p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group"
+              >
+                <img
+                  alt="Career Fair"
+                  class="w-14 h-14 rounded-lg object-cover mr-4"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJcjmL4dU_NdAN5XKn1dUpyHvcYYmkVCHRYsldTWQRPHGT805-izsjAqM9ZzeKr7FSrE96grPDjYbAYIXWSGRdgw88uK7dAnkllKjzcvN8bAuZ3dK8lP4Ih9aINHNC8zk2WUUMDokYsims3h-ovtbIO0kDqlHw-_1hwPUPk5hNAWt9QAEyH7_-KSU7PGrkVzJLwS4sTbXuP1JBgY6wj3BDMTQ2s3uVas0cUoVuIWdpFMXIzl0k-pFyezYvDdZZ0ElPnas6P7asl-Q"
+                />
+                <div class="flex-1">
+                  <h4
+                    class="text-sm font-medium text-white mb-1 group-hover:text-emerald-300 transition-colors"
+                  >
+                    Career Fair 💼
+                  </h4>
+                  <p class="text-xs text-muted flex flex-col">
+                    <span>Fri 21</span>
+                    <span>10 AM</span>
+                  </p>
+                </div>
+              </div>
+              <!-- Rec Item 4 -->
+              <div
+                class="flex items-center p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group"
+              >
+                <img
+                  alt="Coding Bootcamp"
+                  class="w-14 h-14 rounded-lg object-cover mr-4"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYy6jAAXmy4IjQHYgyU4XyEZkHx9MnebcSMRwL5sJBJ6cSpUIpbMkQYbsIGbr8NPbaeu7KnQDT65ieZDrFvKRAmZyRm2xHGZAurTIXy8H1mcpkn7U-EyswyoyEMGFvzo80NSr80dcHAli2w6PfLfNy9SqLgvRrnrXsl7SliIRUoURKvBeyNXVel8fnGnu9Q209OHazh_qOKavY6MptZdoNsuvIIDJnuDvJxoseEy5-eNSWtRjgg-MKAafe3K83e8hMrLcKjBggGSc"
+                />
+                <div class="flex-1">
+                  <h4
+                    class="text-sm font-medium text-white mb-1 group-hover:text-emerald-300 transition-colors"
+                  >
+                    Coding Bootcamp 💻
+                  </h4>
+                  <p class="text-xs text-muted flex flex-col">
+                    <span>Sat 22</span>
+                    <span>9 AM</span>
+                  </p>
+                </div>
+              </div>
+              <!-- Rec Item 5 -->
+              <div
+                class="flex items-center p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group"
+              >
+                <img
+                  alt="Coding Bootcamp"
+                  class="w-14 h-14 rounded-lg object-cover mr-4"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9TQVtwXgTcp0gpA31ioY-yzXm34dNWID1Wk4P1LnBZN0yROFUeoORdteIWirmlK9vBjLU3p3RvIxzrDKJ-Equ99pvR-Jr2FJfWcPkBgiVwKvkqIp9_BwYuLMt5Z9HuB6unStubkyO-HcvjPv1X_3slcEwysPKGwdCsTPBkjjzA4BeI08jRijkbj3ixu981aJRcZ2mSFmNRzXcpl8aNFZRUqBEA9kKHiP0ghtGLGrLbKON9nCkNph_ifYLSUIJ-jVU7Svi1cNRz8s"
+                />
+                <div class="flex-1">
+                  <h4
+                    class="text-sm font-medium text-white mb-1 group-hover:text-emerald-300 transition-colors"
+                  >
+                    Coding Bootcamp 👩‍💻
+                  </h4>
+                  <p class="text-xs text-muted flex flex-col">
+                    <span>Sat 22</span>
+                    <span>9 AM</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+        <!-- END: Right Column -->
       </div>
-    </nav>
-    <!-- END: Bottom Navigation -->
+    </main>
+    <!-- END: Main Content -->
   </body>
 </html>

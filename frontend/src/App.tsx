@@ -75,7 +75,7 @@ function AppLayout() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute roles={["organizer", "admin"]}>
+              <ProtectedRoute>
                 <OrganizerDashboard />
               </ProtectedRoute>
             }

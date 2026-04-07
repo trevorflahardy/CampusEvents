@@ -89,24 +89,30 @@ background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
 
 Use `.bg-mesh` or `.bg-hero` classes from `index.css` for pages with radial gradient overlays.
 
-### Dark Mode (Mobile/App views)
+### Dark Mode
 
 ```css
-background: radial-gradient(circle at 20% 0%, #908276 0%, #5c5d63 40%, #25272c 80%, #1b1c20 100%);
+background-color: #121816;
+background-image:
+  radial-gradient(circle at 15% 50%, rgba(20, 50, 45, 0.4), transparent 50%),
+  radial-gradient(circle at 85% 30%, rgba(15, 40, 35, 0.4), transparent 50%);
+background-attachment: fixed;
 ```
 
-- Body text color: `#ffffff`
-- Section headings on dark: `text-white tracking-wide`
-- Muted text on dark: `text-gray-300`
+- Body text color: `#e2e8f0`
+- Headings on dark: `text-white`
+- Muted text on dark: `text-[#94a3b8]`
+- Active nav item: `bg-[#212d28] text-white` with `text-emerald-400` icon
+- Inactive nav item: `text-[#94a3b8] hover:bg-white/5 hover:text-white`
 
 ### When to Use Which
 
-| Context                  | Background          |
-| ------------------------ | ------------------- |
-| Desktop dashboard        | Light linear gradient |
-| Mobile app view          | Dark radial gradient  |
-| Auth/login pages         | Dark radial gradient  |
-| Admin panels             | Light linear gradient |
+| Context                  | Background                    |
+| ------------------------ | ----------------------------- |
+| Desktop dashboard        | Light linear gradient         |
+| Dark mode (any context)  | Dark `#121816` + radial halos |
+| Auth/login pages         | Dark mode bg                  |
+| Admin panels             | Light linear gradient         |
 
 ---
 
@@ -152,15 +158,37 @@ border: 1px solid rgba(226, 232, 240, 0.4);
 **CSS class:** `.glass-subtle` (from index.css)
 **Use for:** Input fields, secondary panels, background sections
 
-### Dark-Mode Glass (Mobile Views)
+### Dark-Mode Glass
 
-On dark backgrounds, glass cards increase opacity:
+On dark (`#121816`) backgrounds, glass is nearly invisible dark overlay — NOT bright white:
+
+**`.glass` (sidebar/header in dark):**
 ```css
-background: rgba(255, 255, 255, 0.85);
-backdrop-filter: blur(10px);
-border: 1px solid rgba(255, 255, 255, 0.3);
-color: #1a1c23;
+background: rgba(255, 255, 255, 0.03);
+backdrop-filter: blur(16px);
+border: 1px solid rgba(255, 255, 255, 0.05);
+box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 ```
+
+**`.glass-heavy` (cards in dark):**
+```css
+background: rgba(255, 255, 255, 0.03);
+backdrop-filter: blur(10px);
+border: 1px solid rgba(255, 255, 255, 0.08);
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+```
+
+**Event card content overlay in dark:**
+```css
+background: rgba(0, 0, 0, 0.2);
+backdrop-filter: blur(12px);  /* bg-black/20 backdrop-blur-md */
+```
+
+**Icon containers in dark stat cards:** `bg-white/5 text-emerald-400`
+
+**Avatar borders in dark:** `border-[#1c2526]`
+
+**IMPORTANT:** In dark mode, text inside glass is LIGHT (`text-white`, `text-[#94a3b8]`). Glass panels are dark, not white.
 
 ### Colored Glass Accents
 

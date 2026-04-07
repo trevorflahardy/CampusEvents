@@ -22,7 +22,7 @@ export default function DashboardHeader({
   const { theme, toggle } = useTheme();
 
   return (
-    <header className="glass sticky top-0 z-20 px-6 py-4 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.05)] shrink-0 dark:bg-[rgba(30,32,38,0.78)] dark:border-white/10">
+    <header className="sticky top-0 z-20 px-6 py-4 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.05)] shrink-0">
       {/* Search bar */}
       <div className="relative w-full max-w-2xl">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -53,7 +53,7 @@ export default function DashboardHeader({
 
         {/* Notification bell */}
         <button
-          className="cursor-pointer p-2 rounded-full hover:bg-white/50 text-gray-500 transition-colors"
+          className="cursor-pointer p-2 rounded-full hover:bg-white/50 dark:hover:bg-white/10 text-gray-500 dark:text-[#94a3b8] transition-colors"
           title="Notifications"
           aria-label="Notifications"
         >
@@ -74,7 +74,7 @@ export default function DashboardHeader({
 
         {/* Settings gear */}
         <button
-          className="cursor-pointer p-2 rounded-full hover:bg-white/50 text-gray-500 transition-colors"
+          className="cursor-pointer p-2 rounded-full hover:bg-white/50 dark:hover:bg-white/10 text-gray-500 dark:text-[#94a3b8] transition-colors"
           title="Settings"
           aria-label="Settings"
         >
@@ -101,7 +101,7 @@ export default function DashboardHeader({
         {/* Light / Dark mode toggle */}
         <button
           onClick={toggle}
-          className="cursor-pointer p-2 rounded-full hover:bg-white/50 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors"
+          className="cursor-pointer p-2 rounded-full hover:bg-white/50 dark:hover:bg-white/10 text-gray-500 dark:text-[#94a3b8] transition-colors"
           title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
           aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
         >
@@ -119,7 +119,7 @@ export default function DashboardHeader({
         {/* User avatar */}
         {user && (
           <div
-            className="w-10 h-10 rounded-full bg-[#1a4f3b] flex items-center justify-center text-white text-sm font-bold shadow-sm border border-white/50 cursor-pointer"
+            className="w-10 h-10 rounded-full bg-[#1a4f3b] flex items-center justify-center text-white text-sm font-bold shadow-sm border border-white/50 dark:border-emerald-500/50 cursor-pointer"
             title={user.name}
           >
             {user.name?.charAt(0).toUpperCase()}

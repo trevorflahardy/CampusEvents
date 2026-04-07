@@ -5,6 +5,7 @@ import {
   useCallback,
   type FormEvent,
 } from "react";
+import { Link } from "react-router-dom";
 import {
   api,
   ApiError,
@@ -207,7 +208,8 @@ function StatCard({ label, value, icon }: StatCardProps) {
 /* ------------------------------------------------------------------ */
 
 export default function OrganizerDashboard() {
-  const { user } = useAuth();
+  const { user, isOrganizer, isAdmin } = useAuth();
+  const isManager = isOrganizer || isAdmin;
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -252,10 +254,12 @@ export default function OrganizerDashboard() {
   const fetchEvents = useCallback(async () => {
     try {
       const data = await api.getEvents();
-      const filtered =
-        user?.role === "admin"
-          ? data
-          : data.filter((e) => e.organizerId === user?.id);
+      // Admins see all, organizers see their own, students see all
+      const filtered = isAdmin
+        ? data
+        : isOrganizer
+          ? data.filter((e) => e.organizerId === user?.id)
+          : data;
       setEvents(filtered);
       const catMap: Record<number, Category[]> = {};
       for (const ev of filtered) {
@@ -267,7 +271,7 @@ export default function OrganizerDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isAdmin, isOrganizer]);
 
   useEffect(() => {
     api
@@ -427,6 +431,7 @@ export default function OrganizerDashboard() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         actions={
+          isManager ? (
           <button
             onClick={() => setShowForm(!showForm)}
             className={`cursor-pointer rounded-full px-5 py-2.5 font-semibold text-sm transition-all duration-200 ${
@@ -437,6 +442,7 @@ export default function OrganizerDashboard() {
           >
             {showForm ? "Close" : "+ Create Event"}
           </button>
+          ) : undefined
         }
       />
 
@@ -455,37 +461,76 @@ export default function OrganizerDashboard() {
 
       {/* ---- Stats grid ---- */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-        <StatCard
-          label="Total Events"
-          value={totalEvents}
-          icon={
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          }
-        />
-        <StatCard
-          label="Upcoming"
-          value={upcomingCount}
-          icon={
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          }
-        />
-        <StatCard
-          label="Tracked Attendees"
-          value={totalAttendees}
-          icon={
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          }
-        />
+        {isManager ? (
+          <>
+            <StatCard
+              label="Total Events"
+              value={totalEvents}
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              }
+            />
+            <StatCard
+              label="Upcoming"
+              value={upcomingCount}
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+            />
+            <StatCard
+              label="Tracked Attendees"
+              value={totalAttendees}
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              }
+            />
+          </>
+        ) : (
+          <>
+            <StatCard
+              label="Available Events"
+              value={upcomingCount}
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                </svg>
+              }
+            />
+            <StatCard
+              label="Events This Week"
+              value={events.filter((e) => {
+                const start = new Date(e.startTime);
+                const now = new Date();
+                const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                return e.status === "upcoming" && start >= now && start <= weekFromNow;
+              }).length}
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+            />
+            <StatCard
+              label="Total Events"
+              value={totalEvents}
+              icon={
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              }
+            />
+          </>
+        )}
       </div>
 
-      {/* ---- create event form ---- */}
-      {showForm && (
+      {/* ---- create event form (managers only) ---- */}
+      {isManager && showForm && (
         <div className="glass-heavy rounded-2xl p-8 mb-8 animate-fade-in">
           <h2 className="text-xl font-bold text-slate-900 mb-6">New Event</h2>
 
@@ -644,7 +689,7 @@ export default function OrganizerDashboard() {
       {/* ---- Section heading ---- */}
       <div className="flex justify-between items-end mb-6">
         <h2 className="text-2xl font-bold text-slate-900 tracking-wide">
-          {user?.role === "admin" ? "All Events" : "My Events"}
+          {isAdmin ? "All Events" : isOrganizer ? "My Events" : "Upcoming Events"}
         </h2>
         <a
           href="/events"
@@ -670,7 +715,7 @@ export default function OrganizerDashboard() {
               <p className="text-lg font-semibold text-slate-700 mb-1">No events match your search</p>
               <p className="text-slate-500 text-sm">Try a different search term.</p>
             </>
-          ) : (
+          ) : isManager ? (
             <>
               <p className="text-lg font-semibold text-slate-700 mb-1">No events yet</p>
               <p className="text-slate-500 text-sm mb-5">Create your first event to get started.</p>
@@ -684,7 +729,64 @@ export default function OrganizerDashboard() {
                 Create Your First Event
               </button>
             </>
+          ) : (
+            <>
+              <p className="text-lg font-semibold text-slate-700 mb-1">No events available</p>
+              <p className="text-slate-500 text-sm">Check back later for upcoming events.</p>
+            </>
           )}
+        </div>
+      ) : !isManager ? (
+        /* ---- Student view: simple browsable event cards ---- */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredEvents.map((event, index) => (
+            <Link
+              key={event.id}
+              to={`/events/${event.id}`}
+              className={`cursor-pointer block glass-heavy rounded-2xl overflow-hidden hover-lift animate-fade-in ${index < 4 ? `stagger-${index + 1}` : ''}`}
+            >
+              {/* Card image area */}
+              <div className="relative h-32 w-full bg-linear-to-br from-slate-100 to-slate-50">
+                <div className="absolute top-2 left-2 flex flex-wrap gap-1.5">
+                  {(eventCategoriesMap[event.id] || []).map((cat) => (
+                    <span
+                      key={cat.id}
+                      className="bg-[#c8e6c9] text-[#2e7d32] text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wider"
+                    >
+                      {cat.name}
+                    </span>
+                  ))}
+                </div>
+                <div className="absolute top-2 right-2">
+                  <span className={`badge ${statusBadge[event.status]}`}>{event.status}</span>
+                </div>
+              </div>
+              <div className="p-4">
+                <h3 className="font-bold text-lg text-gray-900 leading-tight mb-1 line-clamp-2">{event.title}</h3>
+                <div className="flex text-sm text-gray-600 mb-3 space-x-3">
+                  <span className="flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {formatShortDate(event.startTime)}
+                  </span>
+                  <span className="flex items-center gap-1 truncate">
+                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {event.location}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pt-3 border-t border-slate-100/60">
+                  <span className="text-xs text-slate-500 font-medium">by {event.organizerName}</span>
+                  <span className="bg-accent text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm cursor-pointer transition-all duration-150 hover:bg-accent-dark">
+                    {parseFloat(event.ticketPrice) === 0 ? "Free" : `$${parseFloat(event.ticketPrice).toFixed(2)}`}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1111,6 +1213,7 @@ export default function OrganizerDashboard() {
                 Quick Actions
               </h3>
               <div className="space-y-2">
+                {isManager && (
                 <button
                   onClick={() => setShowForm(true)}
                   className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-700 hover:bg-white/50 transition-colors text-left"
@@ -1122,6 +1225,7 @@ export default function OrganizerDashboard() {
                   </div>
                   Create New Event
                 </button>
+                )}
                 <a
                   href="/events"
                   className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-700 hover:bg-white/50 transition-colors text-left"
@@ -1147,8 +1251,8 @@ export default function OrganizerDashboard() {
               </div>
             </div>
 
-            {/* Event Stats Summary */}
-            <div className="glass-heavy rounded-2xl p-6">
+            {/* Event Stats Summary (managers only) */}
+            {isManager && <div className="glass-heavy rounded-2xl p-6">
               <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
                 At a Glance
               </h3>
@@ -1170,7 +1274,7 @@ export default function OrganizerDashboard() {
                   <span className="text-sm font-bold text-[#1a4f3b]">{events.length}</span>
                 </div>
               </div>
-            </div>
+            </div>}
           </aside>
 
         </div>{/* end flex row */}

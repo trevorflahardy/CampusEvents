@@ -24,20 +24,10 @@ export default function Navbar() {
     {
       label: "Dashboard",
       path: "/dashboard",
-      show: isOrganizer || isAdmin,
+      show: isAuthenticated,
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-        </svg>
-      ),
-    },
-    {
-      label: "Events",
-      path: "/events",
-      show: true,
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       ),
     },
@@ -79,20 +69,20 @@ export default function Navbar() {
   const desktopLinkClasses = (path: string) =>
     `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors cursor-pointer ${
       isActive(path)
-        ? "bg-white/70 shadow-sm text-[#1a4f3b]"
-        : "text-slate-600 hover:bg-white/40"
+        ? "bg-white/70 shadow-sm text-[#1a4f3b] dark:bg-[#212d28] dark:text-emerald-400 dark:shadow-none"
+        : "text-slate-600 hover:bg-white/40 dark:text-[#94a3b8] dark:hover:bg-white/5 dark:hover:text-white"
     }`;
 
   /* ---- Mobile bottom nav link classes ---- */
   const mobileLinkClasses = (path: string) =>
     `flex flex-col items-center cursor-pointer transition-colors ${
-      isActive(path) ? "text-[#1a4f3b]" : "text-gray-400"
+      isActive(path) ? "text-[#1a4f3b] dark:text-emerald-400" : "text-gray-400 dark:text-[#64748b]"
     }`;
 
   return (
     <>
       {/* ========== Desktop Sidebar ========== */}
-      <aside className="hidden md:flex glass w-64 h-screen flex-col pt-8 pb-6 px-4 fixed left-0 top-0 z-40 border-r border-white/20">
+      <aside className="hidden md:flex glass w-64 h-screen flex-col pt-8 pb-6 px-4 fixed left-0 top-0 z-40 border-r border-slate-200/60 dark:border-white/20">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2 cursor-pointer px-2 mb-2">
           <div className="w-9 h-9 rounded-xl bg-[#1a4f3b] flex items-center justify-center shadow-md">
@@ -100,7 +90,7 @@ export default function Navbar() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <span className="text-lg font-bold text-slate-900">
+          <span className="text-lg font-bold text-slate-900 dark:text-white">
             Campus<span className="text-gradient">Events</span>
           </span>
         </Link>
@@ -108,17 +98,17 @@ export default function Navbar() {
         {/* User Profile */}
         {isAuthenticated && user ? (
           <div className="flex items-center gap-3 mb-8 px-2 mt-3">
-            <div className="w-10 h-10 rounded-full bg-[#1a4f3b] flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-full bg-[#1a4f3b] flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0 ring-2 ring-emerald-500/30 dark:ring-emerald-500/50">
               {user.name?.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <h2 className="font-semibold text-sm leading-tight truncate">{user.name}</h2>
-              <p className="text-xs text-slate-500 capitalize">{user.role}</p>
+              <h2 className="font-semibold text-sm leading-tight truncate dark:text-white">{user.name}</h2>
+              <p className="text-xs text-slate-500 dark:text-[#94a3b8] capitalize">{user.role}</p>
             </div>
           </div>
         ) : (
           <div className="mb-8 mt-3 px-2">
-            <p className="text-sm text-slate-500">Welcome, Guest</p>
+            <p className="text-sm text-slate-500 dark:text-[#94a3b8]">Welcome, Guest</p>
           </div>
         )}
 
@@ -138,11 +128,11 @@ export default function Navbar() {
         </nav>
 
         {/* Bottom section: Auth */}
-        <div className="pt-4 border-t border-white/20 space-y-2 px-2">
+        <div className="pt-4 border-t border-white/20 dark:border-white/5 space-y-2 px-2">
           {isAuthenticated ? (
             <button
               onClick={handleLogout}
-              className="cursor-pointer flex items-center gap-3 w-full px-2 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-white/40 hover:text-slate-700 transition-colors"
+              className="cursor-pointer flex items-center gap-3 w-full px-2 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-white/40 hover:text-slate-700 dark:text-[#94a3b8] dark:hover:bg-white/5 dark:hover:text-white transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

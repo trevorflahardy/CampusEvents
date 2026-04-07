@@ -64,6 +64,21 @@ When asked to restyle a component or page:
 - Stats row: `grid grid-cols-3 gap-6` (desktop) / horizontal scroll (mobile)
 - Event cards: 2-3 column grid (desktop) / stacked list (mobile)
 
+### Dark Mode
+
+Dark mode uses a **dark glass on dark background** approach — NOT bright white glass.
+
+- **Background:** `bg-[#121816]` with CSS radial halos via `.bg-mesh` (dark variant)
+- **Glass panels:** `rgba(255,255,255,0.03)` — barely-there dark overlay, light text
+- **Glass cards:** `rgba(255,255,255,0.03-0.08)` — dark, NOT white
+- **Text:** `text-white` headings, `text-[#94a3b8]` muted, `text-[#e2e8f0]` body
+- **Active nav:** `bg-[#212d28]` + `text-white` + `text-emerald-400` icon
+- **Inactive nav:** `text-[#94a3b8] hover:bg-white/5 hover:text-white`
+- **Icon containers:** `bg-white/5 text-emerald-400`
+- **Avatar ring:** `ring-emerald-500/50`
+- **Primary btn:** emerald-tinted glass (`rgba(16,185,129,0.2)` bg + `text-[#34d399]`)
+- **Scrollbar thumb:** `rgba(255,255,255,0.1)`
+
 ### Form/Auth Page
 
 - Dark radial gradient background
