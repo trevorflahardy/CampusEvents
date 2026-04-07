@@ -19,14 +19,14 @@ export default function Landing() {
   const totalCapacity = stats.reduce((sum, s) => sum + s.capacity, 0);
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-hidden bg-hero min-h-screen">
       {/* Hero */}
-      <section className="relative px-4 sm:px-6 pt-32 pb-20 md:pt-44 md:pb-28 bg-gradient-to-b from-slate-50 via-white to-indigo-50/30">
+      <section className="relative px-4 sm:px-6 pt-32 pb-20 md:pt-44 md:pb-28">
         <div className="max-w-4xl mx-auto text-center relative">
-          <div className="inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm rounded-full px-5 py-2 mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 glass rounded-full px-5 py-2 mb-8 animate-fade-in">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-light opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#1a4f3b]" />
             </span>
             <span className="text-sm font-semibold text-slate-600">
               {totalEvents > 0
@@ -49,7 +49,7 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in stagger-3">
             <Link
               to="/events"
-              className="cursor-pointer inline-flex items-center gap-2.5 btn-primary text-white font-bold px-8 py-4 rounded-2xl text-lg"
+              className="cursor-pointer inline-flex items-center gap-2.5 bg-[#1a4f3b] hover:bg-accent text-white font-bold px-8 py-4 rounded-full text-lg shadow-[0_4px_20px_rgba(26,79,59,0.4)] hover:shadow-[0_6px_24px_rgba(26,79,59,0.6)] hover:-translate-y-px active:translate-y-0 transition-all duration-200"
             >
               Browse Events
               <svg
@@ -69,7 +69,7 @@ export default function Landing() {
             {!isAuthenticated && (
               <Link
                 to="/register"
-                className="cursor-pointer inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm font-bold px-8 py-4 rounded-2xl text-slate-700 hover:shadow-md hover:border-slate-300 transition-all duration-200 text-lg"
+                className="cursor-pointer inline-flex items-center gap-2 glass font-bold px-8 py-4 rounded-full text-slate-700 hover:shadow-md transition-all duration-200 text-lg"
               >
                 Create Account
               </Link>
@@ -82,23 +82,23 @@ export default function Landing() {
       {totalEvents > 0 && (
         <section className="px-4 sm:px-6 -mt-6 pb-16 relative z-10">
           <div className="max-w-3xl mx-auto">
-            <div className="bg-white border border-slate-200 shadow-lg rounded-3xl p-1.5">
+            <div className="glass-heavy rounded-3xl p-1.5 hover-lift">
               <div className="grid grid-cols-3 divide-x divide-slate-200/50">
                 {[
                   {
                     value: totalEvents,
                     label: "Active Events",
-                    color: "text-indigo-600",
+                    color: "text-[#1a4f3b]",
                   },
                   {
                     value: totalTickets,
                     label: "Tickets Sold",
-                    color: "text-violet-600",
+                    color: "text-accent",
                   },
                   {
                     value: totalCapacity,
                     label: "Total Capacity",
-                    color: "text-pink-600",
+                    color: "text-accent-light",
                   },
                 ].map((stat, i) => (
                   <div key={i} className="text-center py-7 px-4">
@@ -134,8 +134,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                glass: "glass-blue",
-                iconBg: "bg-indigo-500",
+                iconBg: "bg-[#1a4f3b]",
                 icon: (
                   <path
                     strokeLinecap="round"
@@ -148,8 +147,7 @@ export default function Landing() {
                 desc: "Search by name, filter by category or date range, and find exactly what you're looking for on campus.",
               },
               {
-                glass: "glass-violet",
-                iconBg: "bg-violet-500",
+                iconBg: "bg-accent",
                 icon: (
                   <path
                     strokeLinecap="round"
@@ -162,8 +160,7 @@ export default function Landing() {
                 desc: "Reserve your spot with one click. Get a confirmation code and track all your bookings in one place.",
               },
               {
-                glass: "glass-emerald",
-                iconBg: "bg-emerald-500",
+                iconBg: "bg-accent-light",
                 icon: (
                   <path
                     strokeLinecap="round"
@@ -178,7 +175,7 @@ export default function Landing() {
             ].map((feature, i) => (
               <div
                 key={i}
-                className="bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 rounded-3xl p-8 cursor-default"
+                className="glass-heavy rounded-2xl p-8 cursor-default hover-lift"
               >
                 <div
                   className={`w-12 h-12 rounded-2xl ${feature.iconBg} flex items-center justify-center mb-5 shadow-lg`}
@@ -205,17 +202,9 @@ export default function Landing() {
       {/* CTA */}
       <section className="px-4 sm:px-6 pb-28">
         <div className="max-w-4xl mx-auto">
-          <div
-            className="relative rounded-3xl p-12 md:p-16 text-center overflow-hidden"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(168,85,247,0.08) 50%, rgba(236,72,153,0.06) 100%)",
-              backdropFilter: "blur(40px)",
-              border: "1px solid rgba(139,92,246,0.15)",
-            }}
-          >
-            <div className="absolute -top-20 -right-20 w-60 h-60 bg-indigo-400/15 rounded-full blur-3xl pointer-events-none animate-float" />
-            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-pink-400/10 rounded-full blur-3xl pointer-events-none animate-float-slow" />
+          <div className="relative glass-heavy rounded-3xl p-12 md:p-16 text-center overflow-hidden">
+            <div className="absolute -top-20 -right-20 w-60 h-60 bg-[#1a4f3b]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-accent-light/8 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">
@@ -228,14 +217,14 @@ export default function Landing() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   to="/events"
-                  className="cursor-pointer inline-flex items-center gap-2 btn-primary text-white font-bold px-8 py-4 rounded-2xl"
+                  className="cursor-pointer inline-flex items-center gap-2 btn-primary text-white font-bold px-8 py-4 rounded-full"
                 >
                   Explore Events
                 </Link>
                 {!isAuthenticated && (
                   <Link
                     to="/register"
-                    className="cursor-pointer text-indigo-500 font-bold hover:text-violet-500 transition-colors text-lg"
+                    className="cursor-pointer text-[#1a4f3b] font-bold hover:text-accent-light transition-colors text-lg"
                   >
                     Sign up free
                   </Link>

@@ -30,10 +30,16 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{
+        background:
+          "radial-gradient(circle at 20% 0%, #908276 0%, #5c5d63 40%, #25272c 80%, #1b1c20 100%)",
+      }}
+    >
       <div className="w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/25">
+          <div className="w-14 h-14 rounded-2xl bg-[#1a4f3b] flex items-center justify-center mx-auto mb-4 shadow-[0_4px_20px_rgba(26,79,59,0.4)]">
             <svg
               className="w-7 h-7 text-white"
               fill="none"
@@ -48,11 +54,11 @@ export default function Login() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-          <p className="text-slate-400 mt-1 text-sm">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
+          <p className="text-gray-300 mt-1 text-sm">Sign in to your account</p>
         </div>
 
-        <div className="glass-heavy rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,0,0,0.06)]">
+        <div className="glass-heavy rounded-2xl p-8">
           {error && (
             <div className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-5 text-sm font-medium">
               {error}
@@ -97,7 +103,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={submitting}
-              className="cursor-pointer w-full btn-primary text-white font-bold py-3 rounded-xl"
+              className="cursor-pointer w-full btn-primary text-white font-bold py-3 rounded-full"
             >
               {submitting ? (
                 <span className="flex items-center justify-center gap-2">
@@ -111,11 +117,11 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-sm text-slate-400">
+        <p className="mt-6 text-center text-sm text-gray-300">
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="text-indigo-500 hover:text-violet-500 font-semibold transition-colors"
+            className="text-brand-light hover:text-white font-semibold transition-colors"
           >
             Create one
           </Link>

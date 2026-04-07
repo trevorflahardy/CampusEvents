@@ -58,32 +58,32 @@ export default function BrowseEvents() {
   const hasFilters = search || categoryId || from || to || status;
 
   return (
-    <div className="animate-fade-in">
+    <div className="bg-mesh min-h-full animate-fade-in">
       <div className="flex items-end justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
             Events
           </h1>
-          <p className="text-slate-400 mt-1 text-sm">
+          <p className="text-slate-500 mt-1 text-sm">
             {events.length} event{events.length !== 1 ? "s" : ""} found
           </p>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
+      <div className="glass-heavy rounded-2xl p-5 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           <div className="relative">
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
               fill="none"
               stroke="currentColor"
+              strokeWidth={2}
               viewBox="0 0 24 24"
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={1.5}
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
@@ -92,13 +92,13 @@ export default function BrowseEvents() {
               placeholder="Search events..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full input-glass rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400"
+              className="w-full input-glass rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400"
             />
           </div>
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="cursor-pointer w-full input-glass rounded-xl px-4 py-2.5 text-sm text-slate-700"
+            className="cursor-pointer w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
           >
             <option value="">All Categories</option>
             {categories.map((c) => (
@@ -111,18 +111,18 @@ export default function BrowseEvents() {
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="w-full input-glass rounded-xl px-4 py-2.5 text-sm text-slate-700"
+            className="w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
           />
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="w-full input-glass rounded-xl px-4 py-2.5 text-sm text-slate-700"
+            className="w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
           />
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="cursor-pointer w-full input-glass rounded-xl px-4 py-2.5 text-sm text-slate-700"
+            className="cursor-pointer w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
           >
             <option value="">All Statuses</option>
             <option value="upcoming">Upcoming</option>
@@ -134,7 +134,7 @@ export default function BrowseEvents() {
         {hasFilters && (
           <button
             onClick={clearFilters}
-            className="cursor-pointer mt-3 text-sm text-indigo-500 hover:text-violet-500 font-medium transition-colors"
+            className="cursor-pointer mt-3 text-sm text-accent hover:text-[#1a4f3b] font-medium transition-colors"
           >
             Clear all filters
           </button>
@@ -142,17 +142,17 @@ export default function BrowseEvents() {
       </div>
 
       {error && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6 border-l-4 border-red-400">
+        <div className="glass-heavy rounded-2xl p-4 mb-6 border-l-4 border-red-400">
           <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-xl border border-slate-200 p-6"
+              className="glass-heavy rounded-2xl p-6"
             >
               <div className="skeleton h-5 w-3/4 mb-4" />
               <div className="skeleton h-4 w-1/2 mb-2" />
@@ -162,18 +162,18 @@ export default function BrowseEvents() {
           ))}
         </div>
       ) : events.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm text-center py-20 px-8">
-          <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+        <div className="glass-heavy rounded-2xl text-center py-20 px-8">
+          <div className="w-16 h-16 rounded-2xl bg-brand-glow flex items-center justify-center mx-auto mb-4">
             <svg
-              className="w-8 h-8 text-slate-300"
+              className="w-8 h-8 text-accent"
               fill="none"
               stroke="currentColor"
+              strokeWidth={2}
               viewBox="0 0 24 24"
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={1.5}
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
@@ -181,14 +181,16 @@ export default function BrowseEvents() {
           <p className="text-lg font-semibold text-slate-700 mb-1">
             No events found
           </p>
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-500 text-sm">
             Try adjusting your filters or check back later.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {events.map((event, index) => (
+            <div key={event.id} className={`animate-fade-in ${index < 4 ? `stagger-${index + 1}` : ''}`}>
+              <EventCard event={event} />
+            </div>
           ))}
         </div>
       )}

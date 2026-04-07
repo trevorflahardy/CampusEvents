@@ -9,10 +9,10 @@ import {
 } from "../lib/api";
 
 const statusColors: Record<string, string> = {
-  upcoming: "bg-emerald-500/10 text-emerald-600",
-  ongoing: "bg-blue-500/10 text-blue-600",
-  completed: "bg-slate-500/10 text-slate-500",
-  cancelled: "bg-red-500/10 text-red-500",
+  upcoming: "badge-success",
+  ongoing: "badge-info",
+  completed: "badge-neutral",
+  cancelled: "badge-danger",
 };
 
 function formatDate(dateStr: string): string {
@@ -106,7 +106,7 @@ export default function AdminPanel() {
             <div key={i} className="skeleton h-10 w-28 rounded-xl" />
           ))}
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <div className="glass-heavy rounded-2xl p-6">
           <div className="skeleton h-5 w-full mb-3" />
           <div className="skeleton h-5 w-full mb-3" />
           <div className="skeleton h-5 w-3/4" />
@@ -117,12 +117,12 @@ export default function AdminPanel() {
 
   return (
     <div className="animate-fade-in">
-      <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-8">
-        Admin Panel
+      <h1 className="text-3xl font-bold tracking-tight mb-8">
+        <span className="text-gradient">Admin Panel</span>
       </h1>
 
       {error && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6 border-l-4 border-red-400">
+        <div className="glass-heavy rounded-2xl p-4 mb-6 border-l-4 border-red-400">
           <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
@@ -133,10 +133,10 @@ export default function AdminPanel() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+            className={`cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
               activeTab === tab.key
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                ? "btn-primary shadow-sm"
+                : "glass-subtle text-slate-600 hover:bg-white/70"
             }`}
           >
             {tab.label}
@@ -155,11 +155,11 @@ export default function AdminPanel() {
 
       {/* Users */}
       {activeTab === "users" && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="glass-heavy rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50">
-                <tr className="text-left text-slate-400 border-b border-slate-200">
+              <thead className="bg-white/40">
+                <tr className="text-left text-slate-400 border-b border-slate-200/60">
                   <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
                     Name
                   </th>
@@ -177,15 +177,15 @@ export default function AdminPanel() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100/60">
+              <tbody className="divide-y divide-slate-100/40">
                 {users.map((u) => (
                   <tr
                     key={u.id}
-                    className="hover:bg-slate-50 transition-colors"
+                    className="hover:bg-white/40 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-linear-to-br from-accent-dark via-accent to-accent-light flex items-center justify-center text-white text-xs font-semibold shrink-0">
                           {u.name.charAt(0).toUpperCase()}
                         </div>
                         <span className="font-medium text-slate-900">
@@ -201,7 +201,7 @@ export default function AdminPanel() {
                       <select
                         value={u.role}
                         onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                        className="cursor-pointer input-glass rounded-lg px-3 py-1.5 text-sm font-medium"
+                        className="cursor-pointer input-modern rounded-lg px-3 py-1.5 text-sm font-medium"
                       >
                         <option value="student">student</option>
                         <option value="organizer">organizer</option>
@@ -221,11 +221,11 @@ export default function AdminPanel() {
 
       {/* Events */}
       {activeTab === "events" && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="glass-heavy rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50">
-                <tr className="text-left text-slate-400 border-b border-slate-200">
+              <thead className="bg-white/40">
+                <tr className="text-left text-slate-400 border-b border-slate-200/60">
                   <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
                     Title
                   </th>
@@ -243,11 +243,11 @@ export default function AdminPanel() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100/60">
+              <tbody className="divide-y divide-slate-100/40">
                 {events.map((e) => (
                   <tr
                     key={e.id}
-                    className="hover:bg-slate-50 transition-colors"
+                    className="hover:bg-white/40 transition-colors"
                   >
                     <td className="px-6 py-4 text-slate-900 font-medium">
                       {e.title}
@@ -260,7 +260,7 @@ export default function AdminPanel() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColors[e.status]}`}
+                        className={`badge ${statusColors[e.status] || "badge-neutral"}`}
                       >
                         {e.status}
                       </span>
@@ -288,7 +288,7 @@ export default function AdminPanel() {
                               setError("Failed to cancel event.");
                             }
                           }}
-                          className="cursor-pointer rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+                          className="cursor-pointer btn-danger rounded-full px-3 py-1.5 text-sm font-semibold transition-all duration-150"
                         >
                           Cancel
                         </button>
@@ -325,11 +325,11 @@ export default function AdminPanel() {
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 placeholder="Category name"
                 required
-                className="flex-1 input-glass rounded-xl px-4 py-2.5 text-sm"
+                className="flex-1 input-modern rounded-lg px-4 py-2.5 text-sm"
               />
               <button
                 type="submit"
-                className="cursor-pointer btn-primary text-white font-bold px-6 py-2.5 rounded-xl"
+                className="cursor-pointer btn-primary text-white font-bold px-6 py-2.5 rounded-full"
               >
                 Add
               </button>
@@ -347,7 +347,7 @@ export default function AdminPanel() {
                 {categories.map((cat) => (
                   <span
                     key={cat.id}
-                    className="rounded-full bg-indigo-500/8 text-indigo-600 border border-indigo-500/15 px-4 py-1.5 text-sm font-medium"
+                    className="rounded-full bg-brand-glow text-[#1a4f3b] border border-brand-light px-4 py-1.5 text-sm font-medium"
                   >
                     {cat.name}
                   </span>
@@ -375,7 +375,7 @@ export default function AdminPanel() {
                     <div className="flex items-center gap-2">
                       <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500 rounded-full"
+                          className="h-full bg-gradient-to-r from-accent-dark via-accent to-accent-light rounded-full"
                           style={{
                             width: `${Math.min((pc.eventCount / Math.max(...popularCategories.map((p) => p.eventCount))) * 100, 100)}%`,
                           }}

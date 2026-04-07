@@ -17,57 +17,58 @@ function App() {
       <BrowserRouter>
         <div className="min-h-screen bg-mesh">
           <Navbar />
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route
-              path="/events"
-              element={
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-                  <BrowseEvents />
-                </main>
-              }
-            />
-            <Route
-              path="/events/:id"
-              element={
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-                  <EventDetail />
-                </main>
-              }
-            />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/my-tickets"
-              element={
-                <ProtectedRoute>
+          {/* Main content area — offset for the fixed sidebar on desktop */}
+          <div className="md:ml-64">
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route
+                path="/events"
+                element={
                   <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-                    <MyTickets />
+                    <BrowseEvents />
                   </main>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute roles={["organizer", "admin"]}>
+                }
+              />
+              <Route
+                path="/events/:id"
+                element={
                   <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
+                    <EventDetail />
+                  </main>
+                }
+              />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route
+                path="/my-tickets"
+                element={
+                  <ProtectedRoute>
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
+                      <MyTickets />
+                    </main>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute roles={["organizer", "admin"]}>
                     <OrganizerDashboard />
-                  </main>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute roles={["admin"]}>
-                  <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-                    <AdminPanel />
-                  </main>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute roles={["admin"]}>
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
+                      <AdminPanel />
+                    </main>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </div>
         </div>
       </BrowserRouter>
     </AuthProvider>

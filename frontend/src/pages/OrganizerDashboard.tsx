@@ -20,19 +20,16 @@ import { useAuth } from "../context/useAuth";
 /* ------------------------------------------------------------------ */
 
 const statusBadge: Record<string, string> = {
-  upcoming: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  ongoing: "bg-blue-50 text-blue-700 border border-blue-200",
-  completed: "bg-slate-100 text-slate-500 border border-slate-200",
-  cancelled: "bg-red-50 text-red-600 border border-red-200",
+  upcoming: "badge-success",
+  ongoing: "badge-info",
+  completed: "badge-neutral",
+  cancelled: "badge-danger",
 };
 
-function formatDate(dateStr: string): string {
+function formatShortDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
   });
 }
 
@@ -131,7 +128,7 @@ function InlineField({
 
   if (editing) {
     const shared =
-      "w-full input-glass rounded-lg px-2.5 py-1 text-sm focus:ring-2 focus:ring-indigo-500/40 " +
+      "w-full input-glass rounded-lg px-2.5 py-1 text-sm focus:ring-2 focus:ring-[#1a4f3b]/30 " +
       inputClassName;
     return multiline ? (
       <textarea
@@ -161,7 +158,7 @@ function InlineField({
   return (
     <span
       onClick={() => setEditing(true)}
-      className={`group/field inline-flex items-center gap-1.5 cursor-pointer rounded-md px-1 -mx-1 hover:bg-slate-100 transition-colors ${className}`}
+      className={`group/field inline-flex items-center gap-1.5 cursor-pointer rounded-md px-1 -mx-1 hover:bg-white/50 transition-colors ${className}`}
     >
       <span className={saving ? "opacity-50" : ""}>
         {prefix}
@@ -190,15 +187,15 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon }: StatCardProps) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex items-center gap-4">
-      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600">
-        {icon}
-      </div>
+    <div className="glass-heavy rounded-3xl p-6 flex justify-between items-center animate-fade-in">
       <div>
-        <p className="text-2xl font-bold text-slate-900 leading-none">
-          {value}
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+          {label}
         </p>
-        <p className="text-sm text-slate-500 mt-0.5">{label}</p>
+        <p className="text-4xl font-bold text-slate-900">{value}</p>
+      </div>
+      <div className="w-12 h-12 rounded-2xl bg-brand-glow flex items-center justify-center text-[#1a4f3b]">
+        {icon}
       </div>
     </div>
   );
@@ -217,6 +214,7 @@ export default function OrganizerDashboard() {
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // create-event form state
   const [title, setTitle] = useState("");
@@ -372,32 +370,45 @@ export default function OrganizerDashboard() {
     0,
   );
 
+  /* ---------- search filter ---------- */
+
+  const filteredEvents = searchQuery.trim()
+    ? events.filter(
+        (e) =>
+          e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          e.location.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : events;
+
   /* ---------- loading skeleton ---------- */
 
   if (loading) {
     return (
-      <div className="animate-fade-in space-y-6">
-        <div className="skeleton h-8 w-56" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl border border-slate-200 shadow-sm p-5"
-            >
-              <div className="skeleton h-6 w-12 mb-2" />
-              <div className="skeleton h-4 w-24" />
-            </div>
-          ))}
+      <div className="flex flex-col h-screen overflow-hidden animate-fade-in">
+        <div className="glass px-6 py-4 shrink-0">
+          <div className="skeleton h-12 w-full max-w-2xl rounded-full" />
         </div>
-        {[1, 2].map((i) => (
-          <div
-            key={i}
-            className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
-          >
-            <div className="skeleton h-5 w-1/3 mb-3" />
-            <div className="skeleton h-4 w-1/2" />
+        <div className="flex-1 overflow-y-auto p-8 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="glass-heavy rounded-3xl p-6">
+                <div className="skeleton h-4 w-24 mb-3 rounded-lg" />
+                <div className="skeleton h-10 w-16 rounded-lg" />
+              </div>
+            ))}
           </div>
-        ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[1, 2].map((i) => (
+              <div key={i} className="glass-heavy rounded-2xl overflow-hidden">
+                <div className="skeleton h-32 w-full" />
+                <div className="p-4">
+                  <div className="skeleton h-5 w-2/3 mb-3 rounded-lg" />
+                  <div className="skeleton h-4 w-1/2 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -405,49 +416,84 @@ export default function OrganizerDashboard() {
   /* ---------- render ---------- */
 
   return (
-    <div className="animate-fade-in space-y-8">
-      {/* ---- header ---- */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-          Dashboard
-        </h1>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className={`cursor-pointer rounded-xl px-5 py-2.5 font-semibold text-sm transition-all duration-200 ${
-            showForm
-              ? "bg-white rounded-xl border border-slate-200 shadow-sm text-slate-600 hover:bg-slate-50"
-              : "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700"
-          }`}
-        >
-          {showForm ? "Close" : "+ Create Event"}
-        </button>
-      </div>
+    <div className="flex flex-col h-screen overflow-hidden animate-fade-in">
+      {/* ---- Sticky glass header with search + action icons ---- */}
+      <header className="glass sticky top-0 z-20 px-6 py-4 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.05)] shrink-0">
+        {/* Search bar */}
+        <div className="relative w-full max-w-2xl">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search events, venues, or tags..."
+            className="glass-subtle w-full pl-11 pr-4 py-3 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-white/50 placeholder-gray-500 transition-shadow"
+          />
+        </div>
+        {/* Right: action icons + create button + avatar */}
+        <div className="flex items-center gap-3 ml-4 shrink-0">
+          {/* Notification bell */}
+          <button className="cursor-pointer p-2 rounded-full hover:bg-white/50 text-gray-500 transition-colors" title="Notifications">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </button>
+          {/* Settings gear */}
+          <button className="cursor-pointer p-2 rounded-full hover:bg-white/50 text-gray-500 transition-colors" title="Settings">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+          {/* Create event button */}
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className={`cursor-pointer rounded-full px-5 py-2.5 font-semibold text-sm transition-all duration-200 ${
+              showForm
+                ? "btn-secondary"
+                : "bg-accent text-white shadow-sm hover:bg-accent-dark hover:shadow-[0_6px_24px_rgba(26,79,59,0.4)] hover:-translate-y-px active:translate-y-0"
+            }`}
+          >
+            {showForm ? "Close" : "+ Create Event"}
+          </button>
+          {/* User avatar */}
+          {user && (
+            <div className="w-10 h-10 rounded-full bg-[#1a4f3b] flex items-center justify-center text-white text-sm font-bold shadow-sm border border-white/50 cursor-pointer" title={user.name}>
+              {user.name?.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* ---- Scrollable content area ---- */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex gap-8 p-8">
+          {/* ---- Left: main content ---- */}
+          <div className="flex-1 min-w-0">
 
       {/* ---- error banner ---- */}
       {error && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 border-l-4 !border-l-red-400">
+        <div className="glass-heavy rounded-2xl p-4 border-l-4 border-l-red-400 mb-6 animate-fade-in">
           <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
 
-      {/* ---- stats ---- */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* ---- Stats grid ---- */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
         <StatCard
           label="Total Events"
           value={totalEvents}
           icon={
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           }
         />
@@ -455,18 +501,8 @@ export default function OrganizerDashboard() {
           label="Upcoming"
           value={upcomingCount}
           icon={
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           }
         />
@@ -474,18 +510,8 @@ export default function OrganizerDashboard() {
           label="Tracked Attendees"
           value={totalAttendees}
           icon={
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-              />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           }
         />
@@ -493,7 +519,7 @@ export default function OrganizerDashboard() {
 
       {/* ---- create event form ---- */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 animate-fade-in">
+        <div className="glass-heavy rounded-2xl p-8 mb-8 animate-fade-in">
           <h2 className="text-xl font-bold text-slate-900 mb-6">New Event</h2>
 
           {formError && (
@@ -505,10 +531,7 @@ export default function OrganizerDashboard() {
           <form onSubmit={handleCreateEvent} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label
-                  htmlFor="ev-title"
-                  className="block text-sm font-medium text-slate-700 mb-1.5"
-                >
+                <label htmlFor="ev-title" className="block text-sm font-medium text-slate-700 mb-1.5">
                   Title
                 </label>
                 <input
@@ -521,10 +544,7 @@ export default function OrganizerDashboard() {
                 />
               </div>
               <div>
-                <label
-                  htmlFor="ev-loc"
-                  className="block text-sm font-medium text-slate-700 mb-1.5"
-                >
+                <label htmlFor="ev-loc" className="block text-sm font-medium text-slate-700 mb-1.5">
                   Location
                 </label>
                 <input
@@ -537,10 +557,7 @@ export default function OrganizerDashboard() {
                 />
               </div>
               <div>
-                <label
-                  htmlFor="ev-start"
-                  className="block text-sm font-medium text-slate-700 mb-1.5"
-                >
+                <label htmlFor="ev-start" className="block text-sm font-medium text-slate-700 mb-1.5">
                   Start
                 </label>
                 <input
@@ -553,10 +570,7 @@ export default function OrganizerDashboard() {
                 />
               </div>
               <div>
-                <label
-                  htmlFor="ev-end"
-                  className="block text-sm font-medium text-slate-700 mb-1.5"
-                >
+                <label htmlFor="ev-end" className="block text-sm font-medium text-slate-700 mb-1.5">
                   End
                 </label>
                 <input
@@ -569,10 +583,7 @@ export default function OrganizerDashboard() {
                 />
               </div>
               <div>
-                <label
-                  htmlFor="ev-cap"
-                  className="block text-sm font-medium text-slate-700 mb-1.5"
-                >
+                <label htmlFor="ev-cap" className="block text-sm font-medium text-slate-700 mb-1.5">
                   Capacity
                 </label>
                 <input
@@ -586,10 +597,7 @@ export default function OrganizerDashboard() {
                 />
               </div>
               <div>
-                <label
-                  htmlFor="ev-price"
-                  className="block text-sm font-medium text-slate-700 mb-1.5"
-                >
+                <label htmlFor="ev-price" className="block text-sm font-medium text-slate-700 mb-1.5">
                   Ticket Price
                 </label>
                 <input
@@ -606,10 +614,7 @@ export default function OrganizerDashboard() {
             </div>
 
             <div>
-              <label
-                htmlFor="ev-desc"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
+              <label htmlFor="ev-desc" className="block text-sm font-medium text-slate-700 mb-1.5">
                 Description
               </label>
               <textarea
@@ -638,9 +643,9 @@ export default function OrganizerDashboard() {
                             : [...prev, cat.id],
                         )
                       }
-                      className={`cursor-pointer rounded-full px-3 py-1 text-sm font-medium border transition-colors ${
+                      className={`cursor-pointer rounded-full px-3 py-1 text-sm font-medium border transition-all duration-150 ${
                         selectedCategoryIds.includes(cat.id)
-                          ? "bg-indigo-600 text-white border-indigo-600"
+                          ? "bg-[#1a4f3b] text-white border-[#1a4f3b]"
                           : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                       }`}
                     >
@@ -654,7 +659,7 @@ export default function OrganizerDashboard() {
             <button
               type="submit"
               disabled={submitting}
-              className="cursor-pointer bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 font-bold px-8 py-3 rounded-xl transition-colors disabled:opacity-50"
+              className="cursor-pointer btn-primary rounded-full px-8 py-3 font-bold text-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? "Creating..." : "Create Event"}
             </button>
@@ -662,371 +667,499 @@ export default function OrganizerDashboard() {
         </div>
       )}
 
-      {/* ---- events list ---- */}
-      <div>
-        <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+      {/* ---- Section heading ---- */}
+      <div className="flex justify-between items-end mb-6">
+        <h2 className="text-2xl font-bold text-slate-900 tracking-wide">
           {user?.role === "admin" ? "All Events" : "My Events"}
         </h2>
+        <a
+          href="/events"
+          className="text-sm font-medium text-slate-800 flex items-center gap-1 hover:underline cursor-pointer"
+        >
+          View All
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
 
-        {events.length === 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm text-center py-16 text-slate-400">
-            You haven't created any events yet.
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {events.map((event) => (
-              <div
-                key={event.id}
-                className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
-              >
-                {/* card body */}
-                <div className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                    {/* left: editable fields */}
-                    <div className="space-y-2 min-w-0 flex-1">
-                      {/* title + badge */}
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <InlineField
-                          value={event.title}
-                          field="title"
-                          eventId={event.id}
-                          onSave={handleInlineSave}
-                          className="text-lg font-semibold text-slate-900"
-                        />
-                        <span
-                          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadge[event.status]}`}
-                        >
-                          {event.status}
-                        </span>
-                      </div>
+      {/* ---- events grid ---- */}
+      {filteredEvents.length === 0 ? (
+        <div className="glass-heavy rounded-2xl text-center py-16 text-slate-400">
+          {searchQuery.trim()
+            ? "No events match your search."
+            : "You haven't created any events yet."}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredEvents.map((event, idx) => (
+            <article
+              key={event.id}
+              className={`glass-heavy rounded-2xl overflow-hidden flex flex-col shadow-md hover-lift animate-fade-in ${
+                idx < 4 ? `stagger-${idx + 1}` : ""
+              }`}
+            >
+              {/* Card image area with category tag */}
+              <div className="relative h-32 w-full bg-linear-to-br from-brand-light to-brand-glow">
+                {/* Category tags overlay */}
+                <div className="absolute top-2 left-2 flex flex-wrap gap-1.5">
+                  {(eventCategoriesMap[event.id] || []).map((cat) => (
+                    <span
+                      key={cat.id}
+                      className="bg-[#c8e6c9] text-[#2e7d32] text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wider"
+                    >
+                      {cat.name}
+                    </span>
+                  ))}
+                </div>
+                {/* Status badge top-right */}
+                <div className="absolute top-2 right-2">
+                  <span className={`badge ${statusBadge[event.status]}`}>
+                    {event.status}
+                  </span>
+                </div>
+              </div>
 
-                      {/* location + dates */}
-                      <div className="flex items-center gap-2 text-sm text-slate-500">
-                        <svg
-                          className="w-4 h-4 text-slate-400 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        </svg>
-                        <InlineField
-                          value={event.location}
-                          field="location"
-                          eventId={event.id}
-                          onSave={handleInlineSave}
-                          className="text-slate-500"
-                        />
-                      </div>
+              {/* Card content */}
+              <div className="p-4 flex-1 flex flex-col">
+                {/* Title (editable) */}
+                <InlineField
+                  value={event.title}
+                  field="title"
+                  eventId={event.id}
+                  onSave={handleInlineSave}
+                  className="font-bold text-lg text-gray-900 leading-tight mb-1"
+                />
 
-                      <div className="text-sm text-slate-400">
-                        {formatDate(event.startTime)} &ndash;{" "}
-                        {formatDate(event.endTime)}
-                      </div>
-
-                      {/* organizer (admin can reassign) */}
-                      {user?.role === "admin" && (
-                        <div className="flex items-center gap-2 text-sm text-slate-500">
-                          <span className="text-slate-400">Organizer:</span>
-                          <select
-                            value={event.organizerId}
-                            onChange={async (e) => {
-                              const nextOrganizerId = Number(e.target.value);
-                              try {
-                                await handleInlineSave(event.id, {
-                                  organizerId: nextOrganizerId,
-                                });
-                              } catch {
-                                setError("Failed to reassign organizer.");
-                                e.target.value = String(event.organizerId);
-                              }
-                            }}
-                            className="cursor-pointer input-glass rounded-lg px-2 py-1 text-sm"
-                          >
-                            {organizers.map((org) => (
-                              <option key={org.id} value={org.id}>
-                                {org.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-
-                      {/* capacity + price row */}
-                      <div className="flex items-center gap-4 text-sm pt-1">
-                        <span className="flex items-center gap-1.5 text-slate-500">
-                          <svg
-                            className="w-4 h-4 text-slate-400 shrink-0"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                          </svg>
-                          <InlineField
-                            value={String(event.capacity)}
-                            field="capacity"
-                            eventId={event.id}
-                            onSave={handleInlineSave}
-                            type="number"
-                            className="text-slate-600"
-                          />
-                          <span className="text-slate-400">cap.</span>
-                        </span>
-
-                        <span className="flex items-center gap-1 text-slate-500">
-                          <InlineField
-                            value={event.ticketPrice ?? "0.00"}
-                            field="ticketPrice"
-                            eventId={event.id}
-                            onSave={handleInlineSave}
-                            prefix="$"
-                            type="number"
-                            className="text-slate-600"
-                          />
-                        </span>
-                      </div>
-
-                      {/* description (editable) */}
-                      {event.description && (
-                        <div className="pt-1">
-                          <InlineField
-                            value={event.description}
-                            field="description"
-                            eventId={event.id}
-                            onSave={handleInlineSave}
-                            multiline
-                            className="text-sm text-slate-400"
-                          />
-                        </div>
-                      )}
-
-                      {/* categories */}
-                      <div className="flex flex-wrap gap-1.5 pt-2 items-center">
-                        {(eventCategoriesMap[event.id] || []).map((cat) => (
-                          <span
-                            key={cat.id}
-                            className="rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200 px-2.5 py-0.5 text-xs font-medium"
-                          >
-                            {cat.name}
-                          </span>
-                        ))}
-                        {editingCategoriesFor !== event.id && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingCategoriesFor(event.id);
-                              setDraftCategoryIds(
-                                (eventCategoriesMap[event.id] || []).map(
-                                  (c) => c.id,
-                                ),
-                              );
-                            }}
-                            className="cursor-pointer rounded-full bg-slate-50 text-slate-400 border border-slate-200 px-2.5 py-0.5 text-xs font-medium hover:bg-slate-100 transition-colors"
-                          >
-                            + Edit
-                          </button>
-                        )}
-                      </div>
-                      {editingCategoriesFor === event.id && (
-                        <div className="flex flex-wrap gap-2 pt-1 items-center">
-                          {categories.map((cat) => (
-                            <button
-                              key={cat.id}
-                              type="button"
-                              onClick={() =>
-                                setDraftCategoryIds((prev) =>
-                                  prev.includes(cat.id)
-                                    ? prev.filter((id) => id !== cat.id)
-                                    : [...prev, cat.id],
-                                )
-                              }
-                              className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
-                                draftCategoryIds.includes(cat.id)
-                                  ? "bg-indigo-600 text-white border-indigo-600"
-                                  : "bg-white text-slate-500 border-slate-200"
-                              }`}
-                            >
-                              {cat.name}
-                            </button>
-                          ))}
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              try {
-                                await api.setEventCategories(
-                                  event.id,
-                                  draftCategoryIds,
-                                );
-                                setEditingCategoriesFor(null);
-                                await fetchEvents();
-                              } catch {
-                                setError("Failed to save categories.");
-                              }
-                            }}
-                            className="cursor-pointer rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
-                          >
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingCategoriesFor(null)}
-                            className="cursor-pointer text-xs text-slate-400 hover:text-slate-600"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* right: action buttons */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => toggleAttendees(event.id)}
-                        className="cursor-pointer bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-                      >
-                        {expandedEvent === event.id
-                          ? "Hide Attendees"
-                          : "Attendees"}
-                      </button>
-                      {event.status !== "cancelled" && (
-                        <button
-                          onClick={async () => {
-                            if (
-                              !confirm(
-                                "Are you sure you want to cancel this event?",
-                              )
-                            ) {
-                              return;
-                            }
-                            try {
-                              await api.updateEvent(event.id, {
-                                status: "cancelled",
-                              });
-                              await fetchEvents();
-                            } catch {
-                              setError("Failed to cancel event.");
-                            }
-                          }}
-                          className="cursor-pointer rounded-xl bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
-                        >
-                          Cancel Event
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                {/* Meta row: date + location */}
+                <div className="flex items-center text-sm text-gray-600 mb-3 space-x-3">
+                  <span className="flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {formatShortDate(event.startTime)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <InlineField
+                      value={event.location}
+                      field="location"
+                      eventId={event.id}
+                      onSave={handleInlineSave}
+                      className="text-gray-600"
+                    />
+                  </span>
                 </div>
 
-                {/* attendees table */}
-                {expandedEvent === event.id && (
-                  <div className="border-t border-slate-200 p-6 animate-fade-in">
-                    {!attendeesMap[event.id] ? (
-                      <div className="text-slate-400 text-sm">
-                        Loading attendees...
+                {/* Description */}
+                {event.description && (
+                  <div className="mb-3">
+                    <InlineField
+                      value={event.description}
+                      field="description"
+                      eventId={event.id}
+                      onSave={handleInlineSave}
+                      multiline
+                      className="text-sm text-slate-400 line-clamp-2"
+                    />
+                  </div>
+                )}
+
+                {/* Capacity + price row */}
+                <div className="flex items-center gap-4 text-sm text-slate-500 mb-3">
+                  <span className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <InlineField
+                      value={String(event.capacity)}
+                      field="capacity"
+                      eventId={event.id}
+                      onSave={handleInlineSave}
+                      type="number"
+                      className="text-slate-600"
+                    />
+                    <span className="text-slate-400">cap.</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-slate-500">
+                    <InlineField
+                      value={event.ticketPrice ?? "0.00"}
+                      field="ticketPrice"
+                      eventId={event.id}
+                      onSave={handleInlineSave}
+                      prefix="$"
+                      type="number"
+                      className="text-slate-600"
+                    />
+                  </span>
+                </div>
+
+                {/* Organizer (admin can reassign) */}
+                {user?.role === "admin" && (
+                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
+                    <span className="text-slate-400">Organizer:</span>
+                    <select
+                      value={event.organizerId}
+                      onChange={async (e) => {
+                        const nextOrganizerId = Number(e.target.value);
+                        try {
+                          await handleInlineSave(event.id, {
+                            organizerId: nextOrganizerId,
+                          });
+                        } catch {
+                          setError("Failed to reassign organizer.");
+                          e.target.value = String(event.organizerId);
+                        }
+                      }}
+                      className="cursor-pointer input-glass rounded-lg px-2 py-1 text-sm"
+                    >
+                      {organizers.map((org) => (
+                        <option key={org.id} value={org.id}>
+                          {org.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Category editing */}
+                {editingCategoriesFor !== event.id && (
+                  <div className="flex flex-wrap gap-1.5 mb-2 items-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCategoriesFor(event.id);
+                        setDraftCategoryIds(
+                          (eventCategoriesMap[event.id] || []).map((c) => c.id),
+                        );
+                      }}
+                      className="cursor-pointer rounded-full bg-white/60 text-slate-400 border border-slate-200 px-2.5 py-0.5 text-xs font-medium hover:bg-white/80 transition-colors"
+                    >
+                      + Edit Tags
+                    </button>
+                  </div>
+                )}
+                {editingCategoriesFor === event.id && (
+                  <div className="flex flex-wrap gap-2 mb-2 items-center">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() =>
+                          setDraftCategoryIds((prev) =>
+                            prev.includes(cat.id)
+                              ? prev.filter((id) => id !== cat.id)
+                              : [...prev, cat.id],
+                          )
+                        }
+                        className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium border transition-all duration-150 ${
+                          draftCategoryIds.includes(cat.id)
+                            ? "bg-[#1a4f3b] text-white border-[#1a4f3b]"
+                            : "bg-white text-slate-500 border-slate-200"
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await api.setEventCategories(
+                            event.id,
+                            draftCategoryIds,
+                          );
+                          setEditingCategoriesFor(null);
+                          await fetchEvents();
+                        } catch {
+                          setError("Failed to save categories.");
+                        }
+                      }}
+                      className="cursor-pointer rounded-full bg-accent px-3 py-1 text-xs font-semibold text-white hover:bg-accent-dark transition-colors"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingCategoriesFor(null)}
+                      className="cursor-pointer text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+
+                {/* Footer: attendee avatar stack + action buttons */}
+                <div className="flex justify-between items-center mt-auto pt-2">
+                  {/* Attendee avatar stack */}
+                  <div className="flex -space-x-2">
+                    {(attendeesMap[event.id] || []).slice(0, 3).map((att) => (
+                      <div
+                        key={att.ticketId}
+                        className="w-8 h-8 rounded-full border-2 border-white bg-brand-light text-[#1a4f3b] flex items-center justify-center text-xs font-bold"
+                        title={att.userName}
+                      >
+                        {att.userName?.charAt(0).toUpperCase()}
                       </div>
-                    ) : attendeesMap[event.id].length === 0 ? (
-                      <div className="text-slate-400 text-sm">
-                        No attendees yet.
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="bg-slate-50 text-left">
-                              <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-slate-500 rounded-tl-lg">
-                                Name
-                              </th>
-                              <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-slate-500">
-                                Email
-                              </th>
-                              <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-slate-500">
-                                Code
-                              </th>
-                              <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-slate-500">
-                                Checked In
-                              </th>
-                              <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-slate-500 rounded-tr-lg">
-                                Action
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-200">
-                            {attendeesMap[event.id].map((att) => (
-                              <tr
-                                key={att.ticketId}
-                                className="hover:bg-slate-50 transition-colors"
-                              >
-                                <td className="px-4 py-3 text-slate-900 font-medium">
-                                  {att.userName}
-                                </td>
-                                <td className="px-4 py-3 text-slate-500">
-                                  {att.userEmail}
-                                </td>
-                                <td className="px-4 py-3 font-mono text-indigo-600 font-bold">
-                                  {att.confirmationCode}
-                                </td>
-                                <td className="px-4 py-3">
-                                  {att.checkedIn ? (
-                                    <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
-                                      <svg
-                                        className="w-3.5 h-3.5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M5 13l4 4L19 7"
-                                        />
-                                      </svg>
-                                      Yes
-                                    </span>
-                                  ) : (
-                                    <span className="text-slate-400">No</span>
-                                  )}
-                                </td>
-                                <td className="px-4 py-3">
-                                  {!att.checkedIn && (
-                                    <button
-                                      onClick={() =>
-                                        handleCheckin(att.ticketId, event.id)
-                                      }
-                                      className="cursor-pointer rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 shadow-sm transition-colors"
-                                    >
-                                      Check In
-                                    </button>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                    ))}
+                    {(attendeesMap[event.id] || []).length > 3 && (
+                      <div className="w-8 h-8 rounded-full border-2 border-white bg-[#1a4f3b] text-white flex items-center justify-center text-xs font-bold z-10">
+                        +{(attendeesMap[event.id] || []).length - 3}
                       </div>
                     )}
                   </div>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleAttendees(event.id)}
+                      className="cursor-pointer bg-white/70 rounded-full border border-slate-200 shadow-sm px-4 py-2 text-sm font-medium text-slate-600 hover:bg-white transition-all duration-150"
+                    >
+                      {expandedEvent === event.id ? "Hide" : "Attendees"}
+                    </button>
+                    {event.status !== "cancelled" && (
+                      <button
+                        onClick={async () => {
+                          if (
+                            !confirm(
+                              "Are you sure you want to cancel this event?",
+                            )
+                          ) {
+                            return;
+                          }
+                          try {
+                            await api.updateEvent(event.id, {
+                              status: "cancelled",
+                            });
+                            await fetchEvents();
+                          } catch {
+                            setError("Failed to cancel event.");
+                          }
+                        }}
+                        className="cursor-pointer btn-danger rounded-full px-3 py-2 text-sm font-medium transition-all duration-150"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendees table (expandable) */}
+              {expandedEvent === event.id && (
+                <div className="border-t border-slate-200/60 p-4 animate-fade-in">
+                  {!attendeesMap[event.id] ? (
+                    <div className="text-slate-400 text-sm">
+                      Loading attendees...
+                    </div>
+                  ) : attendeesMap[event.id].length === 0 ? (
+                    <div className="text-slate-400 text-sm">
+                      No attendees yet.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-brand-glow/50 text-left">
+                            <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-slate-500 rounded-tl-lg">
+                              Name
+                            </th>
+                            <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-slate-500">
+                              Email
+                            </th>
+                            <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-slate-500">
+                              Code
+                            </th>
+                            <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-slate-500">
+                              Checked In
+                            </th>
+                            <th className="px-4 py-3 font-medium text-xs uppercase tracking-wider text-slate-500 rounded-tr-lg">
+                              Action
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200/60">
+                          {attendeesMap[event.id].map((att) => (
+                            <tr
+                              key={att.ticketId}
+                              className="hover:bg-white/50 transition-colors"
+                            >
+                              <td className="px-4 py-3 text-slate-900 font-medium">
+                                {att.userName}
+                              </td>
+                              <td className="px-4 py-3 text-slate-500">
+                                {att.userEmail}
+                              </td>
+                              <td className="px-4 py-3 font-mono text-[#1a4f3b] font-bold">
+                                {att.confirmationCode}
+                              </td>
+                              <td className="px-4 py-3">
+                                {att.checkedIn ? (
+                                  <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+                                    <svg
+                                      className="w-3.5 h-3.5"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M5 13l4 4L19 7"
+                                      />
+                                    </svg>
+                                    Yes
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400">No</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
+                                {!att.checkedIn && (
+                                  <button
+                                    onClick={() =>
+                                      handleCheckin(att.ticketId, event.id)
+                                    }
+                                    className="cursor-pointer rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-dark shadow-sm transition-all duration-150"
+                                  >
+                                    Check In
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
+
+          </div>{/* end left column */}
+
+          {/* ---- Right sidebar: Upcoming This Week + Quick Actions ---- */}
+          <aside className="hidden xl:flex flex-col gap-6 w-80 shrink-0">
+            {/* Upcoming This Week */}
+            <div className="glass-heavy rounded-2xl p-6">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
+                Upcoming This Week
+              </h3>
+              <div className="space-y-3">
+                {events
+                  .filter((e) => {
+                    const start = new Date(e.startTime);
+                    const now = new Date();
+                    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                    return e.status === "upcoming" && start >= now && start <= weekFromNow;
+                  })
+                  .slice(0, 5)
+                  .map((e) => (
+                    <div key={e.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/50 transition-colors cursor-pointer">
+                      <div className="w-10 h-10 rounded-xl bg-brand-glow flex items-center justify-center text-[#1a4f3b] shrink-0">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 truncate">{e.title}</p>
+                        <p className="text-xs text-slate-500">
+                          {new Date(e.startTime).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                          {" "}
+                          {new Date(e.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                        </p>
+                        <p className="text-xs text-slate-400 truncate">{e.location}</p>
+                      </div>
+                    </div>
+                  ))}
+                {events.filter((e) => {
+                  const start = new Date(e.startTime);
+                  const now = new Date();
+                  const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                  return e.status === "upcoming" && start >= now && start <= weekFromNow;
+                }).length === 0 && (
+                  <p className="text-sm text-slate-400 text-center py-4">No events this week</p>
                 )}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="glass-heavy rounded-2xl p-6">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
+                Quick Actions
+              </h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-700 hover:bg-white/50 transition-colors text-left"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-brand-glow flex items-center justify-center text-[#1a4f3b]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                  Create New Event
+                </button>
+                <a
+                  href="/events"
+                  className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-700 hover:bg-white/50 transition-colors text-left"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-brand-glow flex items-center justify-center text-[#1a4f3b]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  Browse All Events
+                </a>
+                <a
+                  href="/my-tickets"
+                  className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-700 hover:bg-white/50 transition-colors text-left"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-brand-glow flex items-center justify-center text-[#1a4f3b]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                    </svg>
+                  </div>
+                  View Tickets
+                </a>
+              </div>
+            </div>
+
+            {/* Event Stats Summary */}
+            <div className="glass-heavy rounded-2xl p-6">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
+                At a Glance
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Active Events</span>
+                  <span className="text-sm font-bold text-slate-900">{events.filter(e => e.status === "upcoming" || e.status === "ongoing").length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Completed</span>
+                  <span className="text-sm font-bold text-slate-900">{events.filter(e => e.status === "completed").length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Cancelled</span>
+                  <span className="text-sm font-bold text-slate-900">{events.filter(e => e.status === "cancelled").length}</span>
+                </div>
+                <div className="border-t border-slate-200/60 pt-3 flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-700">Total</span>
+                  <span className="text-sm font-bold text-[#1a4f3b]">{events.length}</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+        </div>{/* end flex row */}
+      </div>{/* end scrollable area */}
     </div>
   );
 }

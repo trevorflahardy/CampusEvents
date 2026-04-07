@@ -4,10 +4,10 @@ import { api, ApiError, type EventDetail as EventDetailType } from "../lib/api";
 import { useAuth } from "../context/useAuth";
 
 const statusColors: Record<string, string> = {
-  upcoming: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  ongoing: "bg-blue-50 text-blue-700 border border-blue-200",
-  completed: "bg-slate-100 text-slate-500 border border-slate-200",
-  cancelled: "bg-red-50 text-red-600 border border-red-200",
+  upcoming: "badge-success",
+  ongoing: "badge-info",
+  completed: "badge-neutral",
+  cancelled: "badge-danger",
 };
 
 function formatDateTime(dateStr: string): string {
@@ -124,7 +124,7 @@ function EditableField({
 
   if (editing) {
     const baseInput =
-      "w-full rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-sm text-slate-800 outline-none ring-2 ring-indigo-200 focus:ring-indigo-400 transition-shadow " +
+      "w-full rounded-lg border border-[#2b5c50]/30 bg-white px-3 py-1.5 text-sm text-slate-800 outline-none ring-2 ring-accent/20 focus:ring-[#1a4f3b]/40 transition-shadow " +
       inputClassName;
 
     if (type === "textarea") {
@@ -165,12 +165,12 @@ function EditableField({
   return (
     <span
       onClick={() => setEditing(true)}
-      className={`group/edit cursor-pointer inline-flex items-center gap-1.5 rounded-md transition-colors hover:bg-indigo-50 px-1 -mx-1 ${className}`}
+      className={`group/edit cursor-pointer inline-flex items-center gap-1.5 rounded-md transition-colors hover:bg-brand-glow px-1 -mx-1 ${className}`}
       title="Click to edit"
     >
       {displayValue ?? value}
       <svg
-        className="w-3.5 h-3.5 text-indigo-400 opacity-0 group-hover/edit:opacity-100 transition-opacity shrink-0"
+        className="w-3.5 h-3.5 text-accent opacity-0 group-hover/edit:opacity-100 transition-opacity shrink-0"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -254,14 +254,14 @@ export default function EventDetail() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto animate-fade-in">
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
+      <div className="bg-mesh min-h-full max-w-3xl mx-auto animate-fade-in">
+        <div className="glass-heavy rounded-2xl p-8">
           <div className="skeleton h-8 w-2/3 mb-6" />
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="skeleton h-16 rounded-xl" />
-            <div className="skeleton h-16 rounded-xl" />
-            <div className="skeleton h-16 rounded-xl" />
-            <div className="skeleton h-16 rounded-xl" />
+            <div className="skeleton h-16 rounded-2xl" />
+            <div className="skeleton h-16 rounded-2xl" />
+            <div className="skeleton h-16 rounded-2xl" />
+            <div className="skeleton h-16 rounded-2xl" />
           </div>
           <div className="skeleton h-4 w-full mb-2" />
           <div className="skeleton h-4 w-3/4" />
@@ -272,9 +272,9 @@ export default function EventDetail() {
 
   if (error || !event) {
     return (
-      <div className="text-center py-20">
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-10 inline-block">
-          <div className="w-14 h-14 rounded-xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+      <div className="bg-mesh min-h-full text-center py-20">
+        <div className="glass-heavy rounded-2xl p-10 inline-block">
+          <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
             <svg
               className="w-7 h-7 text-red-500"
               fill="none"
@@ -311,10 +311,10 @@ export default function EventDetail() {
     event.status !== "completed";
 
   return (
-    <div className="max-w-3xl mx-auto animate-fade-in">
+    <div className="bg-mesh min-h-full max-w-3xl mx-auto animate-fade-in">
       <Link
         to="/events"
-        className="cursor-pointer inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 font-medium mb-6 transition-colors"
+        className="cursor-pointer inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#1a4f3b] font-medium mb-6 transition-colors"
       >
         <svg
           className="w-4 h-4"
@@ -334,7 +334,7 @@ export default function EventDetail() {
 
       {/* Editor Banner */}
       {canEdit && (
-        <div className="mb-4 flex items-center gap-2.5 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm text-indigo-700">
+        <div className="mb-4 flex items-center gap-2.5 rounded-lg border border-brand-light bg-brand-glow px-4 py-2.5 text-sm text-[#1a4f3b]">
           <svg
             className="w-4 h-4 shrink-0"
             fill="none"
@@ -354,7 +354,7 @@ export default function EventDetail() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 md:p-10">
+      <div className="glass-heavy rounded-2xl p-8 md:p-10">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-8">
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
@@ -369,7 +369,7 @@ export default function EventDetail() {
             />
           </h1>
           <span
-            className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${statusColors[event.status] || "bg-slate-100 text-slate-500 border border-slate-200"}`}
+            className={`badge shrink-0 uppercase tracking-wide ${statusColors[event.status] || "badge-neutral"}`}
           >
             {event.status}
           </span>
@@ -378,10 +378,10 @@ export default function EventDetail() {
         {/* Info Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
           {/* Start Time */}
-          <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+          <div className="glass-subtle rounded-2xl p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-brand-glow flex items-center justify-center shrink-0">
               <svg
-                className="w-4.5 h-4.5 text-indigo-500"
+                className="w-4.5 h-4.5 text-[#1a4f3b]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -412,10 +412,10 @@ export default function EventDetail() {
           </div>
 
           {/* End Time */}
-          <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+          <div className="glass-subtle rounded-2xl p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-brand-glow flex items-center justify-center shrink-0">
               <svg
-                className="w-4.5 h-4.5 text-blue-500"
+                className="w-4.5 h-4.5 text-[#1a4f3b]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -446,10 +446,10 @@ export default function EventDetail() {
           </div>
 
           {/* Location */}
-          <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+          <div className="glass-subtle rounded-2xl p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-brand-glow flex items-center justify-center shrink-0">
               <svg
-                className="w-4.5 h-4.5 text-emerald-500"
+                className="w-4.5 h-4.5 text-[#1a4f3b]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -484,10 +484,10 @@ export default function EventDetail() {
           </div>
 
           {/* Organizer (read-only always) */}
-          <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+          <div className="glass-subtle rounded-2xl p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-brand-glow flex items-center justify-center shrink-0">
               <svg
-                className="w-4.5 h-4.5 text-amber-500"
+                className="w-4.5 h-4.5 text-[#1a4f3b]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -512,7 +512,7 @@ export default function EventDetail() {
         </div>
 
         {/* Price & Capacity Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-8 p-5 rounded-xl bg-slate-50 border border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-8 p-5 glass-subtle rounded-2xl">
           {/* Price */}
           <div className="shrink-0">
             <div className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">
@@ -526,7 +526,7 @@ export default function EventDetail() {
               onSaved={fetchEvent}
               type="number"
               displayValue={formatPrice(event.ticketPrice)}
-              className="text-2xl font-extrabold text-indigo-600"
+              className="text-2xl font-extrabold text-[#1a4f3b]"
               inputClassName="text-lg font-bold"
             />
           </div>
@@ -616,7 +616,7 @@ export default function EventDetail() {
               {event.categories.map((cat) => (
                 <span
                   key={cat.id}
-                  className="rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 px-3 py-1 text-sm font-medium"
+                  className="rounded-md bg-brand-glow text-[#1a4f3b] border border-brand-light px-3 py-1 text-xs font-bold uppercase tracking-wider"
                 >
                   {cat.name}
                 </span>
@@ -634,7 +634,7 @@ export default function EventDetail() {
             <button
               onClick={handleBookTicket}
               disabled={booking}
-              className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-xl transition-colors shadow-sm disabled:opacity-50"
+              className="cursor-pointer btn-primary font-bold px-8 py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {booking ? (
                 <span className="flex items-center gap-2">
@@ -665,7 +665,7 @@ export default function EventDetail() {
             <button
               onClick={handleCancelEvent}
               disabled={cancelling}
-              className="cursor-pointer rounded-xl px-6 py-3 font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50"
+              className="cursor-pointer btn-danger rounded-full px-6 py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {cancelling ? (
                 <span className="flex items-center gap-2">
