@@ -67,7 +67,8 @@ export default function BrowseEvents() {
       />
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-      <div className="flex items-end justify-between mb-8">
+
+      <div className="flex items-end justify-between mb-5">
         <div>
           <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
             Events
@@ -79,7 +80,7 @@ export default function BrowseEvents() {
       </div>
 
       {/* Filter Bar */}
-      <div className="glass-heavy rounded-2xl p-5 mb-8">
+      <div className="mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <select
             value={categoryId}

@@ -27,7 +27,7 @@ export default function Register() {
     setSubmitting(true);
     try {
       await register({ netId, name, email, password, role });
-      navigate("/events");
+      navigate("/dashboard");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -40,14 +40,9 @@ export default function Register() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{
-        background:
-          "radial-gradient(circle at 20% 0%, #908276 0%, #5c5d63 40%, #25272c 80%, #1b1c20 100%)",
-      }}
-    >
+    <div className="bg-mesh min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md animate-fade-in">
+        {/* Brand header */}
         <div className="text-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-[#1a4f3b] flex items-center justify-center mx-auto mb-4 shadow-[0_4px_20px_rgba(26,79,59,0.4)]">
             <svg
@@ -64,13 +59,19 @@ export default function Register() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white">Create account</h1>
-          <p className="text-gray-300 mt-1 text-sm">Join CampusEvents today</p>
+          <h1 className="text-2xl font-bold text-slate-800">Create account</h1>
+          <p className="text-slate-500 mt-1 text-sm">
+            Join CampusEvents today
+          </p>
         </div>
 
-        <div className="glass-heavy rounded-2xl p-8">
+        {/* Glass form card */}
+        <div className="glass-heavy rounded-2xl p-8 animate-fade-in stagger-1">
           {error && (
-            <div role="alert" className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-5 text-sm font-medium">
+            <div
+              role="alert"
+              className="badge-danger rounded-xl p-3 mb-5 text-sm font-medium"
+            >
               {error}
             </div>
           )}
@@ -90,7 +91,7 @@ export default function Register() {
                   required
                   value={netId}
                   onChange={(e) => setNetId(e.target.value)}
-                  className="w-full input-glass rounded-xl px-4 py-2.5 text-sm"
+                  className="w-full input-glass rounded-xl px-4 py-2.5 text-sm placeholder-slate-400"
                   placeholder="U12345678"
                 />
               </div>
@@ -125,7 +126,7 @@ export default function Register() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm"
+                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm placeholder-slate-400"
                 placeholder="John Doe"
               />
             </div>
@@ -142,7 +143,7 @@ export default function Register() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm"
+                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm placeholder-slate-400"
                 placeholder="you@usf.edu"
               />
             </div>
@@ -159,7 +160,7 @@ export default function Register() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm"
+                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm placeholder-slate-400"
                 placeholder="Choose a password"
               />
             </div>
@@ -176,14 +177,14 @@ export default function Register() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm"
+                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm placeholder-slate-400"
                 placeholder="Repeat your password"
               />
             </div>
             <button
               type="submit"
               disabled={submitting}
-              className="cursor-pointer w-full btn-primary text-white font-bold py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cursor-pointer w-full btn-primary font-bold py-3 rounded-full text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <span className="flex items-center justify-center gap-2">
@@ -197,11 +198,12 @@ export default function Register() {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-300">
+        {/* Footer link */}
+        <p className="mt-6 text-center text-sm text-slate-500 animate-fade-in stagger-2">
           Already have an account?{" "}
           <Link
             to="/login"
-            className="text-brand-light hover:text-white font-semibold transition-colors"
+            className="text-[#1a4f3b] hover:text-[#2f6d56] font-semibold transition-colors"
           >
             Sign in
           </Link>

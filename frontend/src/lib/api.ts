@@ -145,6 +145,8 @@ export interface Event {
   createdAt: string;
   organizerName: string;
   bannerUrl: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   categories?: Category[];
 }
 
@@ -169,6 +171,8 @@ export interface CreateEventData {
   capacity: number;
   ticketPrice?: string;
   organizerId: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface Ticket {
