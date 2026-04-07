@@ -687,6 +687,109 @@ select:focus-visible {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* ─── Mapbox SearchBox overrides ─── */
+
+/* Light mode */
+[class*="mapboxgl-ctrl-geocoder"],
+.mapboxgl-ctrl-geocoder,
+.SearchBox > div,
+div[class*="SearchBox"] > div:first-child,
+.--darkmode > div:first-child {
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(12px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
+  border: 1px solid rgba(226, 232, 240, 0.5) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: none !important;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
+}
+
+div[class*="SearchBox"] input,
+.mapboxgl-ctrl-geocoder input {
+  background: transparent !important;
+  color: #334155 !important;
+  font-size: 0.875rem !important;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
+}
+
+div[class*="SearchBox"] input:focus,
+.mapboxgl-ctrl-geocoder input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+div[class*="SearchBox"] input::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* SearchBox suggestions dropdown */
+div[class*="SearchBox"] [class*="suggestions"],
+div[class*="SearchBox"] [class*="Results"],
+div[class*="SearchBox"] ul {
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+  margin-top: 4px !important;
+  overflow: hidden !important;
+}
+
+div[class*="SearchBox"] [class*="suggestions"] li,
+div[class*="SearchBox"] [class*="Results"] li,
+div[class*="SearchBox"] ul li {
+  font-size: 0.875rem !important;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
+  color: #334155 !important;
+}
+
+div[class*="SearchBox"] li[aria-selected="true"],
+div[class*="SearchBox"] li:hover {
+  background: rgba(26, 79, 59, 0.08) !important;
+}
+
+/* Dark mode */
+.dark div[class*="SearchBox"] > div:first-child,
+.dark .mapboxgl-ctrl-geocoder {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark div[class*="SearchBox"] input,
+.dark .mapboxgl-ctrl-geocoder input {
+  color: #e2e8f0 !important;
+}
+
+.dark div[class*="SearchBox"] input::placeholder {
+  color: #64748b !important;
+}
+
+.dark div[class*="SearchBox"] [class*="suggestions"],
+.dark div[class*="SearchBox"] [class*="Results"],
+.dark div[class*="SearchBox"] ul {
+  background: rgba(15, 20, 25, 0.92) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark div[class*="SearchBox"] [class*="suggestions"] li,
+.dark div[class*="SearchBox"] [class*="Results"] li,
+.dark div[class*="SearchBox"] ul li {
+  color: #e2e8f0 !important;
+}
+
+.dark div[class*="SearchBox"] li[aria-selected="true"],
+.dark div[class*="SearchBox"] li:hover {
+  background: rgba(52, 211, 153, 0.12) !important;
+}
+
+/* SearchBox SVG icons */
+.dark div[class*="SearchBox"] svg {
+  fill: #94a3b8 !important;
+  color: #94a3b8 !important;
+}
+
 /* Dark mode: all body text is light; glass panels are dark, not white */
 .dark body {
   color: #e2e8f0;
