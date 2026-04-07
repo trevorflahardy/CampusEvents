@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 const roleBadgeClasses: Record<string, string> = {
   admin: "bg-violet-500/10 text-violet-600 border border-violet-500/20",

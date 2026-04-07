@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api, ApiError, type EventDetail as EventDetailType } from "../lib/api";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 const statusColors: Record<string, string> = {
   upcoming: "bg-emerald-50 text-emerald-700 border border-emerald-200",
