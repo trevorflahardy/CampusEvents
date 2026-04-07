@@ -427,6 +427,28 @@ body {
   background: #94a3b8;
 }
 
+/* ─── Focus ─── */
+.glass:focus-visible,
+.glass-heavy:focus-visible,
+.glass-subtle:focus-visible {
+  outline: 2px solid #1a4f3b;
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+select:focus-visible {
+  outline: 2px solid #1a4f3b;
+  outline-offset: 2px;
+}
+
+.dark button:focus-visible,
+.dark a:focus-visible,
+.dark select:focus-visible {
+  outline: 2px solid #2f6d56;
+  outline-offset: 2px;
+}
+
 /* ─── Dark Mode ─── */
 
 .dark .bg-mesh {

@@ -37,6 +37,9 @@ export default function AdminPanel() {
   const [error, setError] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [categoryError, setCategoryError] = useState("");
+  const [cancellingEventId, setCancellingEventId] = useState<number | null>(null);
+  const [changingRoleUserId, setChangingRoleUserId] = useState<number | null>(null);
+  const [addingCategory, setAddingCategory] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -63,6 +66,7 @@ export default function AdminPanel() {
   };
 
   const handleRoleChange = async (userId: number, newRole: string) => {
+    setChangingRoleUserId(userId);
     try {
       await api.updateUserRole(userId, newRole);
       setUsers((prev) =>
@@ -74,6 +78,8 @@ export default function AdminPanel() {
       );
     } catch {
       setError("Failed to update role.");
+    } finally {
+      setChangingRoleUserId(null);
     }
   };
 
@@ -81,6 +87,7 @@ export default function AdminPanel() {
     e.preventDefault();
     setCategoryError("");
     if (!newCategoryName.trim()) return;
+    setAddingCategory(true);
     try {
       const cat = await api.createCategory(newCategoryName.trim());
       setCategories((prev) => [...prev, cat]);
@@ -88,6 +95,8 @@ export default function AdminPanel() {
     } catch (err) {
       if (err instanceof ApiError) setCategoryError(err.message);
       else setCategoryError("Failed to add category.");
+    } finally {
+      setAddingCategory(false);
     }
   };
 
@@ -122,7 +131,7 @@ export default function AdminPanel() {
       </h1>
 
       {error && (
-        <div className="glass-heavy rounded-2xl p-4 mb-6 border-l-4 border-red-400">
+        <div role="alert" className="glass-heavy rounded-2xl p-4 mb-6 border-l-4 border-red-400">
           <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
@@ -200,8 +209,9 @@ export default function AdminPanel() {
                     <td className="px-6 py-4">
                       <select
                         value={u.role}
+                        disabled={changingRoleUserId === u.id}
                         onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                        className="cursor-pointer input-modern rounded-lg px-3 py-1.5 text-sm font-medium"
+                        className="cursor-pointer input-modern rounded-lg px-3 py-1.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option value="student">student</option>
                         <option value="organizer">organizer</option>
@@ -268,8 +278,10 @@ export default function AdminPanel() {
                     <td className="px-6 py-4">
                       {e.status !== "cancelled" ? (
                         <button
+                          disabled={cancellingEventId === e.id}
                           onClick={async () => {
                             if (!confirm("Cancel this event?")) return;
+                            setCancellingEventId(e.id);
                             try {
                               await api.updateEvent(e.id, {
                                 status: "cancelled",
@@ -286,11 +298,20 @@ export default function AdminPanel() {
                               );
                             } catch {
                               setError("Failed to cancel event.");
+                            } finally {
+                              setCancellingEventId(null);
                             }
                           }}
-                          className="cursor-pointer btn-danger rounded-full px-3 py-1.5 text-sm font-semibold transition-all duration-150"
+                          className="cursor-pointer btn-danger rounded-full px-3 py-1.5 text-sm font-semibold transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Cancel
+                          {cancellingEventId === e.id ? (
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                              Cancelling...
+                            </span>
+                          ) : (
+                            "Cancel"
+                          )}
                         </button>
                       ) : (
                         <span className="text-xs text-slate-400 font-medium">
@@ -314,7 +335,7 @@ export default function AdminPanel() {
               Add Category
             </h2>
             {categoryError && (
-              <div className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-4 text-sm font-medium">
+              <div role="alert" className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-4 text-sm font-medium">
                 {categoryError}
               </div>
             )}
@@ -329,9 +350,17 @@ export default function AdminPanel() {
               />
               <button
                 type="submit"
-                className="cursor-pointer btn-primary text-white font-bold px-6 py-2.5 rounded-full"
+                disabled={addingCategory}
+                className="cursor-pointer btn-primary text-white font-bold px-6 py-2.5 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add
+                {addingCategory ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Adding...
+                  </span>
+                ) : (
+                  "Add"
+                )}
               </button>
             </form>
           </div>

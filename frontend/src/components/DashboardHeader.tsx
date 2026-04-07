@@ -55,6 +55,7 @@ export default function DashboardHeader({
         <button
           className="cursor-pointer p-2 rounded-full hover:bg-white/50 text-gray-500 transition-colors"
           title="Notifications"
+          aria-label="Notifications"
         >
           <svg
             className="w-6 h-6"
@@ -75,6 +76,7 @@ export default function DashboardHeader({
         <button
           className="cursor-pointer p-2 rounded-full hover:bg-white/50 text-gray-500 transition-colors"
           title="Settings"
+          aria-label="Settings"
         >
           <svg
             className="w-6 h-6"
@@ -101,6 +103,7 @@ export default function DashboardHeader({
           onClick={toggle}
           className="cursor-pointer p-2 rounded-full hover:bg-white/50 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 transition-colors"
           title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+          aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
         >
           {theme === "light" ? (
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>

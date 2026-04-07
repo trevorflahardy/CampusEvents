@@ -113,7 +113,7 @@ export default function Navbar() {
             </div>
             <div className="min-w-0">
               <h2 className="font-semibold text-sm leading-tight truncate">{user.name}</h2>
-              <p className="text-[11px] text-slate-500 capitalize">{user.role}</p>
+              <p className="text-xs text-slate-500 capitalize">{user.role}</p>
             </div>
           </div>
         ) : (
@@ -129,6 +129,7 @@ export default function Navbar() {
               key={item.path}
               to={item.path}
               className={desktopLinkClasses(item.path)}
+              aria-current={isActive(item.path) ? "page" : undefined}
             >
               {item.icon}
               {item.label}
@@ -202,6 +203,7 @@ export default function Navbar() {
               key={item.path}
               to={item.path}
               className={mobileLinkClasses(item.path)}
+              aria-current={isActive(item.path) ? "page" : undefined}
             >
               <span className="[&>svg]:w-6 [&>svg]:h-6">{item.icon}</span>
               <span className="text-xs font-medium mt-0.5">{item.label}</span>

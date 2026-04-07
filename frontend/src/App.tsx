@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -18,11 +19,33 @@ const STANDALONE_ROUTES = ["/", "/login", "/register"];
 function AppLayout() {
   const location = useLocation();
   const isStandalone = STANDALONE_ROUTES.includes(location.pathname);
+  const mainRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Set page title
+    const titles: Record<string, string> = {
+      "/": "Home",
+      "/events": "Events",
+      "/login": "Sign In",
+      "/register": "Create Account",
+      "/my-tickets": "My Tickets",
+      "/dashboard": "Dashboard",
+      "/admin": "Admin Panel",
+    };
+    const base = "CampusEvents";
+    const pageTitle = titles[location.pathname] || "Page";
+    document.title = location.pathname === "/" ? base : `${pageTitle} - ${base}`;
+
+    // Move focus to main content for screen readers
+    if (mainRef.current) {
+      mainRef.current.focus();
+    }
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-mesh">
       {!isStandalone && <Navbar />}
-      <div className={isStandalone ? "" : "md:ml-64"}>
+      <div ref={mainRef} tabIndex={-1} className={`outline-none ${isStandalone ? "" : "md:ml-64"}`}>
         <Routes>
           {/* Standalone pages — no sidebar */}
           <Route path="/" element={<Landing />} />

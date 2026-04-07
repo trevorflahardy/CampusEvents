@@ -85,6 +85,7 @@ export default function BrowseEvents() {
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
             className="cursor-pointer w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
+            aria-label="Filter by category"
           >
             <option value="">All Categories</option>
             {categories.map((c) => (
@@ -98,17 +99,20 @@ export default function BrowseEvents() {
             value={from}
             onChange={(e) => setFrom(e.target.value)}
             className="w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
+            aria-label="Start date filter"
           />
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
             className="w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
+            aria-label="End date filter"
           />
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
             className="cursor-pointer w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
+            aria-label="Filter by status"
           >
             <option value="">All Statuses</option>
             <option value="upcoming">Upcoming</option>

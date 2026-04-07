@@ -244,6 +244,8 @@ export default function OrganizerDashboard() {
     {},
   );
   const [expandedEvent, setExpandedEvent] = useState<number | null>(null);
+  const [cancellingEventId, setCancellingEventId] = useState<number | null>(null);
+  const [checkingInTicketId, setCheckingInTicketId] = useState<number | null>(null);
 
   /* ---------- data fetching ---------- */
 
@@ -353,12 +355,15 @@ export default function OrganizerDashboard() {
   };
 
   const handleCheckin = async (ticketId: number, eventId: number) => {
+    setCheckingInTicketId(ticketId);
     try {
       await api.checkinTicket(ticketId);
       const data = await api.getEventTickets(eventId);
       setAttendeesMap((prev) => ({ ...prev, [eventId]: data }));
     } catch {
       setError("Failed to check in attendee.");
+    } finally {
+      setCheckingInTicketId(null);
     }
   };
 
@@ -443,7 +448,7 @@ export default function OrganizerDashboard() {
 
       {/* ---- error banner ---- */}
       {error && (
-        <div className="glass-heavy rounded-2xl p-4 border-l-4 border-l-red-400 mb-6 animate-fade-in">
+        <div role="alert" className="glass-heavy rounded-2xl p-4 border-l-4 border-l-red-400 mb-6 animate-fade-in">
           <p className="text-red-600 text-sm font-medium">{error}</p>
         </div>
       )}
@@ -485,7 +490,7 @@ export default function OrganizerDashboard() {
           <h2 className="text-xl font-bold text-slate-900 mb-6">New Event</h2>
 
           {formError && (
-            <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 mb-5 text-sm font-medium">
+            <div role="alert" className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 mb-5 text-sm font-medium">
               {formError}
             </div>
           )}
@@ -623,7 +628,14 @@ export default function OrganizerDashboard() {
               disabled={submitting}
               className="cursor-pointer btn-primary rounded-full px-8 py-3 font-bold text-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? "Creating..." : "Create Event"}
+              {submitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Creating...
+                </span>
+              ) : (
+                "Create Event"
+              )}
             </button>
           </form>
         </div>
@@ -647,10 +659,32 @@ export default function OrganizerDashboard() {
 
       {/* ---- events grid ---- */}
       {filteredEvents.length === 0 ? (
-        <div className="glass-heavy rounded-2xl text-center py-16 text-slate-400">
-          {searchQuery.trim()
-            ? "No events match your search."
-            : "You haven't created any events yet."}
+        <div className="glass-heavy rounded-2xl text-center py-16 px-8">
+          <div className="w-14 h-14 rounded-2xl bg-brand-glow flex items-center justify-center mx-auto mb-4">
+            <svg className="w-7 h-7 text-[#1a4f3b]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          {searchQuery.trim() ? (
+            <>
+              <p className="text-lg font-semibold text-slate-700 mb-1">No events match your search</p>
+              <p className="text-slate-500 text-sm">Try a different search term.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-semibold text-slate-700 mb-1">No events yet</p>
+              <p className="text-slate-500 text-sm mb-5">Create your first event to get started.</p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="cursor-pointer btn-primary rounded-full px-6 py-2.5 text-sm font-bold inline-flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Create Your First Event
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -884,6 +918,7 @@ export default function OrganizerDashboard() {
                     </button>
                     {event.status !== "cancelled" && (
                       <button
+                        disabled={cancellingEventId === event.id}
                         onClick={async () => {
                           if (
                             !confirm(
@@ -892,6 +927,7 @@ export default function OrganizerDashboard() {
                           ) {
                             return;
                           }
+                          setCancellingEventId(event.id);
                           try {
                             await api.updateEvent(event.id, {
                               status: "cancelled",
@@ -899,11 +935,20 @@ export default function OrganizerDashboard() {
                             await fetchEvents();
                           } catch {
                             setError("Failed to cancel event.");
+                          } finally {
+                            setCancellingEventId(null);
                           }
                         }}
-                        className="cursor-pointer btn-danger rounded-full px-3 py-2 text-sm font-medium transition-all duration-150"
+                        className="cursor-pointer btn-danger rounded-full px-3 py-2 text-sm font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Cancel
+                        {cancellingEventId === event.id ? (
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                            Cancelling...
+                          </span>
+                        ) : (
+                          "Cancel"
+                        )}
                       </button>
                     )}
                   </div>
@@ -983,12 +1028,20 @@ export default function OrganizerDashboard() {
                               <td className="px-4 py-3">
                                 {!att.checkedIn && (
                                   <button
+                                    disabled={checkingInTicketId === att.ticketId}
                                     onClick={() =>
                                       handleCheckin(att.ticketId, event.id)
                                     }
-                                    className="cursor-pointer rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-dark shadow-sm transition-all duration-150"
+                                    className="cursor-pointer rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-dark shadow-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
-                                    Check In
+                                    {checkingInTicketId === att.ticketId ? (
+                                      <span className="flex items-center gap-1.5">
+                                        <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Checking in...
+                                      </span>
+                                    ) : (
+                                      "Check In"
+                                    )}
                                   </button>
                                 )}
                               </td>

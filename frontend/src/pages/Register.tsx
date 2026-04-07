@@ -70,7 +70,7 @@ export default function Register() {
 
         <div className="glass-heavy rounded-2xl p-8">
           {error && (
-            <div className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-5 text-sm font-medium">
+            <div role="alert" className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-5 text-sm font-medium">
               {error}
             </div>
           )}
@@ -183,7 +183,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={submitting}
-              className="cursor-pointer w-full btn-primary text-white font-bold py-3 rounded-full"
+              className="cursor-pointer w-full btn-primary text-white font-bold py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <span className="flex items-center justify-center gap-2">
