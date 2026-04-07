@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { api } from "../../lib/api";
 import EventLocationPicker from "../EventLocationPicker";
 
@@ -52,10 +53,10 @@ export default function LocationEditModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-12 pb-8 overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
       <div className="fixed inset-0 bg-black/70 backdrop-blur-xl" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-xl mx-4 glass-heavy rounded-3xl p-6 animate-fade-in shadow-2xl">
+      <div className="relative z-10 w-full max-w-xl glass-heavy rounded-3xl p-6 animate-fade-in shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -98,6 +99,7 @@ export default function LocationEditModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
