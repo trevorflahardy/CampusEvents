@@ -1,5 +1,18 @@
-import { useState, useEffect, useRef, useCallback, type FormEvent } from "react";
-import { api, ApiError, type Event, type Category, type Attendee, type User } from "../lib/api";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  type FormEvent,
+} from "react";
+import {
+  api,
+  ApiError,
+  type Event,
+  type Category,
+  type Attendee,
+  type User,
+} from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
 /* ------------------------------------------------------------------ */
@@ -93,8 +106,7 @@ function InlineField({
     }
     setSaving(true);
     try {
-      const patchValue =
-        type === "number" ? Number(trimmed) : trimmed;
+      const patchValue = type === "number" ? Number(trimmed) : trimmed;
       await onSave(eventId, { [field]: patchValue });
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);
@@ -156,7 +168,9 @@ function InlineField({
         {value || <span className="text-slate-300 italic">empty</span>}
       </span>
       {saved ? (
-        <span className="text-emerald-600 text-xs font-medium whitespace-nowrap">Saved</span>
+        <span className="text-emerald-600 text-xs font-medium whitespace-nowrap">
+          Saved
+        </span>
       ) : (
         <PencilIcon />
       )}
@@ -181,7 +195,9 @@ function StatCard({ label, value, icon }: StatCardProps) {
         {icon}
       </div>
       <div>
-        <p className="text-2xl font-bold text-slate-900 leading-none">{value}</p>
+        <p className="text-2xl font-bold text-slate-900 leading-none">
+          {value}
+        </p>
         <p className="text-sm text-slate-500 mt-0.5">{label}</p>
       </div>
     </div>
@@ -213,15 +229,21 @@ export default function OrganizerDashboard() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
 
   // per-event categories
-  const [eventCategoriesMap, setEventCategoriesMap] = useState<Record<number, Category[]>>({});
-  const [editingCategoriesFor, setEditingCategoriesFor] = useState<number | null>(null);
+  const [eventCategoriesMap, setEventCategoriesMap] = useState<
+    Record<number, Category[]>
+  >({});
+  const [editingCategoriesFor, setEditingCategoriesFor] = useState<
+    number | null
+  >(null);
   const [draftCategoryIds, setDraftCategoryIds] = useState<number[]>([]);
 
   // organizers (for admin reassignment)
   const [organizers, setOrganizers] = useState<User[]>([]);
 
   // attendees
-  const [attendeesMap, setAttendeesMap] = useState<Record<number, Attendee[]>>({});
+  const [attendeesMap, setAttendeesMap] = useState<Record<number, Attendee[]>>(
+    {},
+  );
   const [expandedEvent, setExpandedEvent] = useState<number | null>(null);
 
   /* ---------- data fetching ---------- */
@@ -229,9 +251,10 @@ export default function OrganizerDashboard() {
   const fetchEvents = useCallback(async () => {
     try {
       const data = await api.getEvents();
-      const filtered = user?.role === "admin"
-        ? data
-        : data.filter((e) => e.organizerId === user?.id);
+      const filtered =
+        user?.role === "admin"
+          ? data
+          : data.filter((e) => e.organizerId === user?.id);
       setEvents(filtered);
       // Load categories for each event
       const catMap: Record<number, Category[]> = {};
@@ -250,12 +273,20 @@ export default function OrganizerDashboard() {
   }, [user]);
 
   useEffect(() => {
-    api.getCategories().then(setCategories).catch(() => {});
+    api
+      .getCategories()
+      .then(setCategories)
+      .catch(() => {});
     fetchEvents();
     if (user?.role === "admin") {
-      api.getUsers().then((users) =>
-        setOrganizers(users.filter((u) => u.role === "organizer" || u.role === "admin"))
-      ).catch(() => {});
+      api
+        .getUsers()
+        .then((users) =>
+          setOrganizers(
+            users.filter((u) => u.role === "organizer" || u.role === "admin"),
+          ),
+        )
+        .catch(() => {});
     }
   }, [fetchEvents, user]);
 
@@ -353,14 +384,20 @@ export default function OrganizerDashboard() {
         <div className="skeleton h-8 w-56" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <div
+              key={i}
+              className="bg-white rounded-xl border border-slate-200 shadow-sm p-5"
+            >
               <div className="skeleton h-6 w-12 mb-2" />
               <div className="skeleton h-4 w-24" />
             </div>
           ))}
         </div>
         {[1, 2].map((i) => (
-          <div key={i} className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <div
+            key={i}
+            className="bg-white rounded-xl border border-slate-200 shadow-sm p-6"
+          >
             <div className="skeleton h-5 w-1/3 mb-3" />
             <div className="skeleton h-4 w-1/2" />
           </div>
@@ -375,7 +412,9 @@ export default function OrganizerDashboard() {
     <div className="animate-fade-in space-y-8">
       {/* ---- header ---- */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          Dashboard
+        </h1>
         <button
           onClick={() => setShowForm(!showForm)}
           className={`cursor-pointer rounded-xl px-5 py-2.5 font-semibold text-sm transition-all duration-200 ${
@@ -401,8 +440,18 @@ export default function OrganizerDashboard() {
           label="Total Events"
           value={totalEvents}
           icon={
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
           }
         />
@@ -410,8 +459,18 @@ export default function OrganizerDashboard() {
           label="Upcoming"
           value={upcomingCount}
           icon={
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           }
         />
@@ -419,8 +478,18 @@ export default function OrganizerDashboard() {
           label="Tracked Attendees"
           value={totalAttendees}
           icon={
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+              />
             </svg>
           }
         />
@@ -440,7 +509,10 @@ export default function OrganizerDashboard() {
           <form onSubmit={handleCreateEvent} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="ev-title" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="ev-title"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   Title
                 </label>
                 <input
@@ -453,7 +525,10 @@ export default function OrganizerDashboard() {
                 />
               </div>
               <div>
-                <label htmlFor="ev-loc" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="ev-loc"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   Location
                 </label>
                 <input
@@ -466,7 +541,10 @@ export default function OrganizerDashboard() {
                 />
               </div>
               <div>
-                <label htmlFor="ev-start" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="ev-start"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   Start
                 </label>
                 <input
@@ -479,7 +557,10 @@ export default function OrganizerDashboard() {
                 />
               </div>
               <div>
-                <label htmlFor="ev-end" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="ev-end"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   End
                 </label>
                 <input
@@ -492,7 +573,10 @@ export default function OrganizerDashboard() {
                 />
               </div>
               <div>
-                <label htmlFor="ev-cap" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="ev-cap"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   Capacity
                 </label>
                 <input
@@ -506,7 +590,10 @@ export default function OrganizerDashboard() {
                 />
               </div>
               <div>
-                <label htmlFor="ev-price" className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="ev-price"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   Ticket Price
                 </label>
                 <input
@@ -523,7 +610,10 @@ export default function OrganizerDashboard() {
             </div>
 
             <div>
-              <label htmlFor="ev-desc" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="ev-desc"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Description
               </label>
               <textarea
@@ -537,7 +627,9 @@ export default function OrganizerDashboard() {
 
             {categories.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Categories</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Categories
+                </label>
                 <div className="flex flex-wrap gap-2">
                   {categories.map((cat) => (
                     <button
@@ -614,9 +706,23 @@ export default function OrganizerDashboard() {
 
                       {/* location + dates */}
                       <div className="flex items-center gap-2 text-sm text-slate-500">
-                        <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <svg
+                          className="w-4 h-4 text-slate-400 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
                         </svg>
                         <InlineField
                           value={event.location}
@@ -628,7 +734,8 @@ export default function OrganizerDashboard() {
                       </div>
 
                       <div className="text-sm text-slate-400">
-                        {formatDate(event.startTime)} &ndash; {formatDate(event.endTime)}
+                        {formatDate(event.startTime)} &ndash;{" "}
+                        {formatDate(event.endTime)}
                       </div>
 
                       {/* organizer (admin can reassign) */}
@@ -638,12 +745,16 @@ export default function OrganizerDashboard() {
                           <select
                             value={event.organizerId}
                             onChange={async (e) => {
-                              await handleInlineSave(event.id, { organizerId: Number(e.target.value) });
+                              await handleInlineSave(event.id, {
+                                organizerId: Number(e.target.value),
+                              });
                             }}
                             className="cursor-pointer input-glass rounded-lg px-2 py-1 text-sm"
                           >
                             {organizers.map((org) => (
-                              <option key={org.id} value={org.id}>{org.name}</option>
+                              <option key={org.id} value={org.id}>
+                                {org.name}
+                              </option>
                             ))}
                           </select>
                         </div>
@@ -652,8 +763,18 @@ export default function OrganizerDashboard() {
                       {/* capacity + price row */}
                       <div className="flex items-center gap-4 text-sm pt-1">
                         <span className="flex items-center gap-1.5 text-slate-500">
-                          <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <svg
+                            className="w-4 h-4 text-slate-400 shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
                           </svg>
                           <InlineField
                             value={String(event.capacity)}
@@ -696,7 +817,10 @@ export default function OrganizerDashboard() {
                       {/* categories */}
                       <div className="flex flex-wrap gap-1.5 pt-2 items-center">
                         {(eventCategoriesMap[event.id] || []).map((cat) => (
-                          <span key={cat.id} className="rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200 px-2.5 py-0.5 text-xs font-medium">
+                          <span
+                            key={cat.id}
+                            className="rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200 px-2.5 py-0.5 text-xs font-medium"
+                          >
                             {cat.name}
                           </span>
                         ))}
@@ -705,7 +829,11 @@ export default function OrganizerDashboard() {
                             type="button"
                             onClick={() => {
                               setEditingCategoriesFor(event.id);
-                              setDraftCategoryIds((eventCategoriesMap[event.id] || []).map((c) => c.id));
+                              setDraftCategoryIds(
+                                (eventCategoriesMap[event.id] || []).map(
+                                  (c) => c.id,
+                                ),
+                              );
                             }}
                             className="cursor-pointer rounded-full bg-slate-50 text-slate-400 border border-slate-200 px-2.5 py-0.5 text-xs font-medium hover:bg-slate-100 transition-colors"
                           >
@@ -738,7 +866,10 @@ export default function OrganizerDashboard() {
                           <button
                             type="button"
                             onClick={async () => {
-                              await api.setEventCategories(event.id, draftCategoryIds);
+                              await api.setEventCategories(
+                                event.id,
+                                draftCategoryIds,
+                              );
                               setEditingCategoriesFor(null);
                               await fetchEvents();
                             }}
@@ -763,18 +894,27 @@ export default function OrganizerDashboard() {
                         onClick={() => toggleAttendees(event.id)}
                         className="cursor-pointer bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
                       >
-                        {expandedEvent === event.id ? "Hide Attendees" : "Attendees"}
+                        {expandedEvent === event.id
+                          ? "Hide Attendees"
+                          : "Attendees"}
                       </button>
                       <select
                         value={event.status}
                         onChange={async (e) => {
                           const newStatus = e.target.value;
-                          if (newStatus === "cancelled" && !confirm("Are you sure you want to cancel this event?")) {
+                          if (
+                            newStatus === "cancelled" &&
+                            !confirm(
+                              "Are you sure you want to cancel this event?",
+                            )
+                          ) {
                             e.target.value = event.status;
                             return;
                           }
                           try {
-                            await api.updateEvent(event.id, { status: newStatus as Event["status"] });
+                            await api.updateEvent(event.id, {
+                              status: newStatus as Event["status"],
+                            });
                             await fetchEvents();
                           } catch {
                             setError("Failed to update status.");
@@ -795,9 +935,13 @@ export default function OrganizerDashboard() {
                 {expandedEvent === event.id && (
                   <div className="border-t border-slate-200 p-6 animate-fade-in">
                     {!attendeesMap[event.id] ? (
-                      <div className="text-slate-400 text-sm">Loading attendees...</div>
+                      <div className="text-slate-400 text-sm">
+                        Loading attendees...
+                      </div>
                     ) : attendeesMap[event.id].length === 0 ? (
-                      <div className="text-slate-400 text-sm">No attendees yet.</div>
+                      <div className="text-slate-400 text-sm">
+                        No attendees yet.
+                      </div>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
@@ -822,9 +966,16 @@ export default function OrganizerDashboard() {
                           </thead>
                           <tbody className="divide-y divide-slate-200">
                             {attendeesMap[event.id].map((att) => (
-                              <tr key={att.ticketId} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-4 py-3 text-slate-900 font-medium">{att.userName}</td>
-                                <td className="px-4 py-3 text-slate-500">{att.userEmail}</td>
+                              <tr
+                                key={att.ticketId}
+                                className="hover:bg-slate-50 transition-colors"
+                              >
+                                <td className="px-4 py-3 text-slate-900 font-medium">
+                                  {att.userName}
+                                </td>
+                                <td className="px-4 py-3 text-slate-500">
+                                  {att.userEmail}
+                                </td>
                                 <td className="px-4 py-3 font-mono text-indigo-600 font-bold">
                                   {att.confirmationCode}
                                 </td>
@@ -853,7 +1004,9 @@ export default function OrganizerDashboard() {
                                 <td className="px-4 py-3">
                                   {!att.checkedIn && (
                                     <button
-                                      onClick={() => handleCheckin(att.ticketId, event.id)}
+                                      onClick={() =>
+                                        handleCheckin(att.ticketId, event.id)
+                                      }
                                       className="cursor-pointer rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 shadow-sm transition-colors"
                                     >
                                       Check In

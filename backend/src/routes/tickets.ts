@@ -32,8 +32,7 @@ router.post("/", authMiddleware, async (c) => {
       id: events.id,
       capacity: events.capacity,
       status: events.status,
-      ticketsSold:
-        sql<number>`(SELECT count(*) FROM tickets WHERE tickets.event_id = ${events.id})`,
+      ticketsSold: sql<number>`(SELECT count(*) FROM tickets WHERE tickets.event_id = ${events.id})`,
     })
     .from(events)
     .where(eq(events.id, eventId));
@@ -55,10 +54,7 @@ router.post("/", authMiddleware, async (c) => {
   } catch (err) {
     const pgErr = err as { code?: string };
     if (pgErr.code === "23505") {
-      return c.json(
-        { error: "You already have a ticket for this event" },
-        409,
-      );
+      return c.json({ error: "You already have a ticket for this event" }, 409);
     }
     console.error("Ticket purchase error:", err);
     return c.json({ error: "Failed to purchase ticket" }, 500);

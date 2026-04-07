@@ -24,7 +24,9 @@ export default function BrowseEvents() {
       if (from) params.from = from;
       if (to) params.to = to;
       if (status) params.status = status;
-      const data = await api.getEvents(Object.keys(params).length > 0 ? params : undefined);
+      const data = await api.getEvents(
+        Object.keys(params).length > 0 ? params : undefined,
+      );
       setEvents(data);
     } catch {
       setError("Failed to load events.");
@@ -34,7 +36,10 @@ export default function BrowseEvents() {
   }, [search, categoryId, from, to, status]);
 
   useEffect(() => {
-    api.getCategories().then(setCategories).catch(() => {});
+    api
+      .getCategories()
+      .then(setCategories)
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -56,7 +61,9 @@ export default function BrowseEvents() {
     <div className="animate-fade-in">
       <div className="flex items-end justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Events</h1>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+            Events
+          </h1>
           <p className="text-slate-400 mt-1 text-sm">
             {events.length} event{events.length !== 1 ? "s" : ""} found
           </p>
@@ -67,8 +74,18 @@ export default function BrowseEvents() {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
             <input
               type="text"
@@ -85,7 +102,9 @@ export default function BrowseEvents() {
           >
             <option value="">All Categories</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </select>
           <input
@@ -131,7 +150,10 @@ export default function BrowseEvents() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-slate-200 p-6">
+            <div
+              key={i}
+              className="bg-white rounded-xl border border-slate-200 p-6"
+            >
               <div className="skeleton h-5 w-3/4 mb-4" />
               <div className="skeleton h-4 w-1/2 mb-2" />
               <div className="skeleton h-4 w-2/3 mb-6" />
@@ -142,12 +164,26 @@ export default function BrowseEvents() {
       ) : events.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm text-center py-20 px-8">
           <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <svg
+              className="w-8 h-8 text-slate-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
           </div>
-          <p className="text-lg font-semibold text-slate-700 mb-1">No events found</p>
-          <p className="text-slate-400 text-sm">Try adjusting your filters or check back later.</p>
+          <p className="text-lg font-semibold text-slate-700 mb-1">
+            No events found
+          </p>
+          <p className="text-slate-400 text-sm">
+            Try adjusting your filters or check back later.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

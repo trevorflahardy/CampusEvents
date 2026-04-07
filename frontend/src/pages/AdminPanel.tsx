@@ -1,5 +1,12 @@
 import { useState, useEffect, type FormEvent } from "react";
-import { api, ApiError, type User, type Event, type Category, type PopularCategory } from "../lib/api";
+import {
+  api,
+  ApiError,
+  type User,
+  type Event,
+  type Category,
+  type PopularCategory,
+} from "../lib/api";
 
 const statusColors: Record<string, string> = {
   upcoming: "bg-emerald-500/10 text-emerald-600",
@@ -9,7 +16,11 @@ const statusColors: Record<string, string> = {
 };
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 type Tab = "users" | "events" | "categories";
@@ -19,21 +30,31 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<User[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [popularCategories, setPopularCategories] = useState<PopularCategory[]>([]);
+  const [popularCategories, setPopularCategories] = useState<PopularCategory[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [categoryError, setCategoryError] = useState("");
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
     try {
       const [u, e, c, pc] = await Promise.all([
-        api.getUsers(), api.getEvents(), api.getCategories(), api.getPopularCategories(),
+        api.getUsers(),
+        api.getEvents(),
+        api.getCategories(),
+        api.getPopularCategories(),
       ]);
-      setUsers(u); setEvents(e); setCategories(c); setPopularCategories(pc);
+      setUsers(u);
+      setEvents(e);
+      setCategories(c);
+      setPopularCategories(pc);
     } catch {
       setError("Failed to load data.");
     } finally {
@@ -44,9 +65,13 @@ export default function AdminPanel() {
   const handleRoleChange = async (userId: number, newRole: string) => {
     try {
       await api.updateUserRole(userId, newRole);
-      setUsers((prev) => prev.map((u) =>
-        u.id === userId ? { ...u, role: newRole as "admin" | "organizer" | "student" } : u
-      ));
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? { ...u, role: newRole as "admin" | "organizer" | "student" }
+            : u,
+        ),
+      );
     } catch {
       setError("Failed to update role.");
     }
@@ -77,7 +102,9 @@ export default function AdminPanel() {
       <div className="animate-fade-in">
         <div className="skeleton h-8 w-40 mb-8" />
         <div className="flex gap-2 mb-6">
-          {[1, 2, 3].map((i) => <div key={i} className="skeleton h-10 w-28 rounded-xl" />)}
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="skeleton h-10 w-28 rounded-xl" />
+          ))}
         </div>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <div className="skeleton h-5 w-full mb-3" />
@@ -90,7 +117,9 @@ export default function AdminPanel() {
 
   return (
     <div className="animate-fade-in">
-      <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-8">Admin Panel</h1>
+      <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-8">
+        Admin Panel
+      </h1>
 
       {error && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6 border-l-4 border-red-400">
@@ -111,9 +140,13 @@ export default function AdminPanel() {
             }`}
           >
             {tab.label}
-            <span className={`rounded-full px-2 py-0.5 text-xs ${
-              activeTab === tab.key ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400"
-            }`}>
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs ${
+                activeTab === tab.key
+                  ? "bg-white/20 text-white"
+                  : "bg-slate-100 text-slate-400"
+              }`}
+            >
               {tab.count}
             </span>
           </button>
@@ -127,26 +160,43 @@ export default function AdminPanel() {
             <table className="w-full text-sm">
               <thead className="bg-slate-50">
                 <tr className="text-left text-slate-400 border-b border-slate-200">
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">NetID</th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Created</th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                    NetID
+                  </th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                    Created
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100/60">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                  <tr
+                    key={u.id}
+                    className="hover:bg-slate-50 transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center text-white text-xs font-semibold shrink-0">
                           {u.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-medium text-slate-900">{u.name}</span>
+                        <span className="font-medium text-slate-900">
+                          {u.name}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-500">{u.email}</td>
-                    <td className="px-6 py-4 font-mono text-slate-500 text-xs">{u.netId}</td>
+                    <td className="px-6 py-4 font-mono text-slate-500 text-xs">
+                      {u.netId}
+                    </td>
                     <td className="px-6 py-4">
                       <select
                         value={u.role}
@@ -158,7 +208,9 @@ export default function AdminPanel() {
                         <option value="admin">admin</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 text-slate-400 text-xs">{formatDate(u.createdAt)}</td>
+                    <td className="px-6 py-4 text-slate-400 text-xs">
+                      {formatDate(u.createdAt)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -174,21 +226,42 @@ export default function AdminPanel() {
             <table className="w-full text-sm">
               <thead className="bg-slate-50">
                 <tr className="text-left text-slate-400 border-b border-slate-200">
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Title</th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Organizer</th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">Action</th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                    Title
+                  </th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                    Organizer
+                  </th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100/60">
                 {events.map((e) => (
-                  <tr key={e.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 text-slate-900 font-medium">{e.title}</td>
-                    <td className="px-6 py-4 text-slate-500">{e.organizerName}</td>
-                    <td className="px-6 py-4 text-slate-400 text-xs">{formatDate(e.startTime)}</td>
+                  <tr
+                    key={e.id}
+                    className="hover:bg-slate-50 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-slate-900 font-medium">
+                      {e.title}
+                    </td>
+                    <td className="px-6 py-4 text-slate-500">
+                      {e.organizerName}
+                    </td>
+                    <td className="px-6 py-4 text-slate-400 text-xs">
+                      {formatDate(e.startTime)}
+                    </td>
                     <td className="px-6 py-4">
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColors[e.status]}`}>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColors[e.status]}`}
+                      >
                         {e.status}
                       </span>
                     </td>
@@ -197,13 +270,27 @@ export default function AdminPanel() {
                         value={e.status}
                         onChange={async (ev) => {
                           const newStatus = ev.target.value;
-                          if (newStatus === "cancelled" && !confirm("Cancel this event?")) {
+                          if (
+                            newStatus === "cancelled" &&
+                            !confirm("Cancel this event?")
+                          ) {
                             ev.target.value = e.status;
                             return;
                           }
                           try {
-                            await api.updateEvent(e.id, { status: newStatus as Event["status"] });
-                            setEvents((prev) => prev.map((ev) => ev.id === e.id ? { ...ev, status: newStatus as Event["status"] } : ev));
+                            await api.updateEvent(e.id, {
+                              status: newStatus as Event["status"],
+                            });
+                            setEvents((prev) =>
+                              prev.map((ev) =>
+                                ev.id === e.id
+                                  ? {
+                                      ...ev,
+                                      status: newStatus as Event["status"],
+                                    }
+                                  : ev,
+                              ),
+                            );
                           } catch {
                             setError("Failed to update status.");
                           }
@@ -228,7 +315,9 @@ export default function AdminPanel() {
       {activeTab === "categories" && (
         <div className="space-y-6">
           <div className="glass-heavy rounded-2xl p-6">
-            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Add Category</h2>
+            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+              Add Category
+            </h2>
             {categoryError && (
               <div className="bg-red-50/80 border border-red-200/60 text-red-600 rounded-xl p-3 mb-4 text-sm font-medium">
                 {categoryError}
@@ -253,13 +342,18 @@ export default function AdminPanel() {
           </div>
 
           <div className="glass rounded-2xl p-6">
-            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">All Categories</h2>
+            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+              All Categories
+            </h2>
             {categories.length === 0 ? (
               <p className="text-slate-400 text-sm">No categories yet.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {categories.map((cat) => (
-                  <span key={cat.id} className="rounded-full bg-indigo-500/8 text-indigo-600 border border-indigo-500/15 px-4 py-1.5 text-sm font-medium">
+                  <span
+                    key={cat.id}
+                    className="rounded-full bg-indigo-500/8 text-indigo-600 border border-indigo-500/15 px-4 py-1.5 text-sm font-medium"
+                  >
                     {cat.name}
                   </span>
                 ))}
@@ -268,19 +362,28 @@ export default function AdminPanel() {
           </div>
 
           <div className="glass rounded-2xl p-6">
-            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Popular Categories</h2>
+            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">
+              Popular Categories
+            </h2>
             {popularCategories.length === 0 ? (
               <p className="text-slate-400 text-sm">No data yet.</p>
             ) : (
               <div className="space-y-3">
                 {popularCategories.map((pc) => (
-                  <div key={pc.categoryId} className="flex items-center justify-between py-3 border-b border-slate-100/60 last:border-0">
-                    <span className="text-slate-900 font-medium">{pc.name}</span>
+                  <div
+                    key={pc.categoryId}
+                    className="flex items-center justify-between py-3 border-b border-slate-100/60 last:border-0"
+                  >
+                    <span className="text-slate-900 font-medium">
+                      {pc.name}
+                    </span>
                     <div className="flex items-center gap-2">
                       <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500 rounded-full"
-                          style={{ width: `${Math.min((pc.eventCount / Math.max(...popularCategories.map(p => p.eventCount))) * 100, 100)}%` }}
+                          style={{
+                            width: `${Math.min((pc.eventCount / Math.max(...popularCategories.map((p) => p.eventCount))) * 100, 100)}%`,
+                          }}
                         />
                       </div>
                       <span className="text-sm text-slate-400 font-medium tabular-nums w-12 text-right">

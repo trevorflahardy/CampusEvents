@@ -73,8 +73,7 @@ export const api = {
       method: "PUT",
       body: JSON.stringify({ categoryIds }),
     }),
-  getEventTickets: (id: number) =>
-    request<Attendee[]>(`/events/${id}/tickets`),
+  getEventTickets: (id: number) => request<Attendee[]>(`/events/${id}/tickets`),
 
   // Tickets
   purchaseTicket: (userId: number, eventId: number) =>
@@ -91,8 +90,7 @@ export const api = {
 
   // Categories
   getCategories: () => request<Category[]>("/categories"),
-  getPopularCategories: () =>
-    request<PopularCategory[]>("/categories/popular"),
+  getPopularCategories: () => request<PopularCategory[]>("/categories/popular"),
   createCategory: (name: string) =>
     request<Category>("/categories", {
       method: "POST",

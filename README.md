@@ -73,6 +73,7 @@ docker compose up -d
 ```
 
 This starts:
+
 - **postgres** on `:5432`
 - **backend** on `:3000`
 - **frontend** on `:5173`
@@ -81,12 +82,12 @@ This starts:
 
 All seed users share the password `password123`:
 
-| Email            | Role      |
-| ---------------- | --------- |
-| admin@usf.edu    | admin     |
-| jane@usf.edu     | organizer |
-| trevor@usf.edu   | student   |
-| alex@usf.edu     | student   |
+| Email          | Role      |
+| -------------- | --------- |
+| admin@usf.edu  | admin     |
+| jane@usf.edu   | organizer |
+| trevor@usf.edu | student   |
+| alex@usf.edu   | student   |
 
 ---
 
@@ -94,11 +95,11 @@ All seed users share the password `password123`:
 
 ### Auth
 
-| Method | Path                | Description              |
-| ------ | ------------------- | ------------------------ |
-| POST   | /api/auth/register  | Register a new user      |
-| POST   | /api/auth/login     | Login, returns JWT token |
-| GET    | /api/auth/me        | Get current user profile |
+| Method | Path               | Description              |
+| ------ | ------------------ | ------------------------ |
+| POST   | /api/auth/register | Register a new user      |
+| POST   | /api/auth/login    | Login, returns JWT token |
+| GET    | /api/auth/me       | Get current user profile |
 
 ### Events
 
@@ -114,59 +115,59 @@ All seed users share the password `password123`:
 
 ### Tickets
 
-| Method | Path                      | Description          |
-| ------ | ------------------------- | -------------------- |
-| POST   | /api/tickets              | Purchase a ticket    |
-| GET    | /api/tickets/user/:userId | Get user's tickets   |
-| PATCH  | /api/tickets/:id/checkin  | Check in a ticket    |
-| DELETE | /api/tickets/:id          | Cancel a ticket      |
+| Method | Path                      | Description        |
+| ------ | ------------------------- | ------------------ |
+| POST   | /api/tickets              | Purchase a ticket  |
+| GET    | /api/tickets/user/:userId | Get user's tickets |
+| PATCH  | /api/tickets/:id/checkin  | Check in a ticket  |
+| DELETE | /api/tickets/:id          | Cancel a ticket    |
 
 ### Categories
 
-| Method | Path                       | Description                    |
-| ------ | -------------------------- | ------------------------------ |
-| GET    | /api/categories            | List all categories            |
-| GET    | /api/categories/popular    | Categories with >1 event       |
-| GET    | /api/categories/:id/events | Events in a category           |
-| POST   | /api/categories            | Create category (admin only)   |
+| Method | Path                       | Description                  |
+| ------ | -------------------------- | ---------------------------- |
+| GET    | /api/categories            | List all categories          |
+| GET    | /api/categories/popular    | Categories with >1 event     |
+| GET    | /api/categories/:id/events | Events in a category         |
+| POST   | /api/categories            | Create category (admin only) |
 
 ### Users
 
-| Method | Path           | Description       |
-| ------ | -------------- | ----------------- |
-| GET    | /api/users     | List all users    |
-| GET    | /api/users/:id | Get user profile  |
+| Method | Path           | Description      |
+| ------ | -------------- | ---------------- |
+| GET    | /api/users     | List all users   |
+| GET    | /api/users/:id | Get user profile |
 
 ---
 
 ## UI Pages
 
-| Page                | Route         | Access    | Description                                        |
-| ------------------- | ------------- | --------- | -------------------------------------------------- |
-| Browse Events       | /             | Public    | Search and filter events with category/date/status |
-| Event Detail        | /events/:id   | Public    | Full event info, capacity bar, book ticket         |
-| My Tickets          | /my-tickets   | Student   | Booking history with confirmation codes            |
-| Organizer Dashboard | /dashboard    | Organizer | Create events, view attendees, check-in            |
-| Admin Panel         | /admin        | Admin     | Manage users, events, and categories               |
-| Login               | /login        | Public    | Email/password login                               |
-| Register            | /register     | Public    | Create a new account                               |
+| Page                | Route       | Access    | Description                                        |
+| ------------------- | ----------- | --------- | -------------------------------------------------- |
+| Browse Events       | /           | Public    | Search and filter events with category/date/status |
+| Event Detail        | /events/:id | Public    | Full event info, capacity bar, book ticket         |
+| My Tickets          | /my-tickets | Student   | Booking history with confirmation codes            |
+| Organizer Dashboard | /dashboard  | Organizer | Create events, view attendees, check-in            |
+| Admin Panel         | /admin      | Admin     | Manage users, events, and categories               |
+| Login               | /login      | Public    | Email/password login                               |
+| Register            | /register   | Public    | Create a new account                               |
 
 ---
 
 ## SQL Query Types (10 required)
 
-| #   | Type                     | Endpoint                       |
-| --- | ------------------------ | ------------------------------ |
-| Q1  | SELECT + JOIN            | GET /api/events                |
-| Q2  | GROUP BY + COUNT         | GET /api/events/stats          |
-| Q3  | SELECT + subquery        | GET /api/events/:id            |
-| Q4  | Multiple JOINs           | GET /api/tickets/user/:userId  |
-| Q5  | INSERT                   | POST /api/tickets              |
-| Q6  | UPDATE                   | PATCH /api/tickets/:id/checkin |
-| Q7  | UPDATE                   | PATCH /api/events/:id          |
-| Q8  | DELETE                   | DELETE /api/tickets/:id        |
-| Q9  | SELECT + HAVING          | GET /api/categories/popular    |
-| Q10 | SELECT + BETWEEN         | GET /api/events?from=&to=      |
+| #   | Type              | Endpoint                       |
+| --- | ----------------- | ------------------------------ |
+| Q1  | SELECT + JOIN     | GET /api/events                |
+| Q2  | GROUP BY + COUNT  | GET /api/events/stats          |
+| Q3  | SELECT + subquery | GET /api/events/:id            |
+| Q4  | Multiple JOINs    | GET /api/tickets/user/:userId  |
+| Q5  | INSERT            | POST /api/tickets              |
+| Q6  | UPDATE            | PATCH /api/tickets/:id/checkin |
+| Q7  | UPDATE            | PATCH /api/events/:id          |
+| Q8  | DELETE            | DELETE /api/tickets/:id        |
+| Q9  | SELECT + HAVING   | GET /api/categories/popular    |
+| Q10 | SELECT + BETWEEN  | GET /api/events?from=&to=      |
 
 ---
 
@@ -206,8 +207,8 @@ See `backend/src/db/schema.ts` for the full Drizzle schema.
 ## Grading Checklist
 
 - [x] Database with >= 3 tables (we have 5)
-- [x] >= 8 distinct SQL query types (we have 10)
-- [x] >= 3 different UI pages/screens (we have 5 + auth pages)
+- [x] > = 8 distinct SQL query types (we have 10)
+- [x] > = 3 different UI pages/screens (we have 5 + auth pages)
 - [x] JDBC/ODBC equivalent (Drizzle ORM over postgres.js)
 - [x] User accounts with login/password _(bonus)_
 - [ ] Database views + user privileges _(bonus)_

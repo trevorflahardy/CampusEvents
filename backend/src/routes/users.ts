@@ -3,11 +3,7 @@ import { z } from "zod";
 import { db } from "../db/client";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
-import {
-  authMiddleware,
-  requireRole,
-  type AuthEnv,
-} from "../middleware/auth";
+import { authMiddleware, requireRole, type AuthEnv } from "../middleware/auth";
 
 const router = new Hono<AuthEnv>();
 
@@ -73,16 +69,16 @@ router.post("/", async (c) => {
   const parsed = registerUserSchema.safeParse(body);
   if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
   try {
-    const inserted = await db
-      .insert(users)
-      .values(parsed.data)
-      .returning();
+    const inserted = await db.insert(users).values(parsed.data).returning();
     const { passwordHash: _, ...safe } = inserted[0];
     return c.json(safe, 201);
   } catch (err) {
     const pgErr = err as { code?: string };
     if (pgErr.code === "23505") {
-      return c.json({ error: "A user with that NetID or email already exists" }, 409);
+      return c.json(
+        { error: "A user with that NetID or email already exists" },
+        409,
+      );
     }
     console.error("User registration error:", err);
     return c.json({ error: "Failed to register user" }, 500);

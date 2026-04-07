@@ -4,11 +4,7 @@ import { eq, sql } from "drizzle-orm";
 
 import { db } from "../db/client";
 import { categories, eventCategories, events } from "../db/schema";
-import {
-  authMiddleware,
-  requireRole,
-  type AuthEnv,
-} from "../middleware/auth";
+import { authMiddleware, requireRole, type AuthEnv } from "../middleware/auth";
 
 const categoriesRouter = new Hono<AuthEnv>();
 
@@ -60,25 +56,20 @@ const createCategorySchema = z.object({
   name: z.string().min(1),
 });
 
-categoriesRouter.post(
-  "/",
-  authMiddleware,
-  requireRole("admin"),
-  async (c) => {
-    const body = await c.req.json();
-    const parsed = createCategorySchema.safeParse(body);
+categoriesRouter.post("/", authMiddleware, requireRole("admin"), async (c) => {
+  const body = await c.req.json();
+  const parsed = createCategorySchema.safeParse(body);
 
-    if (!parsed.success) {
-      return c.json({ error: parsed.error.flatten().fieldErrors }, 400);
-    }
+  if (!parsed.success) {
+    return c.json({ error: parsed.error.flatten().fieldErrors }, 400);
+  }
 
-    const [category] = await db
-      .insert(categories)
-      .values({ name: parsed.data.name })
-      .returning();
+  const [category] = await db
+    .insert(categories)
+    .values({ name: parsed.data.name })
+    .returning();
 
-    return c.json(category, 201);
-  },
-);
+  return c.json(category, 201);
+});
 
 export default categoriesRouter;

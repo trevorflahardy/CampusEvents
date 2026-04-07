@@ -23,28 +23,42 @@ export default function Navbar() {
 
   const linkClasses = (path: string) =>
     `cursor-pointer text-sm font-medium transition-colors duration-200 ${
-      isActive(path)
-        ? "text-indigo-500"
-        : "text-slate-500 hover:text-slate-900"
+      isActive(path) ? "text-indigo-500" : "text-slate-500 hover:text-slate-900"
     }`;
 
   const navLinks = (
     <>
-      <Link to="/events" className={linkClasses("/events")} onClick={() => setMobileOpen(false)}>
+      <Link
+        to="/events"
+        className={linkClasses("/events")}
+        onClick={() => setMobileOpen(false)}
+      >
         Events
       </Link>
       {isAuthenticated && (
-        <Link to="/my-tickets" className={linkClasses("/my-tickets")} onClick={() => setMobileOpen(false)}>
+        <Link
+          to="/my-tickets"
+          className={linkClasses("/my-tickets")}
+          onClick={() => setMobileOpen(false)}
+        >
           My Tickets
         </Link>
       )}
       {isOrganizer && (
-        <Link to="/dashboard" className={linkClasses("/dashboard")} onClick={() => setMobileOpen(false)}>
+        <Link
+          to="/dashboard"
+          className={linkClasses("/dashboard")}
+          onClick={() => setMobileOpen(false)}
+        >
           Dashboard
         </Link>
       )}
       {isAdmin && (
-        <Link to="/admin" className={linkClasses("/admin")} onClick={() => setMobileOpen(false)}>
+        <Link
+          to="/admin"
+          className={linkClasses("/admin")}
+          onClick={() => setMobileOpen(false)}
+        >
           Admin
         </Link>
       )}
@@ -57,9 +71,13 @@ export default function Navbar() {
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold shadow-sm shadow-indigo-500/20">
           {user?.name?.charAt(0).toUpperCase()}
         </div>
-        <span className="text-sm font-medium text-slate-700 hidden sm:block">{user?.name}</span>
+        <span className="text-sm font-medium text-slate-700 hidden sm:block">
+          {user?.name}
+        </span>
       </div>
-      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium hidden sm:inline-flex ${roleBadgeClasses[user?.role || "student"]}`}>
+      <span
+        className={`rounded-full px-2.5 py-0.5 text-xs font-medium hidden sm:inline-flex ${roleBadgeClasses[user?.role || "student"]}`}
+      >
         {user?.role}
       </span>
       <button
@@ -94,16 +112,26 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 cursor-pointer">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-500 flex items-center justify-center shadow-md shadow-indigo-500/20">
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg
+                className="w-4 h-4 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
               </svg>
             </div>
-            <span className="text-lg font-bold text-slate-900">Campus<span className="text-gradient">Events</span></span>
+            <span className="text-lg font-bold text-slate-900">
+              Campus<span className="text-gradient">Events</span>
+            </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks}
-          </div>
+          <div className="hidden md:flex items-center gap-8">{navLinks}</div>
 
           <div className="hidden md:flex">{authSection}</div>
 
@@ -112,11 +140,26 @@ export default function Navbar() {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               {mobileOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               )}
             </svg>
           </button>
@@ -124,9 +167,7 @@ export default function Navbar() {
 
         {mobileOpen && (
           <div className="md:hidden pb-4 flex flex-col gap-4 animate-fade-in">
-            <div className="flex flex-col gap-3">
-              {navLinks}
-            </div>
+            <div className="flex flex-col gap-3">{navLinks}</div>
             <div className="pt-3 border-t border-slate-200/60">
               {authSection}
             </div>
