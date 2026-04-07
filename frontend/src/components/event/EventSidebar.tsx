@@ -5,9 +5,11 @@
  * event timing card with editable start/end/location fields, and the cancel-event
  * button visible only to the event owner.
  */
+import { useState } from "react";
 import type { EventDetail } from "../../lib/api";
 import EventMapPreview from "../EventMapPreview";
 import EditableField from "./EditableField";
+import LocationEditModal from "./LocationEditModal";
 import { formatDateTime } from "./utils";
 
 /** Props for EventSidebar. */
@@ -37,11 +39,26 @@ export default function EventSidebar({
   cancelling,
   onCancelEvent,
 }: EventSidebarProps) {
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
   return (
     <div className="space-y-6">
-      {/* Map Preview */}
+      {/* Map Preview - clickable to edit location when in edit mode */}
       {event.latitude != null && event.longitude != null && (
-        <EventMapPreview latitude={event.latitude} longitude={event.longitude} />
+        <div
+          className={editMode ? "cursor-pointer group/map relative" : ""}
+          onClick={() => editMode && setShowLocationModal(true)}
+          title={editMode ? "Click to edit location" : undefined}
+        >
+          <EventMapPreview latitude={event.latitude} longitude={event.longitude} />
+          {editMode && (
+            <div className="absolute inset-0 rounded-2xl bg-black/0 group-hover/map:bg-black/20 transition-colors flex items-center justify-center">
+              <span className="opacity-0 group-hover/map:opacity-100 transition-opacity bg-black/50 text-white text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">
+                Click to edit location
+              </span>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Organizer Card */}
@@ -83,7 +100,7 @@ export default function EventSidebar({
       {/* Event Timing Card */}
       <div className="glass-heavy rounded-2xl p-6 animate-fade-in stagger-3">
         <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
-          Event Timing
+          Event Details
         </h3>
         <div className="space-y-4">
           {/* Start */}
@@ -179,14 +196,32 @@ export default function EventSidebar({
               <div className="text-xs text-slate-400 font-medium mb-0.5">
                 Location
               </div>
-              <EditableField
-                value={event.location}
-                fieldName="location"
-                eventId={event.id}
-                canEdit={editMode}
-                onSaved={fetchEvent}
-                className="text-sm text-slate-700 font-medium"
-              />
+              {editMode ? (
+                <span
+                  onClick={() => setShowLocationModal(true)}
+                  className="group/edit cursor-pointer inline-flex items-center gap-1.5 rounded-md transition-colors hover:bg-brand-glow dark:hover:bg-emerald-500/10 px-1 -mx-1 text-sm text-slate-700 font-medium"
+                  title="Click to edit location & map pin"
+                >
+                  {event.location}
+                  <svg
+                    className="w-3.5 h-3.5 text-accent opacity-0 group-hover/edit:opacity-100 transition-opacity shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
+                  </svg>
+                </span>
+              ) : (
+                <span className="text-sm text-slate-700 font-medium">
+                  {event.location}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -223,6 +258,18 @@ export default function EventSidebar({
             </span>
           )}
         </button>
+      )}
+
+      {/* Location Edit Modal */}
+      {showLocationModal && (
+        <LocationEditModal
+          eventId={event.id}
+          currentLocation={event.location}
+          currentLat={event.latitude}
+          currentLng={event.longitude}
+          onSaved={fetchEvent}
+          onClose={() => setShowLocationModal(false)}
+        />
       )}
     </div>
   );

@@ -124,7 +124,7 @@ export default function EditableField({
 
   if (editing) {
     const baseInput =
-      "w-full rounded-lg border border-[#2b5c50]/30 bg-white px-3 py-1.5 text-sm text-slate-800 outline-none ring-2 ring-accent/20 focus:ring-[#1a4f3b]/40 transition-shadow " +
+      "w-full rounded-lg border border-[#2b5c50]/30 bg-white dark:bg-white/5 dark:border-white/15 px-3 py-1.5 text-sm text-slate-800 dark:text-slate-200 outline-none ring-2 ring-accent/20 dark:ring-emerald-500/15 focus:ring-[#1a4f3b]/40 dark:focus:ring-emerald-500/30 transition-shadow " +
       inputClassName;
 
     if (type === "textarea") {
@@ -165,7 +165,7 @@ export default function EditableField({
   return (
     <span
       onClick={() => setEditing(true)}
-      className={`group/edit cursor-pointer inline-flex items-center gap-1.5 rounded-md transition-colors hover:bg-brand-glow px-1 -mx-1 ${className}`}
+      className={`group/edit cursor-pointer inline-flex items-center gap-1.5 rounded-md transition-colors hover:bg-brand-glow dark:hover:bg-emerald-500/10 px-1 -mx-1 ${className}`}
       title="Click to edit"
     >
       {displayValue ?? value}
