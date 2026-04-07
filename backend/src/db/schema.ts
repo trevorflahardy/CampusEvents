@@ -49,6 +49,7 @@ export const events = pgTable("events", {
   organizerId: integer("organizer_id")
     .references(() => users.id)
     .notNull(),
+  bannerUrl: text("banner_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

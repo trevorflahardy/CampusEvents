@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { serveStatic } from "hono/bun";
+import { existsSync, mkdirSync } from "fs";
+import { join } from "path";
 
 import authRouter from "./routes/auth";
 import categoriesRouter from "./routes/categories";
@@ -16,6 +19,13 @@ app.use(
   "/api/*",
   cors({ origin: ["http://localhost:5173", "http://frontend:5173"] }),
 );
+
+// Ensure uploads directory exists
+const uploadsDir = join(import.meta.dir, "..", "uploads");
+if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
+
+// Serve uploaded files
+app.use("/uploads/*", serveStatic({ root: join(import.meta.dir, "..") }));
 
 // Health check
 app.get("/health", (c) => c.json({ status: "ok" }));

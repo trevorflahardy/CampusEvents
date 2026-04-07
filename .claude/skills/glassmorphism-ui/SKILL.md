@@ -73,126 +73,175 @@ Use the `.badge`, `.badge-success`, etc. classes from `index.css`.
 
 ---
 
-## 3. Backgrounds
+## 3. The Orb Background Principle (Critical)
 
-### Light Mode (Desktop — Admin/Student Desktop)
+> **Glassmorphism only works when there is multi-color depth behind the glass.**
+> `backdrop-filter: blur()` smears whatever is behind the element. A monochromatic background
+> produces flat, colorless fog. Multiple distinct color orbs = rich, living glass.
 
-```css
-background: linear-gradient(135deg, #e0eaf5 0%, #c8d8e6 50%, #d8e2ea 100%);
-background-attachment: fixed;
-```
+**NEVER use a flat or near-monochromatic background behind glass panels.**
+Always use large radial-gradient "orbs" in 2–3 contrasting hues so the blur samples real color contrast.
 
-Alternative (lighter):
-```css
-background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-```
-
-Use `.bg-mesh` or `.bg-hero` classes from `index.css` for pages with radial gradient overlays.
-
-### Dark Mode
+### Light Mode Background (`bg-mesh`)
 
 ```css
-background-color: #121816;
+background-color: #dce8f0;
 background-image:
-  radial-gradient(circle at 15% 50%, rgba(20, 50, 45, 0.4), transparent 50%),
-  radial-gradient(circle at 85% 30%, rgba(15, 40, 35, 0.4), transparent 50%);
+  /* Upper-left: brand emerald bloom */
+  radial-gradient(ellipse 70% 55% at 5% 68%, rgba(16, 185, 129, 0.24) 0%, transparent 65%),
+  /* Upper-right: sky blue — contrast to emerald */
+  radial-gradient(ellipse 65% 50% at 93% 12%, rgba(56, 189, 248, 0.26) 0%, transparent 60%),
+  /* Lower-center: soft violet — depth */
+  radial-gradient(ellipse 55% 40% at 50% 96%, rgba(167, 139, 250, 0.18) 0%, transparent 55%),
+  /* Center: white bloom — keeps it airy */
+  radial-gradient(ellipse 60% 50% at 52% 38%, rgba(255, 255, 255, 0.55) 0%, transparent 55%);
 background-attachment: fixed;
 ```
 
-- Body text color: `#e2e8f0`
-- Headings on dark: `text-white`
-- Muted text on dark: `text-[#94a3b8]`
-- Active nav item: `bg-[#212d28] text-white` with `text-emerald-400` icon
+**Orb palette for light mode:** emerald (brand) + sky blue (contrast) + violet (depth) + white bloom (airiness)
+
+### Dark Mode Background (`dark .bg-mesh`)
+
+```css
+background-color: #080c0f;
+background-image:
+  /* Upper-left: brand emerald bloom */
+  radial-gradient(ellipse 75% 55% at 8% 65%, rgba(16, 185, 129, 0.30) 0%, transparent 65%),
+  /* Upper-right: indigo/violet contrast */
+  radial-gradient(ellipse 65% 50% at 90% 20%, rgba(99, 102, 241, 0.22) 0%, transparent 60%),
+  /* Lower-center: deep teal accent */
+  radial-gradient(ellipse 50% 40% at 52% 90%, rgba(20, 184, 166, 0.16) 0%, transparent 55%),
+  /* Mid-right: dark emerald anchor */
+  radial-gradient(ellipse 40% 35% at 78% 58%, rgba(6, 78, 59, 0.20) 0%, transparent 50%);
+background-attachment: fixed;
+```
+
+**Orb palette for dark mode:** brand emerald + indigo/violet (contrast) + teal (accent) + dark emerald (anchor)
+
+Use `.bg-mesh` class — it applies these styles. Use `.bg-hero` for landing/auth pages (same principle, slightly different orb positions).
+
+### Dark Mode Text & Nav
+- Body text: `#e2e8f0`
+- Headings: `text-white`
+- Muted text: `text-[#94a3b8]`
+- Active nav item: `bg-white/10 text-white` with `text-emerald-400` icon
 - Inactive nav item: `text-[#94a3b8] hover:bg-white/5 hover:text-white`
-
-### When to Use Which
-
-| Context                  | Background                    |
-| ------------------------ | ----------------------------- |
-| Desktop dashboard        | Light linear gradient         |
-| Dark mode (any context)  | Dark `#121816` + radial halos |
-| Auth/login pages         | Dark mode bg                  |
-| Admin panels             | Light linear gradient         |
 
 ---
 
-## 4. Glassmorphism Tiers
+## 4. Glassmorphism Tiers — Apple Liquid Glass Recipe
+
+> **The full Apple liquid glass recipe has four layers:**
+> 1. **Gradient fill** — not flat alpha; suggests a directional light source hitting the glass face
+> 2. **`saturate()` in backdrop-filter** — amplifies the orb colors bleeding through the blur
+> 3. **Top-edge inset specular** — `inset 0 1px 0 rgba(255,255,255,X)` — the "this is glass" cue
+> 4. **Deep outer shadow** — separates the panel from the background with physical depth
 
 There are **three tiers** of glass effect, each with specific use cases:
 
-### Tier 1: Glass (Navigation, Headers, Overlays)
+### Tier 1: `.glass` (Navigation, Headers, Overlays)
 
+**Light mode:**
 ```css
-background: rgba(255, 255, 255, 0.78);
+background: linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.52) 100%);
 backdrop-filter: blur(20px) saturate(180%);
 -webkit-backdrop-filter: blur(20px) saturate(180%);
-border: 1px solid rgba(226, 232, 240, 0.6);
-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+border: 1px solid rgba(255, 255, 255, 0.65);
+box-shadow:
+  0 4px 24px rgba(0, 0, 0, 0.08),
+  0 1px 4px rgba(0, 0, 0, 0.05),
+  inset 0 1px 0 rgba(255, 255, 255, 0.90),
+  inset 0 -1px 0 rgba(0, 0, 0, 0.04);
 ```
 
-**CSS class:** `.glass` (from index.css)
+**Dark mode:**
+```css
+background: linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(0,0,0,0.18) 100%);
+backdrop-filter: blur(20px) saturate(160%);
+-webkit-backdrop-filter: blur(20px) saturate(160%);
+border: 1px solid rgba(255, 255, 255, 0.10);
+box-shadow:
+  0 8px 32px rgba(0, 0, 0, 0.50),
+  0 0 48px rgba(16, 185, 129, 0.06),
+  inset 0 1px 0 rgba(255, 255, 255, 0.13),
+  inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+```
+
 **Use for:** Top header bar, sidebar panel, sticky navs, modal overlays
 
-### Tier 2: Glass Heavy (Cards, Content Containers)
+### Tier 2: `.glass-heavy` (Cards, Content Containers)
 
+**Light mode:**
 ```css
-background: rgba(255, 255, 255, 0.92);
+background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.62) 100%);
 backdrop-filter: blur(24px) saturate(200%);
 -webkit-backdrop-filter: blur(24px) saturate(200%);
-border: 1px solid rgba(226, 232, 240, 0.7);
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+border: 1px solid rgba(255, 255, 255, 0.72);
+box-shadow:
+  0 8px 32px rgba(0, 0, 0, 0.08),
+  0 2px 8px rgba(0, 0, 0, 0.05),
+  inset 0 1px 0 rgba(255, 255, 255, 0.95),
+  inset 0 -1px 0 rgba(0, 0, 0, 0.03);
 ```
 
-**CSS class:** `.glass-heavy` (from index.css)
+**Dark mode:**
+```css
+background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.20) 100%);
+backdrop-filter: blur(24px) saturate(160%);
+-webkit-backdrop-filter: blur(24px) saturate(160%);
+border: 1px solid rgba(255, 255, 255, 0.10);
+box-shadow:
+  0 8px 32px rgba(0, 0, 0, 0.45),
+  0 0 64px rgba(16, 185, 129, 0.05),
+  inset 0 1px 0 rgba(255, 255, 255, 0.12),
+  inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+```
+
 **Use for:** Event cards, stat cards, form containers, detail panels
 
-### Tier 3: Glass Subtle (Inputs, Secondary Elements)
+### Tier 3: `.glass-subtle` (Inputs, Secondary Elements)
 
+**Light mode:**
 ```css
-background: rgba(255, 255, 255, 0.55);
+background: linear-gradient(135deg, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.38) 100%);
 backdrop-filter: blur(12px) saturate(160%);
 -webkit-backdrop-filter: blur(12px) saturate(160%);
-border: 1px solid rgba(226, 232, 240, 0.4);
+border: 1px solid rgba(255, 255, 255, 0.52);
+box-shadow: 0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.80);
 ```
 
-**CSS class:** `.glass-subtle` (from index.css)
+**Dark mode:**
+```css
+background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.14) 100%);
+backdrop-filter: blur(12px) saturate(140%);
+-webkit-backdrop-filter: blur(12px) saturate(140%);
+border: 1px solid rgba(255, 255, 255, 0.07);
+box-shadow: 0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+```
+
 **Use for:** Input fields, secondary panels, background sections
 
-### Dark-Mode Glass
+### Key Values at a Glance
 
-On dark (`#121816`) backgrounds, glass is nearly invisible dark overlay — NOT bright white:
+| Property | Light Mode | Dark Mode |
+| --- | --- | --- |
+| `backdrop-filter blur` | `20–24px` | `20–24px` |
+| `saturate` | `160–200%` | `140–160%` |
+| Fill (top of gradient) | `rgba(255,255,255, 0.60–0.85)` | `rgba(255,255,255, 0.06–0.09)` |
+| Fill (bottom of gradient) | `rgba(255,255,255, 0.38–0.62)` | `rgba(0,0,0, 0.14–0.20)` |
+| Border | `rgba(255,255,255, 0.52–0.72)` | `rgba(255,255,255, 0.07–0.10)` |
+| Top inset specular | `rgba(255,255,255, 0.80–0.95)` | `rgba(255,255,255, 0.08–0.13)` |
+| Outer shadow alpha | `0.05–0.08` | `0.35–0.50` |
 
-**`.glass` (sidebar/header in dark):**
-```css
-background: rgba(255, 255, 255, 0.03);
-backdrop-filter: blur(16px);
-border: 1px solid rgba(255, 255, 255, 0.05);
-box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-```
-
-**`.glass-heavy` (cards in dark):**
-```css
-background: rgba(255, 255, 255, 0.03);
-backdrop-filter: blur(10px);
-border: 1px solid rgba(255, 255, 255, 0.08);
-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-```
-
-**Event card content overlay in dark:**
-```css
-background: rgba(0, 0, 0, 0.2);
-backdrop-filter: blur(12px);  /* bg-black/20 backdrop-blur-md */
-```
-
-**Icon containers in dark stat cards:** `bg-white/5 text-emerald-400`
-
-**Avatar borders in dark:** `border-[#1c2526]`
-
-**IMPORTANT:** In dark mode, text inside glass is LIGHT (`text-white`, `text-[#94a3b8]`). Glass panels are dark, not white.
+### Dark Mode Notes
+- Text inside dark glass: `text-white` (headings), `text-[#94a3b8]` (muted)
+- Icon containers in dark stat cards: `bg-white/5 text-emerald-400`
+- Avatar borders in dark: `border-white/10`
+- **NEVER use a flat `rgba()` fill** — always the gradient form
 
 ### Colored Glass Accents
 
-Use `.glass-blue`, `.glass-violet`, `.glass-emerald` classes for tinted glass sections (from index.css).
+Use `.glass-brand`, `.glass-brand-strong`, `.glass-emerald` classes for tinted glass sections (from index.css).
 
 ---
 
@@ -580,10 +629,13 @@ Before delivering ANY UI code:
 
 ## 18. Anti-Patterns (NEVER Do These)
 
+- **Monochromatic backgrounds behind glass** — The single biggest glassmorphism killer. `backdrop-filter: blur()` on a flat/near-monochromatic bg produces fog, not glass. Always use multi-color orbs.
+- **Flat `rgba()` glass fill** — Never `background: rgba(255,255,255,0.8)`. Always use `linear-gradient(135deg, rgba(...high) 0%, rgba(...low) 100%)` for directional light.
+- **Missing `saturate()` in backdrop-filter** — `blur()` alone is grey smear. `saturate(160–200%)` is what makes orb colors bleed through richly.
+- **No inset specular highlight** — `inset 0 1px 0 rgba(255,255,255,X)` is the single CSS property that reads as "glass edge". Never omit it.
 - **Vibrant/neon colors** — This is a muted, natural palette
 - **Sharp corners** — Minimum `rounded-lg` on any container
-- **Flat/solid backgrounds** — Always use gradients or glass
-- **Heavy drop shadows** — Shadows are subtle and diffuse
+- **Flat/solid backgrounds** — Always use orb gradients
 - **Browser-default focus rings** — Always custom
 - **Inline styles for glass effects** — Use the CSS utility classes
 - **`tailwind.config.js`** — This is Tailwind v4; use `@theme {}` in CSS

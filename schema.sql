@@ -57,6 +57,7 @@ CREATE TABLE events (
     ticket_price  NUMERIC(10, 2)  NOT NULL DEFAULT 0.00 CHECK (ticket_price >= 0),
     status        event_status    NOT NULL DEFAULT 'upcoming',
     organizer_id  INTEGER         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    banner_url    TEXT,
     created_at    TIMESTAMP       NOT NULL DEFAULT NOW(),
 
     CONSTRAINT valid_time_range CHECK (end_time > start_time)

@@ -74,6 +74,21 @@ export const api = {
       body: JSON.stringify({ categoryIds }),
     }),
   getEventTickets: (id: number) => request<Attendee[]>(`/events/${id}/tickets`),
+  uploadEventBanner: async (eventId: number, file: File): Promise<{ bannerUrl: string }> => {
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("banner", file);
+    const res = await fetch(`${API_BASE}/events/${eventId}/banner`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: "Upload failed" }));
+      throw new ApiError(res.status, body.error || "Upload failed");
+    }
+    return res.json();
+  },
 
   // Tickets
   purchaseTicket: (userId: number, eventId: number) =>
@@ -129,6 +144,7 @@ export interface Event {
   organizerId: number;
   createdAt: string;
   organizerName: string;
+  bannerUrl: string | null;
   categories?: Category[];
 }
 

@@ -54,14 +54,7 @@ function AppLayout() {
 
           {/* App pages — sidebar visible */}
           <Route path="/events" element={<BrowseEvents />} />
-          <Route
-            path="/events/:id"
-            element={
-              <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-                <EventDetail />
-              </main>
-            }
-          />
+          <Route path="/events/:id" element={<EventDetail />} />
           <Route
             path="/my-tickets"
             element={
