@@ -147,6 +147,34 @@ body {
   border: 1px solid rgba(16, 185, 129, 0.12);
 }
 
+/* ─── Ticket Notch (tear-off perforation effect) ─── */
+
+.ticket-notch {
+  mask-image: radial-gradient(
+    circle at 100% 50%,
+    transparent 12px,
+    black 13px
+  );
+  -webkit-mask-image: radial-gradient(
+    circle at 100% 50%,
+    transparent 12px,
+    black 13px
+  );
+}
+
+.stub-notch {
+  mask-image: radial-gradient(
+    circle at 0% 50%,
+    transparent 12px,
+    black 13px
+  );
+  -webkit-mask-image: radial-gradient(
+    circle at 0% 50%,
+    transparent 12px,
+    black 13px
+  );
+}
+
 /* ─── Cards ─── */
 
 .card {
@@ -718,6 +746,19 @@ select:focus-visible {
   background: rgba(255, 255, 255, 0.06);
   color: #94a3b8;
   border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ticket perforation dashed line in dark mode */
+.dark .before\:border-slate-300\/40::before {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark .border-red-200\/60 {
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.dark .hover\:bg-red-50\/60:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
 }
 
 .dark .text-gradient {

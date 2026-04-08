@@ -14,12 +14,39 @@ const statusColors: Record<string, string> = {
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", {
-    weekday: "short",
     month: "short",
     day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+function getRelativeTime(dateStr: string, endDateStr: string, status: string): { label: string; color: string } {
+  const now = Date.now();
+  const start = new Date(dateStr).getTime();
+  const end = new Date(endDateStr).getTime();
+  const diff = start - now;
+
+  if (status === "cancelled") return { label: "Cancelled", color: "text-red-500" };
+  if (status === "completed" || now > end) return { label: "Event ended", color: "text-slate-400" };
+  if (status === "ongoing" || (now >= start && now <= end)) return { label: "Happening now", color: "text-emerald-600" };
+
+  const absDiff = Math.abs(diff);
+  const minutes = Math.floor(absDiff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (minutes < 60) return { label: `Starts in ${minutes}m`, color: "text-amber-600" };
+  if (hours < 24) return { label: `Starts in ${hours}h ${minutes % 60}m`, color: "text-blue-600" };
+  if (days === 1) return { label: "Starts tomorrow", color: "text-blue-500" };
+  if (days < 7) return { label: `Starts in ${days} days`, color: "text-slate-600" };
+  return { label: `Starts in ${days} days`, color: "text-slate-500" };
 }
 
 export default function MyTickets() {
@@ -29,6 +56,7 @@ export default function MyTickets() {
   const [error, setError] = useState("");
   const [cancellingTicketId, setCancellingTicketId] = useState<number | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [checkingInId, setCheckingInId] = useState<number | null>(null);
 
   const fetchTickets = async () => {
     if (!user) return;
@@ -48,6 +76,23 @@ export default function MyTickets() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  const handleCheckin = async (ticketId: number) => {
+    setCheckingInId(ticketId);
+    try {
+      await api.checkinTicket(ticketId);
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.ticketId === ticketId ? { ...t, checkedIn: true } : t
+        )
+      );
+      toast.success("Checked in successfully!");
+    } catch {
+      toast.error("Check-in failed. Make sure the event is currently ongoing.");
+    } finally {
+      setCheckingInId(null);
+    }
+  };
+
   const handleCancel = async (ticketId: number) => {
     setCancelling(true);
     try {
@@ -66,13 +111,25 @@ export default function MyTickets() {
   if (loading) {
     return (
       <div className="animate-fade-in">
-        <div className="skeleton h-8 w-40 mb-8" />
-        <div className="space-y-4">
+        <div className="skeleton h-10 w-48 mb-3 rounded-xl" />
+        <div className="skeleton h-5 w-80 mb-10 rounded-lg" />
+        <div className="flex flex-col gap-6 max-w-5xl">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="glass-heavy rounded-2xl p-6">
-              <div className="skeleton h-5 w-1/3 mb-3" />
-              <div className="skeleton h-4 w-1/2 mb-2" />
-              <div className="skeleton h-4 w-1/4" />
+            <div key={i} className="flex flex-col lg:flex-row w-full">
+              <div className="glass-heavy ticket-notch rounded-l-3xl p-8 flex-grow">
+                <div className="skeleton h-6 w-1/3 mb-3" />
+                <div className="skeleton h-5 w-1/2 mb-6" />
+                <div className="flex gap-8">
+                  <div className="skeleton h-10 w-24" />
+                  <div className="skeleton h-10 w-24" />
+                  <div className="skeleton h-10 w-24" />
+                </div>
+              </div>
+              <div className="glass-heavy stub-notch rounded-r-3xl lg:w-64 p-8 border-l-0">
+                <div className="skeleton h-5 w-20 mb-4" />
+                <div className="skeleton h-16 w-full mb-6 rounded-xl" />
+                <div className="skeleton h-10 w-full rounded-xl" />
+              </div>
             </div>
           ))}
         </div>
@@ -82,9 +139,16 @@ export default function MyTickets() {
 
   return (
     <div className="animate-fade-in">
-      <h1 className="text-3xl font-bold tracking-tight mb-8">
-        <span className="text-gradient">My Tickets</span>
-      </h1>
+      {/* Header */}
+      <header className="mb-10">
+        <h1 className="text-4xl font-bold tracking-tight mb-2">
+          <span className="text-gradient">My Tickets</span>
+        </h1>
+        <p className="text-slate-500 max-w-xl">
+          View and manage your upcoming campus experiences. Your digital entry
+          passes for the season.
+        </p>
+      </header>
 
       {error && (
         <div className="glass-heavy rounded-2xl p-4 mb-6 border-l-4 border-red-400">
@@ -93,7 +157,7 @@ export default function MyTickets() {
       )}
 
       {tickets.length === 0 ? (
-        <div className="glass-heavy rounded-2xl text-center py-20 px-8">
+        <div className="glass-heavy rounded-3xl text-center py-20 px-8 max-w-5xl">
           <div className="w-16 h-16 rounded-2xl bg-brand-glow flex items-center justify-center mx-auto mb-4">
             <svg
               className="w-8 h-8 text-[#1a4f3b]"
@@ -123,162 +187,227 @@ export default function MyTickets() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-4">
-          {tickets.map((ticket) => (
-            <div
-              key={ticket.ticketId}
-              className="glass-heavy rounded-2xl p-6 hover-lift cursor-default"
-            >
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Link
-                      to={`/events/${ticket.eventId}`}
-                      state={{ from: "dashboard" }}
-                      className="cursor-pointer text-lg font-semibold text-slate-900 hover:text-accent transition-colors truncate"
-                    >
-                      {ticket.eventTitle}
-                    </Link>
-                    <span
-                      className={`shrink-0 badge ${statusColors[ticket.eventStatus] || "badge-neutral"}`}
-                    >
-                      {ticket.eventStatus}
-                    </span>
-                  </div>
+        <div className="flex flex-col gap-6 max-w-5xl">
+          {tickets.map((ticket, index) => {
+            const now = Date.now();
+            const start = new Date(ticket.eventStartTime).getTime();
+            const end = new Date(ticket.eventEndTime).getTime();
+            const isHappeningNow = now >= start && now <= end;
+            const isPast =
+              ticket.eventStatus === "completed" ||
+              ticket.eventStatus === "cancelled" ||
+              now > end;
+            const effectiveStatus = isPast
+              ? ticket.eventStatus === "cancelled" ? "cancelled" : "completed"
+              : isHappeningNow ? "ongoing" : ticket.eventStatus;
+            const relative = getRelativeTime(ticket.eventStartTime, ticket.eventEndTime, effectiveStatus);
+            const canCheckin = isHappeningNow && !ticket.checkedIn && !isPast;
 
-                  <div className="text-sm text-slate-500 space-y-1 mb-4">
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      {formatDate(ticket.eventStartTime)}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                      {ticket.eventLocation}
-                    </div>
-                  </div>
-
-                  {/* Confirmation */}
-                  <div className="glass-subtle rounded-xl px-4 py-3 inline-flex items-center gap-3">
-                    <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">
-                      Confirmation
-                    </span>
-                    <span className="font-mono text-lg font-bold text-[#1a4f3b]">
-                      {ticket.confirmationCode}
-                    </span>
-                  </div>
-
-                  {/* Check-in */}
-                  <div className="mt-3 flex items-center gap-2 text-sm">
-                    {ticket.checkedIn ? (
-                      <>
-                        <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                          <svg
-                            className="w-3 h-3 text-emerald-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-emerald-600 font-medium">
-                          Checked In
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-5 h-5 rounded-full bg-amber-500/10 flex items-center justify-center">
-                          <svg
-                            className="w-3 h-3 text-amber-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-amber-600 font-medium">
-                          Not Checked In
-                        </span>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Categories */}
-                  {ticket.categories.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {ticket.categories.map((cat) => (
+            return (
+              <div
+                key={ticket.ticketId}
+                className={`animate-fade-in stagger-${Math.min(index + 1, 4)} flex flex-col lg:flex-row w-full group ${isPast ? "opacity-75 hover:opacity-100 transition-opacity" : ""}`}
+              >
+                {/* Main ticket body */}
+                <div className="glass-heavy ticket-notch rounded-t-3xl lg:rounded-l-3xl lg:rounded-tr-none p-6 md:p-8 flex-grow relative overflow-hidden">
+                  <div className="flex flex-col justify-between h-full">
+                    <div>
+                      {/* Category + Status row */}
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className={`w-2 h-2 rounded-full ${isPast ? "bg-slate-400" : "bg-[#1a4f3b]"}`} />
+                        {ticket.categories.length > 0 ? (
+                          ticket.categories.map((cat) => (
+                            <span
+                              key={cat.id}
+                              className="text-[10px] font-bold tracking-widest text-slate-500 uppercase"
+                            >
+                              {cat.name}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+                            Campus Event
+                          </span>
+                        )}
                         <span
-                          key={cat.id}
-                          className="rounded-full bg-brand-glow text-[#1a4f3b] border border-brand-light px-2.5 py-0.5 text-xs font-medium"
+                          className={`ml-auto badge ${statusColors[effectiveStatus] || "badge-neutral"}`}
                         >
-                          {cat.name}
+                          {effectiveStatus}
                         </span>
-                      ))}
+                      </div>
+
+                      {/* Title */}
+                      <Link
+                        to={`/events/${ticket.eventId}`}
+                        state={{ from: "dashboard" }}
+                        className="cursor-pointer"
+                      >
+                        <h3 className="text-2xl md:text-3xl font-bold tracking-tight leading-tight hover:text-[#2f6d56] transition-colors">
+                          {ticket.eventTitle}
+                        </h3>
+                      </Link>
+
+                      {/* Location */}
+                      <p className="text-slate-500 font-medium mt-1 flex items-center gap-1.5">
+                        <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {ticket.eventLocation}
+                      </p>
                     </div>
-                  )}
+
+                    {/* Relative time indicator */}
+                    <div className={`mt-3 flex items-center gap-2 text-sm font-semibold ${relative.color}`}>
+                      {isHappeningNow && !isPast && (
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                        </span>
+                      )}
+                      {relative.label}
+                    </div>
+
+                    {/* Date / Time / Price / Check-in row */}
+                    <div className="flex flex-wrap gap-6 md:gap-8 mt-4">
+                      <div>
+                        <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">
+                          Date
+                        </span>
+                        <span className="text-lg font-semibold">
+                          {formatDate(ticket.eventStartTime)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">
+                          Time
+                        </span>
+                        <span className="text-lg font-semibold">
+                          {formatTime(ticket.eventStartTime)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">
+                          Price
+                        </span>
+                        <span className="text-lg font-semibold">
+                          {parseFloat(ticket.ticketPrice) === 0
+                            ? "Free"
+                            : `$${parseFloat(ticket.ticketPrice).toFixed(2)}`}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">
+                          Check-in
+                        </span>
+                        <span className="text-lg font-semibold flex items-center gap-1.5">
+                          {ticket.checkedIn ? (
+                            <>
+                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                              Yes
+                            </>
+                          ) : (
+                            <>
+                              <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                              No
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-3 shrink-0">
-                  <span className="text-lg font-bold text-slate-900">
-                    {parseFloat(ticket.ticketPrice) === 0
-                      ? "Free"
-                      : `$${parseFloat(ticket.ticketPrice).toFixed(2)}`}
-                  </span>
-                  {ticket.eventStatus !== "cancelled" &&
-                    ticket.eventStatus !== "completed" && (
+                {/* Stub (perforation + confirmation) */}
+                <div
+                  className="relative w-full lg:w-64 glass-heavy stub-notch rounded-b-3xl lg:rounded-r-3xl lg:rounded-bl-none border-t-0 lg:border-t lg:border-l-0 p-6 md:p-8 flex flex-col justify-between
+                    before:content-[''] before:absolute
+                    before:left-4 before:right-4 before:top-[-0.5px] before:h-0 before:border-t before:border-dashed before:border-slate-300/40
+                    lg:before:left-[-0.5px] lg:before:right-auto lg:before:top-4 lg:before:bottom-4 lg:before:h-auto lg:before:w-0 lg:before:border-t-0 lg:before:border-l lg:before:border-dashed lg:before:border-slate-300/40"
+                >
+                  <div>
+                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">
+                      Verification
+                    </span>
+                    <div className="glass-subtle p-4 rounded-xl">
+                      <span className="block text-[10px] text-slate-400 uppercase tracking-tighter mb-1">
+                        Conf. Number
+                      </span>
+                      <span className="text-xl font-mono tracking-widest font-bold text-[#1a4f3b]">
+                        {ticket.confirmationCode}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-2">
+                    {/* Check-in button for ongoing events */}
+                    {canCheckin ? (
                       <button
-                        onClick={() => setCancellingTicketId(ticket.ticketId)}
-                        className="cursor-pointer btn-danger rounded-full px-4 py-2 text-sm font-medium transition-all duration-150"
+                        onClick={() => handleCheckin(ticket.ticketId)}
+                        disabled={checkingInId === ticket.ticketId}
+                        className="cursor-pointer w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-150 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Cancel Booking
+                        {checkingInId === ticket.ticketId ? (
+                          <>
+                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                            Checking in...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Check In Now
+                          </>
+                        )}
                       </button>
+                    ) : ticket.checkedIn && isHappeningNow ? (
+                      <div className="w-full bg-emerald-50 text-emerald-700 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-emerald-200">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Checked In
+                      </div>
+                    ) : (
+                      <Link
+                        to={`/events/${ticket.eventId}`}
+                        state={{ from: "dashboard" }}
+                        className="cursor-pointer w-full bg-[#1a4f3b] text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-150 hover:bg-[#2b5c50] active:scale-95"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        View Event
+                      </Link>
                     )}
+                    {effectiveStatus !== "cancelled" &&
+                      effectiveStatus !== "completed" && (
+                        <button
+                          onClick={() => setCancellingTicketId(ticket.ticketId)}
+                          className="cursor-pointer w-full border border-red-200/60 hover:bg-red-50/60 py-2 rounded-xl text-xs font-bold text-red-500 transition-colors"
+                        >
+                          Cancel Booking
+                        </button>
+                      )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+      )}
+
+      {/* Footer */}
+      {tickets.length > 0 && (
+        <footer className="mt-12 border-t border-slate-200/40 pt-6 flex justify-between items-center text-slate-500 max-w-5xl">
+          <p className="text-sm">
+            Showing {tickets.length} active ticket{tickets.length !== 1 ? "s" : ""}
+          </p>
+        </footer>
       )}
 
       <ConfirmDialog
