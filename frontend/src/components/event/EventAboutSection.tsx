@@ -93,7 +93,7 @@ export default function EventAboutSection({
               onSaved={fetchEvent}
               type="number"
               displayValue={formatPrice(event.ticketPrice)}
-              className="text-xl font-extrabold text-[#1a4f3b]"
+              className="text-xl font-extrabold text-[#1a4f3b] dark:text-emerald-400"
               inputClassName="text-lg font-bold"
             />
           </div>
