@@ -22,6 +22,7 @@ import {
   type UserTicket,
 } from "../lib/api";
 import { useAuth } from "../context/useAuth";
+import { Link } from "react-router-dom";
 import DashboardHeader from "../components/DashboardHeader";
 import {
   StatsGrid,
@@ -284,11 +285,21 @@ export default function OrganizerDashboard() {
       )
     : activeEvents;
 
-  // Events the current user is registered for (students only)
+  // Events the current user is registered for
   const registeredEventIds = new Set(userTickets.map((t) => t.eventId));
   const myRegisteredEvents = activeEvents.filter((e) =>
     registeredEventIds.has(e.id),
   );
+
+  // Tickets eligible for self-check-in (30min before start → end, not checked in)
+  const now = new Date();
+  const checkinReadyTickets = userTickets.filter((t) => {
+    if (t.checkedIn) return false;
+    const start = new Date(t.eventStartTime);
+    const end = new Date(t.eventEndTime);
+    const windowStart = new Date(start.getTime() - 30 * 60 * 1000);
+    return now >= windowStart && now <= end;
+  });
 
   /* ---------- loading skeleton ---------- */
 
@@ -335,6 +346,37 @@ export default function OrganizerDashboard() {
                 className="glass rounded-2xl p-4 border-l-4 border-l-red-400 mb-6 animate-fade-in"
               >
                 <p className="text-red-600 text-sm font-medium">{error}</p>
+              </div>
+            )}
+
+            {/* ---- Check-in banners ---- */}
+            {checkinReadyTickets.length > 0 && (
+              <div className="space-y-3 mb-6 animate-fade-in">
+                {checkinReadyTickets.map((ticket) => (
+                  <Link
+                    key={ticket.ticketId}
+                    to={`/events/${ticket.eventId}`}
+                    state={{ from: "dashboard" }}
+                    className="flex items-center gap-4 glass-heavy rounded-2xl p-4 border-l-4 border-l-emerald-500 hover-lift cursor-pointer transition-all"
+                  >
+                    <div className="shrink-0 w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                        {ticket.eventTitle}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Check-in is open — tap to check in now
+                      </p>
+                    </div>
+                    <span className="shrink-0 bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-full">
+                      Check In
+                    </span>
+                  </Link>
+                ))}
               </div>
             )}
 

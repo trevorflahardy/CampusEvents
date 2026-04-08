@@ -5,7 +5,7 @@
  * the organizer edit-mode banner, and success/error alert banners into one cohesive
  * action strip at the top of the main content column.
  */
-import type { EventDetail } from "../../lib/api";
+import type { EventDetail, UserTicket } from "../../lib/api";
 import EditableField from "./EditableField";
 
 /** Props for EventActionBar. */
@@ -42,6 +42,12 @@ export interface EventActionBarProps {
   bookingSuccess: string;
   /** Error message to display (e.g. after a failed booking). */
   bookingError: string;
+  /** The current user's ticket for this event, if any. */
+  userTicket?: UserTicket | null;
+  /** Whether a self-check-in request is in progress. */
+  checkingIn?: boolean;
+  /** Handler for the self-check-in button. */
+  onCheckin?: () => void;
 }
 
 /**
@@ -65,7 +71,19 @@ export default function EventActionBar({
   fetchEvent,
   bookingSuccess,
   bookingError,
+  userTicket,
+  checkingIn,
+  onCheckin,
 }: EventActionBarProps) {
+  // Determine if the check-in window is open (30 min before start → end)
+  const now = new Date();
+  const checkinWindowOpen =
+    userTicket &&
+    !userTicket.checkedIn &&
+    hasRegistered &&
+    event.status !== "cancelled" &&
+    now >= new Date(new Date(event.startTime).getTime() - 30 * 60 * 1000) &&
+    now <= new Date(event.endTime);
   return (
     <>
       {/* Capacity + Book Button */}
@@ -142,28 +160,51 @@ export default function EventActionBar({
               )}
             </button>
           )}
+          {/* Self check-in button (within 30min window) */}
+          {checkinWindowOpen && onCheckin && (
+            <button
+              onClick={onCheckin}
+              disabled={checkingIn}
+              className="cursor-pointer font-bold px-8 py-3 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {checkingIn ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Checking In...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Check In
+                </span>
+              )}
+            </button>
+          )}
+          {/* Already checked in */}
+          {userTicket?.checkedIn && hasRegistered && event.status !== "cancelled" && (
+            <span className="inline-flex items-center gap-2 font-bold px-8 py-3 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Checked In
+            </span>
+          )}
+          {/* Registered but check-in not open yet */}
           {hasRegistered &&
-            userRole === "student" &&
+            !userTicket?.checkedIn &&
+            !checkinWindowOpen &&
             event.status !== "cancelled" && (
               <button
                 disabled
                 className="btn-primary font-bold px-8 py-3 rounded-full opacity-50 cursor-not-allowed"
               >
                 <span className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Already Registered
+                  Registered
                 </span>
               </button>
             )}

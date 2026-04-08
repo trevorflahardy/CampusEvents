@@ -44,6 +44,7 @@ export default function AdminPanel() {
     null,
   );
   const [addingCategory, setAddingCategory] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
 
   useEffect(() => {
     loadData();
@@ -103,6 +104,10 @@ export default function AdminPanel() {
       setAddingCategory(false);
     }
   };
+
+  const filteredUsers = users.filter((u) =>
+    u.name.toLowerCase().includes(userSearch.toLowerCase()),
+  );
 
   const tabs: { key: Tab; label: string; count: number }[] = [
     { key: "users", label: "Users", count: users.length },
@@ -171,11 +176,46 @@ export default function AdminPanel() {
 
       {/* Users */}
       {activeTab === "users" && (
-        <div className="glass-heavy rounded-2xl overflow-hidden">
+        <div className="space-y-4">
+          {/* Search bar */}
+          <div className="glass rounded-full flex items-center gap-3 px-5 py-3">
+            <svg
+              className="w-4.5 h-4.5 text-slate-400 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              placeholder="Search users by name..."
+              className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+            />
+            {userSearch && (
+              <button
+                onClick={() => setUserSearch("")}
+                className="cursor-pointer shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          <div className="glass-heavy rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-white/40">
-                <tr className="text-left text-slate-400 border-b border-slate-200/60">
+              <thead className="bg-white/40 dark:bg-white/5">
+                <tr className="text-left text-slate-400 dark:text-slate-500 border-b border-slate-200/60 dark:border-white/10">
                   <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
                     Name
                   </th>
@@ -193,45 +233,58 @@ export default function AdminPanel() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100/40">
-                {users.map((u) => (
-                  <tr
-                    key={u.id}
-                    className="hover:bg-white/40 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-linear-to-br from-accent-dark via-accent to-accent-light flex items-center justify-center text-white text-xs font-semibold shrink-0">
-                          {u.name.charAt(0).toUpperCase()}
+              <tbody className="divide-y divide-slate-100/40 dark:divide-white/5">
+                {filteredUsers.map((u) => (
+                    <tr
+                      key={u.id}
+                      className="hover:bg-white/40 dark:hover:bg-white/5 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-linear-to-br from-accent-dark via-accent to-accent-light flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                            {u.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="font-medium text-slate-900 dark:text-white">
+                            {u.name}
+                          </span>
                         </div>
-                        <span className="font-medium text-slate-900">
-                          {u.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500">{u.email}</td>
-                    <td className="px-6 py-4 font-mono text-slate-500 text-xs">
-                      {u.netId}
-                    </td>
-                    <td className="px-6 py-4">
-                      <select
-                        value={u.role}
-                        disabled={changingRoleUserId === u.id}
-                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                        className="cursor-pointer input-modern rounded-lg px-3 py-1.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <option value="student">student</option>
-                        <option value="organizer">organizer</option>
-                        <option value="admin">admin</option>
-                      </select>
-                    </td>
-                    <td className="px-6 py-4 text-slate-400 text-xs">
-                      {formatDate(u.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{u.email}</td>
+                      <td className="px-6 py-4 font-mono text-slate-500 dark:text-slate-400 text-xs">
+                        {u.netId}
+                      </td>
+                      <td className="px-6 py-4">
+                        <select
+                          value={u.role}
+                          disabled={changingRoleUserId === u.id}
+                          onChange={(e) =>
+                            handleRoleChange(u.id, e.target.value)
+                          }
+                          className="cursor-pointer input-modern rounded-lg px-3 py-1.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <option value="student">student</option>
+                          <option value="organizer">organizer</option>
+                          <option value="admin">admin</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 text-slate-400 dark:text-slate-500 text-xs">
+                        {formatDate(u.createdAt)}
+                      </td>
+                    </tr>
+                  ))}
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-10 text-center text-slate-400 dark:text-slate-500 text-sm"
+                    >
+                      No users matching "{userSearch}"
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
+          </div>
           </div>
         </div>
       )}
