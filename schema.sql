@@ -25,6 +25,7 @@ CREATE TABLE users (
     email         VARCHAR(150)    NOT NULL UNIQUE,
     password_hash TEXT            NOT NULL,
     role          user_role       NOT NULL DEFAULT 'student',
+    profile_photo TEXT,
     created_at    TIMESTAMP       NOT NULL DEFAULT NOW()
 );
 

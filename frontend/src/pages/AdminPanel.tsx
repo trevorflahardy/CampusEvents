@@ -204,37 +204,47 @@ export default function AdminPanel() {
                 onClick={() => setUserSearch("")}
                 className="cursor-pointer shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             )}
           </div>
 
           <div className="glass-heavy rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-white/40 dark:bg-white/5">
-                <tr className="text-left text-slate-400 dark:text-slate-500 border-b border-slate-200/60 dark:border-white/10">
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
-                    NetID
-                  </th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
-                    Created
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100/40 dark:divide-white/5">
-                {filteredUsers.map((u) => (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-white/40 dark:bg-white/5">
+                  <tr className="text-left text-slate-400 dark:text-slate-500 border-b border-slate-200/60 dark:border-white/10">
+                    <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                      NetID
+                    </th>
+                    <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                      Created
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100/40 dark:divide-white/5">
+                  {filteredUsers.map((u) => (
                     <tr
                       key={u.id}
                       className="hover:bg-white/40 dark:hover:bg-white/5 transition-colors"
@@ -249,7 +259,9 @@ export default function AdminPanel() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{u.email}</td>
+                      <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
+                        {u.email}
+                      </td>
                       <td className="px-6 py-4 font-mono text-slate-500 dark:text-slate-400 text-xs">
                         {u.netId}
                       </td>
@@ -272,19 +284,19 @@ export default function AdminPanel() {
                       </td>
                     </tr>
                   ))}
-                {filteredUsers.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-10 text-center text-slate-400 dark:text-slate-500 text-sm"
-                    >
-                      No users matching "{userSearch}"
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  {filteredUsers.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="px-6 py-10 text-center text-slate-400 dark:text-slate-500 text-sm"
+                      >
+                        No users matching "{userSearch}"
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

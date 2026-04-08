@@ -108,8 +108,8 @@ router.get("/user/:userId", authMiddleware, async (c) => {
 // Organizers/admins can still check in any ticket at any time.
 router.patch("/:id/checkin", authMiddleware, async (c) => {
   const id = Number(c.req.param("id"));
-  const userId = c.get("userId") as number;
-  const userRole = c.get("userRole") as string;
+  const callerId = c.get("userId");
+  const callerRole = c.get("userRole");
 
   // Fetch the ticket joined with its event so we can validate timing
   const rows = await db
@@ -128,9 +128,9 @@ router.patch("/:id/checkin", authMiddleware, async (c) => {
   if (!rows.length) return c.json({ error: "Ticket not found" }, 404);
 
   const ticket = rows[0];
-  const isTicketOwner = userId === ticket.ticketUserId;
+  const isTicketOwner = callerId === ticket.ticketUserId;
   const isOrgOrAdmin =
-    userRole === "admin" || userId === ticket.eventOrganizerId;
+    callerRole === "admin" || callerId === ticket.eventOrganizerId;
 
   if (!isTicketOwner && !isOrgOrAdmin) {
     return c.json({ error: "Not authorized to check in this ticket" }, 403);

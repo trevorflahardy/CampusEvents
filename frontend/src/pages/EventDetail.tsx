@@ -39,7 +39,8 @@ export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
-  const cameFromEvents = (location.state as { from?: string } | null)?.from === "events";
+  const cameFromEvents =
+    (location.state as { from?: string } | null)?.from === "events";
   const [event, setEvent] = useState<EventDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

@@ -70,7 +70,8 @@ export default function EventHeroSection({
         let totalLuminance = 0;
         const pixelCount = data.length / 4;
         for (let i = 0; i < data.length; i += 4) {
-          totalLuminance += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+          totalLuminance +=
+            0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
         }
         setIsLightImage(totalLuminance / pixelCount > 140);
       } catch {
@@ -102,8 +103,18 @@ export default function EventHeroSection({
               : "text-white bg-black/30 hover:bg-black/50 border border-white/15"
           }`}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           {backLabel}
         </Link>
@@ -180,8 +191,18 @@ export default function EventHeroSection({
           to={backTo}
           className="cursor-pointer inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#1a4f3b] font-semibold transition-colors mb-4"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           {backLabel}
         </Link>
