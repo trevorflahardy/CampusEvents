@@ -18,7 +18,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     text: string;
   } | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Lock body scroll
   useEffect(() => {
