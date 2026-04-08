@@ -63,7 +63,6 @@ export default function EventActionBar({
   hasRegistered,
   booking,
   onBook,
-  userRole,
   canEdit,
   editMode,
   onEnterEditMode,
@@ -174,8 +173,18 @@ export default function EventActionBar({
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   Check In
                 </span>
@@ -183,14 +192,26 @@ export default function EventActionBar({
             </button>
           )}
           {/* Already checked in */}
-          {userTicket?.checkedIn && hasRegistered && event.status !== "cancelled" && (
-            <span className="inline-flex items-center gap-2 font-bold px-8 py-3 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Checked In
-            </span>
-          )}
+          {userTicket?.checkedIn &&
+            hasRegistered &&
+            event.status !== "cancelled" && (
+              <span className="inline-flex items-center gap-2 font-bold px-8 py-3 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Checked In
+              </span>
+            )}
           {/* Registered but check-in not open yet */}
           {hasRegistered &&
             !userTicket?.checkedIn &&
@@ -201,8 +222,18 @@ export default function EventActionBar({
                 className="btn-primary font-bold px-8 py-3 rounded-full opacity-50 cursor-not-allowed"
               >
                 <span className="flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   Registered
                 </span>
