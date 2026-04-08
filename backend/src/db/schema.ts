@@ -86,3 +86,12 @@ export const eventCategories = pgTable("event_categories", {
     .references(() => categories.id)
     .notNull(),
 });
+
+// Uploaded images table — stores image data in the DB so images survive branch switches and restarts
+export const images = pgTable("images", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull().unique(),
+  mimeType: text("mime_type").notNull(),
+  data: text("data").notNull(), // base64-encoded image data
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

@@ -7,6 +7,7 @@ import {
   tickets,
   eventCategories,
   categories,
+  images,
 } from "../db/schema";
 import { eq, sql, and, gte, lte, inArray } from "drizzle-orm";
 import { authMiddleware, requireRole, type AuthEnv } from "../middleware/auth";
