@@ -153,7 +153,7 @@ export interface User {
   name: string;
   email: string;
   role: "admin" | "organizer" | "student";
-  profilePhoto: string | null;
+  profilePhoto?: string | null;
   createdAt: string;
 }
 
