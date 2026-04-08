@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useAuth } from "../context/useAuth";
 import { useTheme } from "../context/ThemeContext";
+import SettingsModal from "./SettingsModal";
 
 interface DashboardHeaderProps {
   /** Controlled search value */
@@ -20,6 +22,7 @@ export default function DashboardHeader({
 }: DashboardHeaderProps) {
   const { user } = useAuth();
   const { theme, toggle } = useTheme();
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <header className="sticky top-0 z-20 px-6 py-4 flex items-center justify-between shrink-0">
@@ -51,29 +54,9 @@ export default function DashboardHeader({
       <div className="flex items-center gap-3 ml-4 shrink-0">
         {actions}
 
-        {/* Notification bell */}
-        <button
-          className="cursor-pointer p-2 rounded-full hover:bg-white/50 dark:hover:bg-white/10 text-gray-500 dark:text-[#94a3b8] transition-colors"
-          title="Notifications"
-          aria-label="Notifications"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            />
-          </svg>
-        </button>
-
         {/* Settings gear */}
         <button
+          onClick={() => setShowSettings(true)}
           className="cursor-pointer p-2 rounded-full hover:bg-white/50 dark:hover:bg-white/10 text-gray-500 dark:text-[#94a3b8] transition-colors"
           title="Settings"
           aria-label="Settings"
@@ -142,14 +125,30 @@ export default function DashboardHeader({
 
         {/* User avatar */}
         {user && (
-          <div
-            className="w-10 h-10 rounded-full bg-[#1a4f3b] flex items-center justify-center text-white text-sm font-bold shadow-sm border border-white/50 dark:border-emerald-500/50 cursor-pointer"
+          <button
+            onClick={() => setShowSettings(true)}
+            className="cursor-pointer"
             title={user.name}
           >
-            {user.name?.charAt(0).toUpperCase()}
-          </div>
+            {user.profilePhoto ? (
+              <img
+                src={user.profilePhoto}
+                alt={user.name}
+                className="w-10 h-10 rounded-full object-cover shadow-sm border border-white/50 dark:border-emerald-500/50"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-[#1a4f3b] flex items-center justify-center text-white text-sm font-bold shadow-sm border border-white/50 dark:border-emerald-500/50">
+                {user.name?.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </button>
         )}
       </div>
+
+      {/* Settings modal */}
+      {showSettings && (
+        <SettingsModal onClose={() => setShowSettings(false)} />
+      )}
     </header>
   );
 }

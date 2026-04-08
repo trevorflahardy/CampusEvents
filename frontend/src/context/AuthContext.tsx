@@ -21,6 +21,7 @@ export interface AuthContextType {
     role?: string;
   }) => Promise<void>;
   logout: () => void;
+  updateUser: (updated: User) => void;
   isAuthenticated: boolean;
   isOrganizer: boolean;
   isAdmin: boolean;
@@ -79,6 +80,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((updated: User) => {
+    setUser(updated);
+  }, []);
+
   const isAuthenticated = !!user;
   const isOrganizer =
     user?.role === "organizer" || user?.role === "admin" || false;
@@ -93,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        updateUser,
         isAuthenticated,
         isOrganizer,
         isAdmin,

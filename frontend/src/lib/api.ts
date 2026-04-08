@@ -120,10 +120,30 @@ export const api = {
   // Users
   getUsers: () => request<User[]>("/users"),
   updateUserRole: (id: number, role: string) =>
-    request<User>(`/users/${id}`, {
+    request<User>(`/users/${id}/role`, {
       method: "PATCH",
       body: JSON.stringify({ role }),
     }),
+  updateProfile: (id: number, data: { name?: string; email?: string }) =>
+    request<User>(`/users/${id}/profile`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  uploadProfilePhoto: async (userId: number, file: File): Promise<User> => {
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("photo", file);
+    const res = await fetch(`${API_BASE}/users/${userId}/photo`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: "Upload failed" }));
+      throw new ApiError(res.status, body.error || "Upload failed");
+    }
+    return res.json();
+  },
 };
 
 // Types
@@ -133,6 +153,7 @@ export interface User {
   name: string;
   email: string;
   role: "admin" | "organizer" | "student";
+  profilePhoto: string | null;
   createdAt: string;
 }
 

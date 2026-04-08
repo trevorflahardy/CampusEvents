@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
+import { join } from "path";
+import { existsSync, mkdirSync } from "fs";
 import { db } from "../db/client";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
@@ -31,22 +33,99 @@ router.get("/:id", async (c) => {
   return c.json(safe);
 });
 
-// PATCH /api/users/:id — update user role (admin only)
-const updateUserSchema = z.object({
+// PATCH /api/users/:id/role — update user role (admin only)
+const updateRoleSchema = z.object({
   role: z.enum(["admin", "organizer", "student"]),
 });
 
-router.patch("/:id", authMiddleware, requireRole("admin"), async (c) => {
+router.patch("/:id/role", authMiddleware, requireRole("admin"), async (c) => {
   const id = Number(c.req.param("id"));
   if (!Number.isInteger(id) || id <= 0) {
     return c.json({ error: "Invalid user id" }, 400);
   }
   const body = await c.req.json();
-  const parsed = updateUserSchema.safeParse(body);
+  const parsed = updateRoleSchema.safeParse(body);
   if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
   const updated = await db
     .update(users)
     .set({ role: parsed.data.role })
+    .where(eq(users.id, id))
+    .returning();
+  if (!updated.length) return c.json({ error: "User not found" }, 404);
+  const { passwordHash: _, ...safe } = updated[0];
+  return c.json(safe);
+});
+
+// PATCH /api/users/:id/profile — update own profile (name, email)
+const updateProfileSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  email: z.string().email().optional(),
+});
+
+router.patch("/:id/profile", authMiddleware, async (c) => {
+  const id = Number(c.req.param("id"));
+  const callerUserId = c.get("userId");
+
+  if (id !== callerUserId) {
+    return c.json({ error: "You can only update your own profile" }, 403);
+  }
+
+  const body = await c.req.json();
+  const parsed = updateProfileSchema.safeParse(body);
+  if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
+
+  if (!parsed.data.name && !parsed.data.email) {
+    return c.json({ error: "No fields to update" }, 400);
+  }
+
+  try {
+    const updated = await db
+      .update(users)
+      .set(parsed.data)
+      .where(eq(users.id, id))
+      .returning();
+    if (!updated.length) return c.json({ error: "User not found" }, 404);
+    const { passwordHash: _, ...safe } = updated[0];
+    return c.json(safe);
+  } catch (err) {
+    const pgErr = err as { code?: string };
+    if (pgErr.code === "23505") {
+      return c.json({ error: "A user with that email already exists" }, 409);
+    }
+    throw err;
+  }
+});
+
+// POST /api/users/:id/photo — upload profile photo (self only)
+router.post("/:id/photo", authMiddleware, async (c) => {
+  const id = Number(c.req.param("id"));
+  const callerUserId = c.get("userId");
+
+  if (id !== callerUserId) {
+    return c.json({ error: "You can only update your own photo" }, 403);
+  }
+
+  const formData = await c.req.formData();
+  const file = formData.get("photo") as File | null;
+  if (!file) return c.json({ error: "No photo file provided" }, 400);
+
+  const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  if (!allowed.includes(file.type)) {
+    return c.json({ error: "Invalid image type" }, 400);
+  }
+
+  const ext = file.name.split(".").pop() || "jpg";
+  const filename = `avatar_${id}_${Date.now()}.${ext}`;
+  const uploadsDir = join(import.meta.dir, "..", "..", "uploads");
+  if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
+  const filepath = join(uploadsDir, filename);
+
+  await Bun.write(filepath, file);
+
+  const profilePhoto = `/uploads/${filename}`;
+  const updated = await db
+    .update(users)
+    .set({ profilePhoto })
     .where(eq(users.id, id))
     .returning();
   if (!updated.length) return c.json({ error: "User not found" }, 404);
