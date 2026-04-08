@@ -19,6 +19,8 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   } | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const messageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveGenRef = useRef(0);
 
   // Lock body scroll
   useEffect(() => {
@@ -28,35 +30,49 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     };
   }, []);
 
-  // Cleanup debounce on unmount
+  // Cleanup debounce and message timeout on unmount
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
     };
   }, []);
 
-  const showMessage = useCallback(
-    (type: "success" | "error", text: string) => {
-      setMessage({ type, text });
-      setTimeout(() => setMessage(null), 3000);
-    },
-    [],
-  );
+  // Sync form fields when user data changes (e.g. auth finishes loading)
+  useEffect(() => {
+    if (user) {
+      setName(user.name ?? "");
+      setEmail(user.email ?? "");
+    }
+  }, [user]);
+
+  const showMessage = useCallback((type: "success" | "error", text: string) => {
+    if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
+    setMessage({ type, text });
+    messageTimeoutRef.current = setTimeout(() => setMessage(null), 3000);
+  }, []);
 
   const saveProfile = useCallback(
     async (fields: { name?: string; email?: string }) => {
       if (!user) return;
+      const gen = ++saveGenRef.current;
       setSaving(true);
       try {
         const updated = await api.updateProfile(user.id, fields);
-        updateUser(updated);
-        showMessage("success", "Profile updated");
+        if (gen === saveGenRef.current) {
+          updateUser(updated);
+          showMessage("success", "Profile updated");
+        }
       } catch (err) {
-        const msg =
-          err instanceof Error ? err.message : "Failed to update profile";
-        showMessage("error", msg);
+        if (gen === saveGenRef.current) {
+          const msg =
+            err instanceof Error ? err.message : "Failed to update profile";
+          showMessage("error", msg);
+        }
       } finally {
-        setSaving(false);
+        if (gen === saveGenRef.current) {
+          setSaving(false);
+        }
       }
     },
     [user, updateUser, showMessage],
@@ -99,7 +115,8 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     // Basic email format check before saving
     if (value.includes("@") && value.includes(".")) {
       setMessage((current) =>
-        current?.type === "error" && current.text === "Enter a valid email address"
+        current?.type === "error" &&
+        current.text === "Enter a valid email address"
           ? null
           : current,
       );
@@ -111,9 +128,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     showMessage("error", "Enter a valid email address");
   };
 
-  const handlePhotoSelect = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
@@ -123,8 +138,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
       updateUser(updated);
       showMessage("success", "Photo updated");
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "Failed to upload photo";
+      const msg = err instanceof Error ? err.message : "Failed to upload photo";
       showMessage("error", msg);
     } finally {
       setUploadingPhoto(false);

@@ -28,9 +28,7 @@
         "categories_name_unique": {
           "name": "categories_name_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -60,12 +58,8 @@
           "name": "event_categories_event_id_events_id_fk",
           "tableFrom": "event_categories",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -73,12 +67,8 @@
           "name": "event_categories_category_id_categories_id_fk",
           "tableFrom": "event_categories",
           "tableTo": "categories",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["category_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -188,12 +178,8 @@
           "name": "events_organizer_id_users_id_fk",
           "tableFrom": "events",
           "tableTo": "users",
-          "columnsFrom": [
-            "organizer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organizer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -253,12 +239,8 @@
           "name": "tickets_user_id_users_id_fk",
           "tableFrom": "tickets",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -266,12 +248,8 @@
           "name": "tickets_event_id_events_id_fk",
           "tableFrom": "tickets",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -281,9 +259,7 @@
         "tickets_confirmation_code_unique": {
           "name": "tickets_confirmation_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "confirmation_code"
-          ]
+          "columns": ["confirmation_code"]
         }
       },
       "policies": {},
@@ -353,16 +329,12 @@
         "users_net_id_unique": {
           "name": "users_net_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "net_id"
-          ]
+          "columns": ["net_id"]
         },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -374,21 +346,12 @@
     "public.event_status": {
       "name": "event_status",
       "schema": "public",
-      "values": [
-        "upcoming",
-        "ongoing",
-        "completed",
-        "cancelled"
-      ]
+      "values": ["upcoming", "ongoing", "completed", "cancelled"]
     },
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "admin",
-        "organizer",
-        "student"
-      ]
+      "values": ["admin", "organizer", "student"]
     }
   },
   "schemas": {},

@@ -129,6 +129,10 @@ export default function DashboardHeader({
             onClick={() => setShowSettings(true)}
             className="cursor-pointer"
             title={user.name}
+            aria-label={
+              user.name ? `Open settings for ${user.name}` : "Open settings"
+            }
+            aria-haspopup="dialog"
           >
             {user.profilePhoto ? (
               <img
