@@ -219,6 +219,9 @@ export default function EventDetail() {
               fetchEvent={fetchEvent}
               bookingSuccess={bookingSuccess}
               bookingError={bookingError}
+              userTicket={userTicket}
+              checkingIn={checkingIn}
+              onCheckin={handleCheckin}
             />
 
             <EventAboutSection
