@@ -104,14 +104,60 @@ router.get("/user/:userId", authMiddleware, async (c) => {
 });
 
 // Q6: PATCH /api/tickets/:id/checkin — check in a ticket (UPDATE)
+// Self-check-in: allowed 30 min before event start through event end.
+// Organizers/admins can still check in any ticket at any time.
 router.patch("/:id/checkin", authMiddleware, async (c) => {
   const id = Number(c.req.param("id"));
+  const authUser = c.get("user");
+
+  // Fetch the ticket joined with its event so we can validate timing
+  const rows = await db
+    .select({
+      ticketId: tickets.id,
+      ticketUserId: tickets.userId,
+      checkedIn: tickets.checkedIn,
+      eventStartTime: events.startTime,
+      eventEndTime: events.endTime,
+      eventOrganizerId: events.organizerId,
+    })
+    .from(tickets)
+    .innerJoin(events, eq(tickets.eventId, events.id))
+    .where(eq(tickets.id, id));
+
+  if (!rows.length) return c.json({ error: "Ticket not found" }, 404);
+
+  const ticket = rows[0];
+  const isTicketOwner = authUser.id === ticket.ticketUserId;
+  const isOrgOrAdmin =
+    authUser.role === "admin" || authUser.id === ticket.eventOrganizerId;
+
+  if (!isTicketOwner && !isOrgOrAdmin) {
+    return c.json({ error: "Not authorized to check in this ticket" }, 403);
+  }
+
+  // For self-check-in, enforce the 30-min-before-start through event-end window
+  if (isTicketOwner && !isOrgOrAdmin) {
+    const now = new Date();
+    const windowStart = new Date(
+      new Date(ticket.eventStartTime).getTime() - 30 * 60 * 1000,
+    );
+    const windowEnd = new Date(ticket.eventEndTime);
+    if (now < windowStart) {
+      return c.json(
+        { error: "Check-in opens 30 minutes before the event starts" },
+        400,
+      );
+    }
+    if (now > windowEnd) {
+      return c.json({ error: "Check-in has closed for this event" }, 400);
+    }
+  }
+
   const updated = await db
     .update(tickets)
     .set({ checkedIn: true })
     .where(eq(tickets.id, id))
     .returning();
-  if (!updated.length) return c.json({ error: "Ticket not found" }, 404);
   return c.json(updated[0]);
 });
 

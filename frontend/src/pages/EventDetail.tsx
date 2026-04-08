@@ -15,7 +15,12 @@ import {
   type ChangeEvent,
 } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { api, ApiError, type EventDetail as EventDetailType } from "../lib/api";
+import {
+  api,
+  ApiError,
+  type EventDetail as EventDetailType,
+  type UserTicket,
+} from "../lib/api";
 import { useAuth } from "../context/useAuth";
 import {
   EventDetailLoading,
@@ -44,6 +49,8 @@ export default function EventDetail() {
   const [cancelling, setCancelling] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [hasRegistered, setHasRegistered] = useState(false);
+  const [userTicket, setUserTicket] = useState<UserTicket | null>(null);
+  const [checkingIn, setCheckingIn] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,13 +74,15 @@ export default function EventDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  /** Check if the current student user already has a ticket for this event. */
+  /** Check if the current user already has a ticket for this event. */
   useEffect(() => {
-    if (!user || !event || user.role !== "student") return;
+    if (!user || !event) return;
     api
       .getUserTickets(user.id)
       .then((tickets) => {
-        setHasRegistered(tickets.some((t) => t.eventId === event.id));
+        const ticket = tickets.find((t) => t.eventId === event.id);
+        setHasRegistered(!!ticket);
+        setUserTicket(ticket ?? null);
       })
       .catch(() => {});
   }, [user, event]);
@@ -114,6 +123,23 @@ export default function EventDetail() {
       else setBookingError("Failed to book ticket.");
     } finally {
       setBooking(false);
+    }
+  };
+
+  /** Self-check-in for the current user's ticket. */
+  const handleCheckin = async () => {
+    if (!userTicket || !event) return;
+    setCheckingIn(true);
+    setBookingError("");
+    try {
+      await api.checkinTicket(userTicket.ticketId);
+      setUserTicket({ ...userTicket, checkedIn: true });
+      setBookingSuccess("You're checked in! Enjoy the event.");
+    } catch (err) {
+      if (err instanceof ApiError) setBookingError(err.message);
+      else setBookingError("Failed to check in.");
+    } finally {
+      setCheckingIn(false);
     }
   };
 
