@@ -26,6 +26,8 @@ services:
       PORT: "3000"
     depends_on:
       - postgres
+    volumes:
+      - uploads_data:/app/uploads
     develop:
       watch:
         - action: sync
@@ -61,3 +63,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

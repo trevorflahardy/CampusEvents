@@ -19,6 +19,7 @@ import {
   type Category,
   type Attendee,
   type User,
+  type UserTicket,
 } from "../lib/api";
 import { useAuth } from "../context/useAuth";
 import DashboardHeader from "../components/DashboardHeader";
@@ -28,6 +29,7 @@ import {
   DashboardSidebar,
   EventsGrid,
   LoadingSkeleton,
+  StudentEventCard,
 } from "../components/dashboard";
 import { cropBannerImage } from "../components/dashboard/CreateEventForm";
 
@@ -80,6 +82,9 @@ export default function OrganizerDashboard() {
     null,
   );
 
+  // user's registered events (for "My Registered Events" section)
+  const [userTickets, setUserTickets] = useState<UserTicket[]>([]);
+
   /* ---------- data fetching ---------- */
 
   /** Fetches events from the API and filters based on user role. */
@@ -128,6 +133,12 @@ export default function OrganizerDashboard() {
             users.filter((u) => u.role === "organizer" || u.role === "admin"),
           ),
         )
+        .catch(() => {});
+    }
+    if (user) {
+      api
+        .getUserTickets(user.id)
+        .then(setUserTickets)
         .catch(() => {});
     }
   }, [fetchEvents, user]);
@@ -260,13 +271,24 @@ export default function OrganizerDashboard() {
 
   /* ---------- search filter ---------- */
 
+  // Filter out past events (completed/cancelled) for the main grid
+  const activeEvents = events.filter(
+    (e) => e.status === "upcoming" || e.status === "ongoing",
+  );
+
   const filteredEvents = searchQuery.trim()
-    ? events.filter(
+    ? activeEvents.filter(
         (e) =>
           e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           e.location.toLowerCase().includes(searchQuery.toLowerCase()),
       )
-    : events;
+    : activeEvents;
+
+  // Events the current user is registered for (students only)
+  const registeredEventIds = new Set(userTickets.map((t) => t.eventId));
+  const myRegisteredEvents = activeEvents.filter((e) =>
+    registeredEventIds.has(e.id),
+  );
 
   /* ---------- loading skeleton ---------- */
 
@@ -360,6 +382,46 @@ export default function OrganizerDashboard() {
                 onSubmit={handleCreateEvent}
                 onClose={closeForm}
               />
+            )}
+
+            {/* ---- My Registered Events (all users) ---- */}
+            {myRegisteredEvents.length > 0 && (
+              <div className="mb-8">
+                <div className="flex justify-between items-end mb-6">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-wide">
+                    My Registered Events
+                  </h2>
+                  <a
+                    href="/my-tickets"
+                    className="text-sm font-medium text-slate-800 dark:text-slate-300 flex items-center gap-1 hover:underline cursor-pointer"
+                  >
+                    View Tickets
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </a>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {myRegisteredEvents.map((event, index) => (
+                    <StudentEventCard
+                      key={event.id}
+                      event={event}
+                      index={index}
+                      eventCategories={eventCategoriesMap[event.id] || []}
+                    />
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* ---- Section heading + events grid ---- */}
