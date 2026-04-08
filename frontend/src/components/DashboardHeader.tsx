@@ -146,7 +146,7 @@ export default function DashboardHeader({
       </div>
 
       {/* Settings modal */}
-      {showSettings && (
+      {showSettings && user && (
         <SettingsModal onClose={() => setShowSettings(false)} />
       )}
     </header>
