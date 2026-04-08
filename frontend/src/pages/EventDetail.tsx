@@ -151,7 +151,6 @@ export default function EventDetail() {
   const canEdit = isOwner || isAdmin;
   const canBook =
     isAuthenticated &&
-    user?.role === "student" &&
     !soldOut &&
     !hasRegistered &&
     event.status !== "cancelled" &&
