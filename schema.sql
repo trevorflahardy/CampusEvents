@@ -97,6 +97,20 @@ CREATE TABLE tickets (
     CONSTRAINT unique_user_event UNIQUE (user_id, event_id)
 );
 
+-- ──────────────────────────────────────────────────────────────
+-- Uploaded images — stores image binary data in the DB so images
+-- survive branch switches, container restarts, and reseeds.
+-- ──────────────────────────────────────────────────────────────
+
+CREATE TABLE images (
+    id          SERIAL      PRIMARY KEY,
+    filename    TEXT        NOT NULL UNIQUE,
+    mime_type   TEXT        NOT NULL,
+    data        TEXT        NOT NULL,   -- base64-encoded image data
+    created_at  TIMESTAMP   NOT NULL DEFAULT NOW()
+);
+
+
 -- ============================================================
 -- INDEXES (for common query patterns)
 -- ============================================================

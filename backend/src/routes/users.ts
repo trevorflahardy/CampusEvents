@@ -1,9 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { join } from "path";
-import { existsSync, mkdirSync, unlinkSync } from "fs";
 import { db } from "../db/client";
-import { users } from "../db/schema";
+import { users, images } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { authMiddleware, requireRole, type AuthEnv } from "../middleware/auth";
 
@@ -24,6 +22,7 @@ router.get("/", authMiddleware, requireRole("admin"), async (c) => {
   return c.json(rows);
 });
 
+
 // GET /api/users/:id — get a user profile
 router.get("/:id", async (c) => {
   const id = Number(c.req.param("id"));
@@ -33,10 +32,12 @@ router.get("/:id", async (c) => {
   return c.json(safe);
 });
 
+
 // PATCH /api/users/:id/role — update user role (admin only)
 const updateRoleSchema = z.object({
   role: z.enum(["admin", "organizer", "student"]),
 });
+
 
 router.patch("/:id/role", authMiddleware, requireRole("admin"), async (c) => {
   const id = Number(c.req.param("id"));
@@ -56,11 +57,13 @@ router.patch("/:id/role", authMiddleware, requireRole("admin"), async (c) => {
   return c.json(safe);
 });
 
+
 // PATCH /api/users/:id/profile — update own profile (name, email)
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   email: z.string().email().optional(),
 });
+
 
 router.patch("/:id/profile", authMiddleware, async (c) => {
   const id = Number(c.req.param("id"));
@@ -98,6 +101,7 @@ router.patch("/:id/profile", authMiddleware, async (c) => {
     throw err;
   }
 });
+
 
 const MIME_TO_EXT: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -143,37 +147,28 @@ router.post("/:id/photo", authMiddleware, async (c) => {
 
   const ext = MIME_TO_EXT[file.type];
   const filename = `avatar_${id}_${Date.now()}.${ext}`;
-  const uploadsDir = join(import.meta.dir, "..", "..", "uploads");
-  if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
-  const filepath = join(uploadsDir, filename);
 
-  await Bun.write(filepath, file);
+  const arrayBuf = await file.arrayBuffer();
+  const base64Data = Buffer.from(arrayBuf).toString("base64");
+
+  // Store image data in the database
+  await db
+    .insert(images)
+    .values({ filename, mimeType: file.type, data: base64Data })
+    .onConflictDoUpdate({
+      target: images.filename,
+      set: { mimeType: file.type, data: base64Data },
+    });
 
   const profilePhoto = `/uploads/${filename}`;
-  try {
-    const updated = await db
-      .update(users)
-      .set({ profilePhoto })
-      .where(eq(users.id, id))
-      .returning();
-    if (!updated.length) {
-      try {
-        unlinkSync(filepath);
-      } catch {
-        /* ignore */
-      }
-      return c.json({ error: "User not found" }, 404);
-    }
-    const { passwordHash: _, ...safe } = updated[0];
-    return c.json(safe);
-  } catch (err) {
-    try {
-      unlinkSync(filepath);
-    } catch {
-      /* ignore */
-    }
-    throw err;
-  }
+  const updated = await db
+    .update(users)
+    .set({ profilePhoto })
+    .where(eq(users.id, id))
+    .returning();
+  if (!updated.length) return c.json({ error: "User not found" }, 404);
+  const { passwordHash: _, ...safe } = updated[0];
+  return c.json(safe);
 });
 
 // POST /api/users — register a new user with Zod validation
@@ -188,6 +183,7 @@ const registerUserSchema = z.object({
   passwordHash: z.string().min(1),
   role: z.enum(["admin", "organizer", "student"]).optional().default("student"),
 });
+
 
 router.post("/", async (c) => {
   const body = await c.req.json();
@@ -209,5 +205,6 @@ router.post("/", async (c) => {
     return c.json({ error: "Failed to register user" }, 500);
   }
 });
+
 
 export default router;

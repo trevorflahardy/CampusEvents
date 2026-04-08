@@ -361,12 +361,18 @@ router.post(
 
     const ext = file.name.split(".").pop() || "jpg";
     const filename = `banner_${id}_${Date.now()}.${ext}`;
-    const { join } = await import("path");
-    const uploadsDir = join(import.meta.dir, "..", "..", "uploads");
-    const filepath = join(uploadsDir, filename);
 
     const buffer = await file.arrayBuffer();
-    await Bun.write(filepath, buffer);
+    const base64Data = Buffer.from(buffer).toString("base64");
+
+    // Store image data in the database
+    await db
+      .insert(images)
+      .values({ filename, mimeType: file.type, data: base64Data })
+      .onConflictDoUpdate({
+        target: images.filename,
+        set: { mimeType: file.type, data: base64Data },
+      });
 
     const bannerUrl = `/uploads/${filename}`;
     const updated = await db
