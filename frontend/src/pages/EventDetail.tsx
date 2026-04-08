@@ -56,6 +56,8 @@ export default function EventDetail() {
   const [checkingIn, setCheckingIn] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showUnregisterConfirm, setShowUnregisterConfirm] = useState(false);
+  const [unregistering, setUnregistering] = useState(false);
   const [, setTick] = useState(0);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
@@ -182,6 +184,26 @@ export default function EventDetail() {
     }
   };
 
+  /** Unregisters the current user from this event. */
+  const handleUnregister = async () => {
+    if (!userTicket || !event) return;
+    setUnregistering(true);
+    try {
+      await api.cancelTicket(userTicket.ticketId);
+      setHasRegistered(false);
+      setUserTicket(null);
+      setShowUnregisterConfirm(false);
+      const updated = await api.getEvent(event.id);
+      setEvent(updated);
+      toast.success("Registration cancelled");
+    } catch (err) {
+      if (err instanceof ApiError) toast.error(err.message);
+      else toast.error("Failed to cancel registration.");
+    } finally {
+      setUnregistering(false);
+    }
+  };
+
   /** Opens the cancel-event confirmation dialog. */
   const requestCancelEvent = () => {
     setShowCancelConfirm(true);
@@ -268,6 +290,8 @@ export default function EventDetail() {
               userTicket={userTicket}
               checkingIn={checkingIn}
               onCheckin={handleCheckin}
+              onUnregister={() => setShowUnregisterConfirm(true)}
+              unregistering={unregistering}
             />
 
             <EventAboutSection
@@ -299,6 +323,17 @@ export default function EventDetail() {
         loading={cancelling}
         onConfirm={handleCancelEvent}
         onCancel={() => setShowCancelConfirm(false)}
+      />
+
+      <ConfirmDialog
+        open={showUnregisterConfirm}
+        title="Cancel your registration?"
+        message="Your ticket will be cancelled and the spot will be released."
+        confirmText="Unregister"
+        isDangerous={true}
+        loading={unregistering}
+        onConfirm={handleUnregister}
+        onCancel={() => setShowUnregisterConfirm(false)}
       />
     </div>
   );

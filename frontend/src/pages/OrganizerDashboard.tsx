@@ -303,13 +303,19 @@ export default function OrganizerDashboard() {
     (e) => e.status === "upcoming" || e.status === "ongoing",
   );
 
+  // For non-managers, exclude events the user is already registered for
+  // (those appear in "My Registered Events" above)
+  const baseEvents = isManager
+    ? activeEvents
+    : activeEvents.filter((e) => !registeredEventIds.has(e.id));
+
   const filteredEvents = searchQuery.trim()
-    ? activeEvents.filter(
+    ? baseEvents.filter(
         (e) =>
           e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           e.location.toLowerCase().includes(searchQuery.toLowerCase()),
       )
-    : activeEvents;
+    : baseEvents;
 
   // Events the current user is registered for
   const registeredEventIds = new Set(userTickets.map((t) => t.eventId));

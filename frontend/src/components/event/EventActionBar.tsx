@@ -48,6 +48,10 @@ export interface EventActionBarProps {
   checkingIn?: boolean;
   /** Handler for the self-check-in button. */
   onCheckin?: () => void;
+  /** Handler for unregistering from the event. */
+  onUnregister?: () => void;
+  /** Whether an unregister request is in progress. */
+  unregistering?: boolean;
 }
 
 /**
@@ -73,6 +77,8 @@ export default function EventActionBar({
   userTicket,
   checkingIn,
   onCheckin,
+  onUnregister,
+  unregistering,
 }: EventActionBarProps) {
   // Determine if the check-in window is open (30 min before start → end)
   const now = new Date();
@@ -219,26 +225,42 @@ export default function EventActionBar({
             !userTicket?.checkedIn &&
             !checkinWindowOpen &&
             event.status !== "cancelled" && (
+              <span className="inline-flex items-center gap-2 font-bold px-8 py-3 rounded-full bg-brand-glow text-[#1a4f3b] border border-brand-light">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Registered
+              </span>
+            )}
+          {/* Unregister button — available when registered, not checked in, event active */}
+          {hasRegistered &&
+            !userTicket?.checkedIn &&
+            onUnregister &&
+            event.status !== "cancelled" &&
+            event.status !== "completed" && (
               <button
-                disabled
-                className="btn-primary font-bold px-8 py-3 rounded-full opacity-50 cursor-not-allowed"
+                onClick={onUnregister}
+                disabled={unregistering}
+                className="cursor-pointer btn-danger font-medium px-5 py-2.5 rounded-full text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  Registered
-                </span>
+                {unregistering ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                    Cancelling...
+                  </span>
+                ) : (
+                  "Cancel Registration"
+                )}
               </button>
             )}
           {soldOut && !hasRegistered && event.status !== "cancelled" && (
