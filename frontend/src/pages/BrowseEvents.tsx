@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { api, type Event, type Category } from "../lib/api";
 import EventCard from "../components/EventCard";
 import DashboardHeader from "../components/DashboardHeader";
+
+const EVENTS_PER_PAGE = 12;
 
 export default function BrowseEvents() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -14,27 +16,8 @@ export default function BrowseEvents() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [status, setStatus] = useState("");
-
-  const fetchEvents = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const params: Record<string, string> = {};
-      if (search) params.search = search;
-      if (categoryId) params.categoryId = categoryId;
-      if (from) params.from = from;
-      if (to) params.to = to;
-      if (status) params.status = status;
-      const data = await api.getEvents(
-        Object.keys(params).length > 0 ? params : undefined,
-      );
-      setEvents(data);
-    } catch {
-      setError("Failed to load events.");
-    } finally {
-      setLoading(false);
-    }
-  }, [search, categoryId, from, to, status]);
+  const [sort, setSort] = useState("date-desc");
+  const [visibleCount, setVisibleCount] = useState(EVENTS_PER_PAGE);
 
   useEffect(() => {
     api
@@ -44,9 +27,33 @@ export default function BrowseEvents() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(fetchEvents, 300);
-    return () => clearTimeout(timer);
-  }, [fetchEvents]);
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const params: Record<string, string> = {};
+        if (search) params.search = search;
+        if (categoryId) params.categoryId = categoryId;
+        if (from) params.from = from;
+        if (to) params.to = to;
+        if (status) params.status = status;
+        const data = await api.getEvents(
+          Object.keys(params).length > 0 ? params : undefined,
+        );
+        if (!cancelled) setEvents(data);
+      } catch {
+        if (!cancelled) setError("Failed to load events.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, 300);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [search, categoryId, from, to, status]);
+
+  useEffect(() => {
+    setVisibleCount(EVENTS_PER_PAGE);
+  }, [search, categoryId, from, to, status, sort]);
 
   const clearFilters = () => {
     setSearch("");
@@ -54,9 +61,23 @@ export default function BrowseEvents() {
     setFrom("");
     setTo("");
     setStatus("");
+    setSort("date-desc");
   };
 
-  const hasFilters = search || categoryId || from || to || status;
+  const hasFilters = search || categoryId || from || to || status || sort !== "date-desc";
+
+  const sortedEvents = [...events].sort((a, b) => {
+    switch (sort) {
+      case "date-asc": return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+      case "date-desc": return new Date(b.startTime).getTime() - new Date(a.startTime).getTime();
+      case "title-asc": return a.title.localeCompare(b.title);
+      case "title-desc": return b.title.localeCompare(a.title);
+      default: return 0;
+    }
+  });
+
+  const visibleEvents = sortedEvents.slice(0, visibleCount);
+  const hasMore = sortedEvents.length > visibleCount;
 
   return (
     <div className="flex flex-col h-screen overflow-hidden animate-fade-in">
@@ -73,14 +94,14 @@ export default function BrowseEvents() {
                 Events
               </h1>
               <p className="text-slate-500 mt-1 text-sm">
-                {events.length} event{events.length !== 1 ? "s" : ""} found
+                {sortedEvents.length} event{sortedEvents.length !== 1 ? "s" : ""} found
               </p>
             </div>
           </div>
 
           {/* Filter Bar */}
           <div className="mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
@@ -119,6 +140,17 @@ export default function BrowseEvents() {
                 <option value="ongoing">Ongoing</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
+              </select>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="cursor-pointer w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
+                aria-label="Sort events"
+              >
+                <option value="date-desc">Date (Newest)</option>
+                <option value="date-asc">Date (Oldest)</option>
+                <option value="title-asc">Title (A-Z)</option>
+                <option value="title-desc">Title (Z-A)</option>
               </select>
             </div>
             {hasFilters && (
@@ -173,11 +205,23 @@ export default function BrowseEvents() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events.map((event, index) => (
-                <EventCard key={event.id} event={event} index={index} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {visibleEvents.map((event, index) => (
+                  <EventCard key={event.id} event={event} index={index} />
+                ))}
+              </div>
+              {hasMore && (
+                <div className="text-center mt-8">
+                  <button
+                    onClick={() => setVisibleCount(v => v + EVENTS_PER_PAGE)}
+                    className="cursor-pointer glass-heavy rounded-full px-8 py-3 text-sm font-semibold text-slate-700 hover:bg-white/80 dark:hover:bg-white/10 transition-all hover-lift"
+                  >
+                    Load More ({sortedEvents.length - visibleCount} remaining)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
         {/* end max-w-7xl */}

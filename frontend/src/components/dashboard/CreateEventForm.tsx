@@ -265,6 +265,7 @@ export default function CreateEventForm({
                 id="ev-title"
                 type="text"
                 required
+                autoFocus
                 value={title}
                 onChange={(e) => onTitleChange(e.target.value)}
                 className="w-full input-glass rounded-xl px-4 py-2.5 text-sm"

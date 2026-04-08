@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { api, type UserTicket } from "../lib/api";
 import { useAuth } from "../context/useAuth";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const statusColors: Record<string, string> = {
   upcoming: "badge-success",
@@ -25,6 +27,8 @@ export default function MyTickets() {
   const [tickets, setTickets] = useState<UserTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [cancellingTicketId, setCancellingTicketId] = useState<number | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const fetchTickets = async () => {
     if (!user) return;
@@ -45,12 +49,17 @@ export default function MyTickets() {
   }, [user]);
 
   const handleCancel = async (ticketId: number) => {
-    if (!confirm("Are you sure you want to cancel this booking?")) return;
+    setCancelling(true);
     try {
       await api.cancelTicket(ticketId);
       setTickets((prev) => prev.filter((t) => t.ticketId !== ticketId));
+      toast.success("Booking cancelled");
     } catch {
       setError("Failed to cancel ticket.");
+      toast.error("Failed to cancel ticket.");
+    } finally {
+      setCancelling(false);
+      setCancellingTicketId(null);
     }
   };
 
@@ -259,7 +268,7 @@ export default function MyTickets() {
                   {ticket.eventStatus !== "cancelled" &&
                     ticket.eventStatus !== "completed" && (
                       <button
-                        onClick={() => handleCancel(ticket.ticketId)}
+                        onClick={() => setCancellingTicketId(ticket.ticketId)}
                         className="cursor-pointer btn-danger rounded-full px-4 py-2 text-sm font-medium transition-all duration-150"
                       >
                         Cancel Booking
@@ -271,6 +280,17 @@ export default function MyTickets() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={cancellingTicketId !== null}
+        title="Cancel this booking?"
+        message="Your ticket will be cancelled and the spot will be released."
+        confirmText="Cancel Booking"
+        isDangerous={true}
+        loading={cancelling}
+        onConfirm={() => { if (cancellingTicketId) handleCancel(cancellingTicketId); }}
+        onCancel={() => setCancellingTicketId(null)}
+      />
     </div>
   );
 }

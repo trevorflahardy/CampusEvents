@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string;
+const TOKEN: string | undefined = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const DEFAULT_LNG = -82.4139;
 const DEFAULT_LAT = 28.0587;
@@ -99,6 +99,7 @@ export default function EventLocationPicker({
       mapInstanceRef.current?.remove();
       mapInstanceRef.current = null;
       markerRef.current = null;
+      if (debounceRef.current) clearTimeout(debounceRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

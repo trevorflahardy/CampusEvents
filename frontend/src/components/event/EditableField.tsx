@@ -15,6 +15,7 @@
  * />
  */
 import { useState, useEffect, useRef, useCallback } from "react";
+import { toast } from "sonner";
 import { api } from "../../lib/api";
 import { toDatetimeLocal } from "./utils";
 
@@ -74,6 +75,7 @@ export default function EditableField({
 
   /** Persists the draft value via the API, or reverts on failure. */
   const save = useCallback(async () => {
+    if (saving) return;
     const trimmed = draft.trim();
     if (trimmed === value) {
       setEditing(false);
@@ -92,10 +94,12 @@ export default function EditableField({
       await api.updateEvent(eventId, payload);
       onSaved();
       setEditing(false);
+      toast.success("Saved");
     } catch {
       // revert on failure
       setDraft(value);
       setEditing(false);
+      toast.error("Failed to save changes");
     } finally {
       setSaving(false);
     }

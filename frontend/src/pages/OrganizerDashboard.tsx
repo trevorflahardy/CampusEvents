@@ -22,7 +22,9 @@ import {
   type UserTicket,
 } from "../lib/api";
 import { useAuth } from "../context/useAuth";
+import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import ConfirmDialog from "../components/ConfirmDialog";
 import DashboardHeader from "../components/DashboardHeader";
 import {
   StatsGrid,
@@ -82,6 +84,7 @@ export default function OrganizerDashboard() {
   const [checkingInTicketId, setCheckingInTicketId] = useState<number | null>(
     null,
   );
+  const [showCancelConfirm, setShowCancelConfirm] = useState<number | null>(null);
 
   // user's registered events (for "My Registered Events" section)
   const [userTickets, setUserTickets] = useState<UserTicket[]>([]);
@@ -153,9 +156,11 @@ export default function OrganizerDashboard() {
     try {
       const cropped = await cropBannerImage(file);
       setBannerFile(cropped);
+      if (bannerPreview) URL.revokeObjectURL(bannerPreview);
       setBannerPreview(URL.createObjectURL(cropped));
     } catch {
       setFormError("Failed to process image.");
+      toast.error("Failed to process image.");
     }
   };
 
@@ -172,6 +177,7 @@ export default function OrganizerDashboard() {
     setPinLat(null);
     setPinLng(null);
     setBannerFile(null);
+    if (bannerPreview) URL.revokeObjectURL(bannerPreview);
     setBannerPreview(null);
     setFormError("");
   };
@@ -184,6 +190,15 @@ export default function OrganizerDashboard() {
     if (!user) return;
     setFormError("");
     setSubmitting(true);
+
+    if (!title.trim()) { setFormError("Title is required."); setSubmitting(false); return; }
+    if (!location.trim()) { setFormError("Location is required."); setSubmitting(false); return; }
+    if (!startTime) { setFormError("Start time is required."); setSubmitting(false); return; }
+    if (!endTime) { setFormError("End time is required."); setSubmitting(false); return; }
+    if (new Date(endTime) <= new Date(startTime)) { setFormError("End time must be after start time."); setSubmitting(false); return; }
+    if (!capacity || Number(capacity) <= 0) { setFormError("Capacity must be a positive number."); setSubmitting(false); return; }
+    if (ticketPrice && Number(ticketPrice) < 0) { setFormError("Price cannot be negative."); setSubmitting(false); return; }
+
     try {
       const newEvent = await api.createEvent({
         title,
@@ -206,9 +221,11 @@ export default function OrganizerDashboard() {
       resetForm();
       setShowForm(false);
       await fetchEvents();
+      toast.success("Event created successfully!");
     } catch (err) {
-      if (err instanceof ApiError) setFormError(err.message);
-      else setFormError("Failed to create event.");
+      const message = err instanceof ApiError ? err.message : "Failed to create event.";
+      setFormError(message);
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -240,25 +257,34 @@ export default function OrganizerDashboard() {
       await api.checkinTicket(ticketId);
       const data = await api.getEventTickets(eventId);
       setAttendeesMap((prev) => ({ ...prev, [eventId]: data }));
+      toast.success("Attendee checked in");
     } catch {
       setError("Failed to check in attendee.");
+      toast.error("Failed to check in attendee.");
     } finally {
       setCheckingInTicketId(null);
     }
   };
 
-  /** Cancels an event after user confirmation. */
+  /** Cancels an event (called after confirmation dialog). */
   const handleCancelEvent = async (eventId: number) => {
-    if (!confirm("Are you sure you want to cancel this event?")) return;
     setCancellingEventId(eventId);
     try {
       await api.updateEvent(eventId, { status: "cancelled" });
       await fetchEvents();
+      toast.success("Event cancelled");
     } catch {
       setError("Failed to cancel event.");
+      toast.error("Failed to cancel event.");
     } finally {
       setCancellingEventId(null);
+      setShowCancelConfirm(null);
     }
+  };
+
+  /** Wrapper that opens the cancel confirmation dialog instead of cancelling directly. */
+  const requestCancelEvent = (eventId: number) => {
+    setShowCancelConfirm(eventId);
   };
 
   /* ---------- derived stats ---------- */
@@ -429,6 +455,7 @@ export default function OrganizerDashboard() {
                 onBannerSelect={handleBannerSelect}
                 onBannerRemove={() => {
                   setBannerFile(null);
+                  if (bannerPreview) URL.revokeObjectURL(bannerPreview);
                   setBannerPreview(null);
                 }}
                 onSubmit={handleCreateEvent}
@@ -491,7 +518,7 @@ export default function OrganizerDashboard() {
               user={user}
               organizers={organizers}
               onToggleAttendees={toggleAttendees}
-              onCancelEvent={handleCancelEvent}
+              onCancelEvent={requestCancelEvent}
               onCheckin={handleCheckin}
               onCreateEvent={() => setShowForm(true)}
             />
@@ -508,6 +535,17 @@ export default function OrganizerDashboard() {
         {/* end flex row */}
       </div>
       {/* end scrollable area */}
+
+      <ConfirmDialog
+        open={showCancelConfirm !== null}
+        title="Cancel this event?"
+        message="All attendees will be notified. This action cannot be undone."
+        confirmText="Cancel Event"
+        isDangerous={true}
+        loading={cancellingEventId !== null}
+        onConfirm={() => { if (showCancelConfirm !== null) handleCancelEvent(showCancelConfirm); }}
+        onCancel={() => setShowCancelConfirm(null)}
+      />
     </div>
   );
 }

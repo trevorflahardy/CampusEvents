@@ -81,6 +81,8 @@ export default function EventActionBar({
     !userTicket.checkedIn &&
     hasRegistered &&
     event.status !== "cancelled" &&
+    event.startTime &&
+    event.endTime &&
     now >= new Date(new Date(event.startTime).getTime() - 30 * 60 * 1000) &&
     now <= new Date(event.endTime);
   return (

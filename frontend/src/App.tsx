@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { Toaster } from "sonner";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Navbar from "./components/Navbar";
@@ -101,6 +102,14 @@ function App() {
         <BrowserRouter>
           <AppLayout />
         </BrowserRouter>
+        <Toaster
+          position="bottom-right"
+          richColors
+          toastOptions={{
+            className:
+              "backdrop-blur-xl bg-white/80 dark:bg-[#0f1419]/80 border border-white/30 dark:border-white/10 shadow-lg",
+          }}
+        />
       </AuthProvider>
     </ThemeProvider>
   );

@@ -1,4 +1,5 @@
 import { useState, useEffect, type FormEvent } from "react";
+import { toast } from "sonner";
 import {
   api,
   ApiError,
@@ -7,6 +8,7 @@ import {
   type Category,
   type PopularCategory,
 } from "../lib/api";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const statusColors: Record<string, string> = {
   upcoming: "badge-success",
@@ -45,6 +47,8 @@ export default function AdminPanel() {
   );
   const [addingCategory, setAddingCategory] = useState(false);
   const [userSearch, setUserSearch] = useState("");
+  const [eventSearch, setEventSearch] = useState("");
+  const [confirmCancelEventId, setConfirmCancelEventId] = useState<number | null>(null);
 
   useEffect(() => {
     loadData();
@@ -81,8 +85,9 @@ export default function AdminPanel() {
             : u,
         ),
       );
+      toast.success(`Role updated to ${newRole}`);
     } catch {
-      setError("Failed to update role.");
+      toast.error("Failed to update role.");
     } finally {
       setChangingRoleUserId(null);
     }
@@ -97,16 +102,40 @@ export default function AdminPanel() {
       const cat = await api.createCategory(newCategoryName.trim());
       setCategories((prev) => [...prev, cat]);
       setNewCategoryName("");
+      toast.success("Category added");
     } catch (err) {
-      if (err instanceof ApiError) setCategoryError(err.message);
-      else setCategoryError("Failed to add category.");
+      const message = err instanceof ApiError ? err.message : "Failed to add category.";
+      setCategoryError(message);
+      toast.error(message);
     } finally {
       setAddingCategory(false);
     }
   };
 
+  const handleCancelEvent = async (eventId: number) => {
+    setCancellingEventId(eventId);
+    try {
+      await api.updateEvent(eventId, { status: "cancelled" });
+      setEvents((prev) =>
+        prev.map((ev) =>
+          ev.id === eventId ? { ...ev, status: "cancelled" } : ev,
+        ),
+      );
+      toast.success("Event cancelled");
+    } catch {
+      toast.error("Failed to cancel event.");
+    } finally {
+      setCancellingEventId(null);
+      setConfirmCancelEventId(null);
+    }
+  };
+
   const filteredUsers = users.filter((u) =>
     u.name.toLowerCase().includes(userSearch.toLowerCase()),
+  );
+
+  const filteredEvents = events.filter((e) =>
+    e.title.toLowerCase().includes(eventSearch.toLowerCase()),
   );
 
   const tabs: { key: Tab; label: string; count: number }[] = [
@@ -303,98 +332,129 @@ export default function AdminPanel() {
 
       {/* Events */}
       {activeTab === "events" && (
-        <div className="glass-heavy rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-white/40">
-                <tr className="text-left text-slate-400 border-b border-slate-200/60">
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
-                    Title
-                  </th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
-                    Organizer
-                  </th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100/40">
-                {events.map((e) => (
-                  <tr
-                    key={e.id}
-                    className="hover:bg-white/40 transition-colors"
-                  >
-                    <td className="px-6 py-4 text-slate-900 font-medium">
-                      {e.title}
-                    </td>
-                    <td className="px-6 py-4 text-slate-500">
-                      {e.organizerName}
-                    </td>
-                    <td className="px-6 py-4 text-slate-400 text-xs">
-                      {formatDate(e.startTime)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`badge ${statusColors[e.status] || "badge-neutral"}`}
-                      >
-                        {e.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      {e.status !== "cancelled" ? (
-                        <button
-                          disabled={cancellingEventId === e.id}
-                          onClick={async () => {
-                            if (!confirm("Cancel this event?")) return;
-                            setCancellingEventId(e.id);
-                            try {
-                              await api.updateEvent(e.id, {
-                                status: "cancelled",
-                              });
-                              setEvents((prev) =>
-                                prev.map((ev) =>
-                                  ev.id === e.id
-                                    ? {
-                                        ...ev,
-                                        status: "cancelled",
-                                      }
-                                    : ev,
-                                ),
-                              );
-                            } catch {
-                              setError("Failed to cancel event.");
-                            } finally {
-                              setCancellingEventId(null);
-                            }
-                          }}
-                          className="cursor-pointer btn-danger rounded-full px-3 py-1.5 text-sm font-semibold transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {cancellingEventId === e.id ? (
-                            <span className="flex items-center gap-1.5">
-                              <span className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
-                              Cancelling...
-                            </span>
-                          ) : (
-                            "Cancel"
-                          )}
-                        </button>
-                      ) : (
-                        <span className="text-xs text-slate-400 font-medium">
-                          No actions
-                        </span>
-                      )}
-                    </td>
+        <div className="space-y-4">
+          {/* Search bar */}
+          <div className="glass rounded-full flex items-center gap-3 px-5 py-3">
+            <svg
+              className="w-4.5 h-4.5 text-slate-400 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              value={eventSearch}
+              onChange={(e) => setEventSearch(e.target.value)}
+              placeholder="Search events by title..."
+              className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+            />
+            {eventSearch && (
+              <button
+                onClick={() => setEventSearch("")}
+                className="cursor-pointer shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          <div className="glass-heavy rounded-2xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-white/40">
+                  <tr className="text-left text-slate-400 border-b border-slate-200/60">
+                    <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                      Organizer
+                    </th>
+                    <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 font-medium text-xs uppercase tracking-wider">
+                      Action
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100/40">
+                  {filteredEvents.map((e) => (
+                    <tr
+                      key={e.id}
+                      className="hover:bg-white/40 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-slate-900 font-medium">
+                        {e.title}
+                      </td>
+                      <td className="px-6 py-4 text-slate-500">
+                        {e.organizerName}
+                      </td>
+                      <td className="px-6 py-4 text-slate-400 text-xs">
+                        {formatDate(e.startTime)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`badge ${statusColors[e.status] || "badge-neutral"}`}
+                        >
+                          {e.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {e.status !== "cancelled" ? (
+                          <button
+                            disabled={cancellingEventId === e.id}
+                            onClick={() => setConfirmCancelEventId(e.id)}
+                            className="cursor-pointer btn-danger rounded-full px-3 py-1.5 text-sm font-semibold transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {cancellingEventId === e.id ? (
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                                Cancelling...
+                              </span>
+                            ) : (
+                              "Cancel"
+                            )}
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-400 font-medium">
+                            No actions
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredEvents.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-10 text-center text-slate-400 dark:text-slate-500 text-sm">
+                        {eventSearch ? `No events matching "${eventSearch}"` : "No events yet."}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -496,6 +556,19 @@ export default function AdminPanel() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmCancelEventId !== null}
+        title="Cancel this event?"
+        message="This will cancel the event for all attendees."
+        confirmText="Cancel Event"
+        isDangerous={true}
+        loading={cancellingEventId !== null}
+        onConfirm={() => {
+          if (confirmCancelEventId !== null) handleCancelEvent(confirmCancelEventId);
+        }}
+        onCancel={() => setConfirmCancelEventId(null)}
+      />
     </div>
   );
 }

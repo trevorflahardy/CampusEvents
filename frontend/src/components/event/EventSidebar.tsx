@@ -6,6 +6,7 @@
  * button visible only to the event owner.
  */
 import { useState } from "react";
+import { toast } from "sonner";
 import type { EventDetail } from "../../lib/api";
 import EventMapPreview from "../EventMapPreview";
 import EditableField from "./EditableField";
@@ -229,6 +230,31 @@ export default function EventSidebar({
           </div>
         </div>
       </div>
+
+      {/* Share Event */}
+      <button
+        type="button"
+        onClick={() => {
+          navigator.clipboard.writeText(window.location.href);
+          toast.success("Event link copied to clipboard");
+        }}
+        className="cursor-pointer w-full flex items-center justify-center gap-2 py-2.5 rounded-xl glass-subtle text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-white/10 transition-colors"
+      >
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-1.06a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.627"
+          />
+        </svg>
+        Share Event
+      </button>
 
       {/* Cancel Event Button (owner only, not already cancelled) */}
       {isOwner && event.status !== "cancelled" && (

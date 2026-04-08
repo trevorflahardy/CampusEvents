@@ -15,6 +15,7 @@ import {
   type ChangeEvent,
 } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { toast } from "sonner";
 import {
   api,
   ApiError,
@@ -22,6 +23,7 @@ import {
   type UserTicket,
 } from "../lib/api";
 import { useAuth } from "../context/useAuth";
+import ConfirmDialog from "../components/ConfirmDialog";
 import {
   EventDetailLoading,
   EventDetailError,
@@ -53,6 +55,8 @@ export default function EventDetail() {
   const [userTicket, setUserTicket] = useState<UserTicket | null>(null);
   const [checkingIn, setCheckingIn] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [, setTick] = useState(0);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
   /** Refetches the current event from the API (used after inline edits). */
@@ -67,13 +71,29 @@ export default function EventDetail() {
   /** Initial event fetch on mount. */
   useEffect(() => {
     if (!id) return;
+    let cancelled = false;
     setLoading(true);
     api
       .getEvent(Number(id))
-      .then(setEvent)
-      .catch(() => setError("Failed to load event."))
-      .finally(() => setLoading(false));
+      .then((data) => {
+        if (!cancelled) setEvent(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Failed to load event.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
+
+  /** Re-render every 60s so check-in window calculation stays fresh. */
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   /** Check if the current user already has a ticket for this event. */
   useEffect(() => {
@@ -97,8 +117,12 @@ export default function EventDetail() {
       await api.uploadEventBanner(event.id, file);
       const updated = await api.getEvent(event.id);
       setEvent(updated);
+      toast.success("Banner updated");
     } catch (err) {
-      if (err instanceof ApiError) setBookingError(err.message);
+      if (err instanceof ApiError) {
+        setBookingError(err.message);
+        toast.error(err.message);
+      }
     } finally {
       setUploadingBanner(false);
       if (bannerInputRef.current) bannerInputRef.current.value = "";
@@ -116,12 +140,20 @@ export default function EventDetail() {
       setBookingSuccess(
         `Ticket booked! Confirmation: ${ticket.confirmationCode}`,
       );
+      toast.success(
+        "Ticket booked! Confirmation: " + ticket.confirmationCode,
+      );
       setHasRegistered(true);
       const updated = await api.getEvent(event.id);
       setEvent(updated);
     } catch (err) {
-      if (err instanceof ApiError) setBookingError(err.message);
-      else setBookingError("Failed to book ticket.");
+      if (err instanceof ApiError) {
+        setBookingError(err.message);
+        toast.error(err.message);
+      } else {
+        setBookingError("Failed to book ticket.");
+        toast.error("Failed to book ticket.");
+      }
     } finally {
       setBooking(false);
     }
@@ -136,25 +168,38 @@ export default function EventDetail() {
       await api.checkinTicket(userTicket.ticketId);
       setUserTicket({ ...userTicket, checkedIn: true });
       setBookingSuccess("You're checked in! Enjoy the event.");
+      toast.success("You're checked in! Enjoy the event.");
     } catch (err) {
-      if (err instanceof ApiError) setBookingError(err.message);
-      else setBookingError("Failed to check in.");
+      if (err instanceof ApiError) {
+        setBookingError(err.message);
+        toast.error(err.message);
+      } else {
+        setBookingError("Failed to check in.");
+        toast.error("Failed to check in.");
+      }
     } finally {
       setCheckingIn(false);
     }
   };
 
-  /** Cancels the event after user confirmation. */
+  /** Opens the cancel-event confirmation dialog. */
+  const requestCancelEvent = () => {
+    setShowCancelConfirm(true);
+  };
+
+  /** Cancels the event (called from the ConfirmDialog onConfirm). */
   const handleCancelEvent = async () => {
-    if (!event || !confirm("Are you sure you want to cancel this event?"))
-      return;
+    if (!event) return;
     setCancelling(true);
     try {
       await api.updateEvent(event.id, { status: "cancelled" });
       const updated = await api.getEvent(event.id);
       setEvent(updated);
+      setShowCancelConfirm(false);
+      toast.success("Event cancelled");
     } catch {
       setError("Failed to cancel event.");
+      toast.error("Failed to cancel event.");
     } finally {
       setCancelling(false);
     }
@@ -240,10 +285,21 @@ export default function EventDetail() {
             fetchEvent={fetchEvent}
             isOwner={isOwner}
             cancelling={cancelling}
-            onCancelEvent={handleCancelEvent}
+            onCancelEvent={requestCancelEvent}
           />
         </div>
       </section>
+
+      <ConfirmDialog
+        open={showCancelConfirm}
+        title="Cancel this event?"
+        message="All attendees will be notified. This action cannot be undone."
+        confirmText="Cancel Event"
+        isDangerous={true}
+        loading={cancelling}
+        onConfirm={handleCancelEvent}
+        onCancel={() => setShowCancelConfirm(false)}
+      />
     </div>
   );
 }

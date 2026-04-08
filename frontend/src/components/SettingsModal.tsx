@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { toast } from "sonner";
 import { useAuth } from "../context/useAuth";
 import { api } from "../lib/api";
 
@@ -13,13 +14,8 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const [email, setEmail] = useState(user?.email ?? "");
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const messageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveGenRef = useRef(0);
 
   // Lock body scroll
@@ -30,13 +26,21 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     };
   }, []);
 
-  // Cleanup debounce and message timeout on unmount
+  // Cleanup debounce on unmount
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
     };
   }, []);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   // Sync form fields when user data changes (e.g. auth finishes loading)
   useEffect(() => {
@@ -45,12 +49,6 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
       setEmail(user.email ?? "");
     }
   }, [user]);
-
-  const showMessage = useCallback((type: "success" | "error", text: string) => {
-    if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
-    setMessage({ type, text });
-    messageTimeoutRef.current = setTimeout(() => setMessage(null), 3000);
-  }, []);
 
   const saveProfile = useCallback(
     async (fields: { name?: string; email?: string }) => {
@@ -61,13 +59,13 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         const updated = await api.updateProfile(user.id, fields);
         if (gen === saveGenRef.current) {
           updateUser(updated);
-          showMessage("success", "Profile updated");
+          toast.success("Profile updated");
         }
       } catch (err) {
         if (gen === saveGenRef.current) {
           const msg =
             err instanceof Error ? err.message : "Failed to update profile";
-          showMessage("error", msg);
+          toast.error(msg);
         }
       } finally {
         if (gen === saveGenRef.current) {
@@ -75,7 +73,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         }
       }
     },
-    [user, updateUser, showMessage],
+    [user, updateUser],
   );
 
   // Debounced auto-save for text fields
@@ -97,35 +95,24 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const handleNameChange = (value: string) => {
     setName(value);
     if (value.trim().length > 0) {
-      setMessage((current) =>
-        current?.type === "error" && current.text === "Name cannot be empty"
-          ? null
-          : current,
-      );
       debounceSave({ name: value });
       return;
     }
 
     cancelPendingSave();
-    showMessage("error", "Name cannot be empty");
+    toast.error("Name cannot be empty");
   };
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
     // Basic email format check before saving
     if (value.includes("@") && value.includes(".")) {
-      setMessage((current) =>
-        current?.type === "error" &&
-        current.text === "Enter a valid email address"
-          ? null
-          : current,
-      );
       debounceSave({ email: value });
       return;
     }
 
     cancelPendingSave();
-    showMessage("error", "Enter a valid email address");
+    toast.error("Enter a valid email address");
   };
 
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,10 +123,10 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     try {
       const updated = await api.uploadProfilePhoto(user.id, file);
       updateUser(updated);
-      showMessage("success", "Photo updated");
+      toast.success("Photo updated");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to upload photo";
-      showMessage("error", msg);
+      toast.error(msg);
     } finally {
       setUploadingPhoto(false);
       // Reset input so the same file can be re-selected
@@ -184,19 +171,6 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
           Account Settings
         </h2>
-
-        {/* Status message */}
-        {message && (
-          <div
-            className={`mb-4 px-4 py-2 rounded-xl text-sm font-medium animate-fade-in ${
-              message.type === "success"
-                ? "bg-emerald-100/80 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-700/30"
-                : "bg-red-100/80 text-red-800 dark:bg-red-900/30 dark:text-red-300 border border-red-200/50 dark:border-red-700/30"
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
 
         {/* Profile photo section */}
         <div className="flex items-center gap-5 mb-8">
