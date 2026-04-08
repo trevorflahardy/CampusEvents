@@ -419,6 +419,73 @@ router.get(
   },
 );
 
+// GET /api/events/:id/checkins — checked-in attendee count + list
+// Organizers/admins: always accessible.
+// All other authenticated users: only accessible within the check-in window
+// (30 min before event start through event end).
+router.get("/:id/checkins", authMiddleware, async (c) => {
+  const id = Number(c.req.param("id"));
+  const callerId = c.get("userId");
+  const callerRole = c.get("userRole");
+
+  const eventRows = await db
+    .select({
+      startTime: events.startTime,
+      endTime: events.endTime,
+      organizerId: events.organizerId,
+      capacity: events.capacity,
+    })
+    .from(events)
+    .where(eq(events.id, id));
+
+  if (!eventRows.length) return c.json({ error: "Event not found" }, 404);
+
+  const ev = eventRows[0];
+  const isOrgOrAdmin = callerRole === "admin" || callerId === ev.organizerId;
+
+  if (!isOrgOrAdmin) {
+    const now = new Date();
+    const windowStart = new Date(
+      new Date(ev.startTime).getTime() - 30 * 60 * 1000,
+    );
+    const windowEnd = new Date(ev.endTime);
+    if (now < windowStart) {
+      return c.json(
+        { error: "Check-in data is not available yet" },
+        403,
+      );
+    }
+    if (now > windowEnd) {
+      return c.json(
+        { error: "This event has ended" },
+        403,
+      );
+    }
+  }
+
+  const checkedInRows = await db
+    .select({
+      ticketId: tickets.id,
+      userId: tickets.userId,
+      userName: users.name,
+      checkedIn: tickets.checkedIn,
+    })
+    .from(tickets)
+    .innerJoin(users, eq(tickets.userId, users.id))
+    .where(and(eq(tickets.eventId, id), eq(tickets.checkedIn, true)));
+
+  const totalRows = await db
+    .select({ count: sql<number>`cast(count(*) as int)` })
+    .from(tickets)
+    .where(eq(tickets.eventId, id));
+
+  return c.json({
+    checkedInCount: checkedInRows.length,
+    totalTickets: totalRows[0].count,
+    attendees: checkedInRows,
+  });
+});
+
 // PUT /api/events/:id/categories — replace all categories for an event
 const setCategoriesSchema = z.object({
   categoryIds: z.array(z.number().int().positive()),
