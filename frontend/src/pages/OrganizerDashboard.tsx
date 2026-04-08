@@ -303,6 +303,12 @@ export default function OrganizerDashboard() {
     (e) => e.status === "upcoming" || e.status === "ongoing",
   );
 
+  // Events the current user is registered for
+  const registeredEventIds = new Set(userTickets.map((t) => t.eventId));
+  const myRegisteredEvents = activeEvents.filter((e) =>
+    registeredEventIds.has(e.id),
+  );
+
   // For non-managers, exclude events the user is already registered for
   // (those appear in "My Registered Events" above)
   const baseEvents = isManager
@@ -316,12 +322,6 @@ export default function OrganizerDashboard() {
           e.location.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : baseEvents;
-
-  // Events the current user is registered for
-  const registeredEventIds = new Set(userTickets.map((t) => t.eventId));
-  const myRegisteredEvents = activeEvents.filter((e) =>
-    registeredEventIds.has(e.id),
-  );
 
   // Tickets eligible for self-check-in (30min before start → end, not checked in)
   const now = new Date();
