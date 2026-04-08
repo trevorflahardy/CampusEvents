@@ -18,6 +18,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { api } from "../../lib/api";
 import { toDatetimeLocal } from "./utils";
+import GlassDateTimePicker from "../GlassDateTimePicker";
 
 /** Props for the EditableField component. */
 export interface EditableFieldProps {
@@ -146,18 +147,40 @@ export default function EditableField({
       );
     }
 
+    if (type === "datetime-local") {
+      return (
+        <div className="space-y-1.5">
+          <GlassDateTimePicker
+            value={toDatetimeLocal(draft)}
+            onChange={(v) => setDraft(v ? new Date(v).toISOString() : "")}
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={save}
+              disabled={saving}
+              className="cursor-pointer btn-primary rounded-lg px-3 py-1 text-xs font-semibold disabled:opacity-50"
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+            <button
+              type="button"
+              onClick={cancel}
+              className="cursor-pointer btn-secondary rounded-lg px-3 py-1 text-xs font-semibold"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <input
         ref={inputRef as React.RefObject<HTMLInputElement>}
         type={type}
-        value={type === "datetime-local" ? toDatetimeLocal(draft) : draft}
-        onChange={(e) =>
-          setDraft(
-            type === "datetime-local"
-              ? new Date(e.target.value).toISOString()
-              : e.target.value,
-          )
-        }
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
         onBlur={save}
         onKeyDown={handleKeyDown}
         disabled={saving}

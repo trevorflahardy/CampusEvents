@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { api, type Event, type Category } from "../lib/api";
 import EventCard from "../components/EventCard";
 import DashboardHeader from "../components/DashboardHeader";
+import GlassDateTimePicker from "../components/GlassDateTimePicker";
 
 const EVENTS_PER_PAGE = 12;
 
@@ -115,19 +116,17 @@ export default function BrowseEvents() {
                   </option>
                 ))}
               </select>
-              <input
-                type="date"
+              <GlassDateTimePicker
                 value={from}
-                onChange={(e) => setFrom(e.target.value)}
-                className="w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
-                aria-label="Start date filter"
+                onChange={setFrom}
+                showTime={false}
+                pill
               />
-              <input
-                type="date"
+              <GlassDateTimePicker
                 value={to}
-                onChange={(e) => setTo(e.target.value)}
-                className="w-full input-glass rounded-full px-4 py-2.5 text-sm text-slate-700"
-                aria-label="End date filter"
+                onChange={setTo}
+                showTime={false}
+                pill
               />
               <select
                 value={status}

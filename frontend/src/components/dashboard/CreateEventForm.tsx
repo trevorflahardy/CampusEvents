@@ -10,6 +10,7 @@
 import { useRef, type FormEvent, type ChangeEvent } from "react";
 import type { Category } from "../../lib/api";
 import EventLocationPicker from "../EventLocationPicker";
+import GlassDateTimePicker from "../GlassDateTimePicker";
 
 /** Props for the {@link CreateEventForm} component. */
 export interface CreateEventFormProps {
@@ -278,13 +279,11 @@ export default function CreateEventForm({
               >
                 Start
               </label>
-              <input
+              <GlassDateTimePicker
                 id="ev-start"
-                type="datetime-local"
-                required
                 value={startTime}
-                onChange={(e) => onStartTimeChange(e.target.value)}
-                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm"
+                onChange={onStartTimeChange}
+                required
               />
             </div>
             <div>
@@ -294,13 +293,11 @@ export default function CreateEventForm({
               >
                 End
               </label>
-              <input
+              <GlassDateTimePicker
                 id="ev-end"
-                type="datetime-local"
-                required
                 value={endTime}
-                onChange={(e) => onEndTimeChange(e.target.value)}
-                className="w-full input-glass rounded-xl px-4 py-2.5 text-sm"
+                onChange={onEndTimeChange}
+                required
               />
             </div>
             <div>
