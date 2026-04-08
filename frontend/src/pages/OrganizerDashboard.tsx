@@ -32,7 +32,6 @@ import {
   DashboardSidebar,
   EventsGrid,
   LoadingSkeleton,
-  StudentEventCard,
 } from "../components/dashboard";
 import { cropBannerImage } from "../components/dashboard/CreateEventForm";
 
@@ -89,20 +88,20 @@ export default function OrganizerDashboard() {
   // user's registered events (for "My Registered Events" section)
   const [userTickets, setUserTickets] = useState<UserTicket[]>([]);
 
+  // tab state: which event view is active
+  const [activeTab, setActiveTab] = useState<"my-events" | "registered" | "all">(
+    isManager ? "my-events" : "all"
+  );
+
   /* ---------- data fetching ---------- */
 
-  /** Fetches events from the API and filters based on user role. */
+  /** Fetches all events from the API (filtering is done client-side by tab). */
   const fetchEvents = useCallback(async () => {
     try {
       const data = await api.getEvents();
-      const filtered = isAdmin
-        ? data
-        : isOrganizer
-          ? data.filter((e) => e.organizerId === user?.id)
-          : data;
-      setEvents(filtered);
+      setEvents(data);
       const catMap: Record<number, Category[]> = {};
-      for (const ev of filtered) {
+      for (const ev of data) {
         catMap[ev.id] = ev.categories ?? [];
       }
       setEventCategoriesMap(catMap);
@@ -111,7 +110,7 @@ export default function OrganizerDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [user, isAdmin, isOrganizer]);
+  }, []);
 
   /** Lock body scroll when modal is open. */
   useEffect(() => {
@@ -289,14 +288,15 @@ export default function OrganizerDashboard() {
 
   /* ---------- derived stats ---------- */
 
-  const totalEvents = events.length;
-  const upcomingCount = events.filter((e) => e.status === "upcoming").length;
+  const myOwnEvents = events.filter((e) => e.organizerId === user?.id);
+  const totalEvents = isManager ? myOwnEvents.length : events.length;
+  const upcomingCount = (isManager ? myOwnEvents : events).filter((e) => e.status === "upcoming").length;
   const totalAttendees = Object.values(attendeesMap).reduce(
     (sum, list) => sum + list.length,
     0,
   );
 
-  /* ---------- search filter ---------- */
+  /* ---------- tab-based filtering ---------- */
 
   // Filter out past events (completed/cancelled) for the main grid
   const activeEvents = events.filter(
@@ -305,15 +305,17 @@ export default function OrganizerDashboard() {
 
   // Events the current user is registered for
   const registeredEventIds = new Set(userTickets.map((t) => t.eventId));
-  const myRegisteredEvents = activeEvents.filter((e) =>
-    registeredEventIds.has(e.id),
-  );
 
-  // For non-managers, exclude events the user is already registered for
-  // (those appear in "My Registered Events" above)
-  const baseEvents = isManager
-    ? activeEvents
-    : activeEvents.filter((e) => !registeredEventIds.has(e.id));
+  // Determine base events based on the active tab
+  let baseEvents: Event[];
+  if (activeTab === "my-events" && isManager) {
+    baseEvents = activeEvents.filter((e) => e.organizerId === user?.id);
+  } else if (activeTab === "registered") {
+    baseEvents = activeEvents.filter((e) => registeredEventIds.has(e.id));
+  } else {
+    // "all" tab — show everything
+    baseEvents = activeEvents;
+  }
 
   const filteredEvents = searchQuery.trim()
     ? baseEvents.filter(
@@ -322,6 +324,18 @@ export default function OrganizerDashboard() {
           e.location.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : baseEvents;
+
+  // Tab definitions
+  const tabs = isManager
+    ? [
+        { key: "my-events" as const, label: "My Events", count: activeEvents.filter((e) => e.organizerId === user?.id).length },
+        { key: "registered" as const, label: "Registered", count: activeEvents.filter((e) => registeredEventIds.has(e.id)).length },
+        { key: "all" as const, label: "All Events", count: activeEvents.length },
+      ]
+    : [
+        { key: "registered" as const, label: "Registered", count: activeEvents.filter((e) => registeredEventIds.has(e.id)).length },
+        { key: "all" as const, label: "All Events", count: activeEvents.length },
+      ];
 
   // Tickets eligible for self-check-in (30min before start → end, not checked in)
   const now = new Date();
@@ -469,45 +483,33 @@ export default function OrganizerDashboard() {
               />
             )}
 
-            {/* ---- My Registered Events (all users) ---- */}
-            {myRegisteredEvents.length > 0 && (
-              <div className="mb-8">
-                <div className="flex justify-between items-end mb-6">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-wide">
-                    My Registered Events
-                  </h2>
-                  <a
-                    href="/my-tickets"
-                    className="text-sm font-medium text-slate-800 dark:text-slate-300 flex items-center gap-1 hover:underline cursor-pointer"
+            {/* ---- Tab navigation ---- */}
+            <div className="mb-6">
+              <div className="flex items-center gap-1 glass-subtle rounded-full p-1 w-fit">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`cursor-pointer rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
+                      activeTab === tab.key
+                        ? "bg-[#1a4f3b] text-white shadow-sm"
+                        : "text-slate-600 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-white/5"
+                    }`}
                   >
-                    View Tickets
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2}
+                    {tab.label}
+                    <span
+                      className={`text-xs rounded-full px-1.5 py-0.5 font-bold ${
+                        activeTab === tab.key
+                          ? "bg-white/20 text-white"
+                          : "bg-slate-200/60 dark:bg-white/10 text-slate-500 dark:text-slate-400"
+                      }`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </a>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {myRegisteredEvents.map((event, index) => (
-                    <StudentEventCard
-                      key={event.id}
-                      event={event}
-                      index={index}
-                      eventCategories={eventCategoriesMap[event.id] || []}
-                    />
-                  ))}
-                </div>
+                      {tab.count}
+                    </span>
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
             {/* ---- Section heading + events grid ---- */}
             <EventsGrid
@@ -516,6 +518,7 @@ export default function OrganizerDashboard() {
               isAdmin={isAdmin}
               isOrganizer={isOrganizer}
               searchQuery={searchQuery}
+              activeTab={activeTab}
               eventCategoriesMap={eventCategoriesMap}
               attendeesMap={attendeesMap}
               expandedEvent={expandedEvent}

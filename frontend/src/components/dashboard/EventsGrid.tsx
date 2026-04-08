@@ -22,6 +22,8 @@ export interface EventsGridProps {
   isOrganizer: boolean;
   /** Current search query */
   searchQuery: string;
+  /** Active tab key */
+  activeTab: "my-events" | "registered" | "all";
   /** Map of event ID to categories */
   eventCategoriesMap: Record<number, Category[]>;
   /** Map of event ID to attendees */
@@ -56,6 +58,7 @@ export default function EventsGrid({
   isAdmin,
   isOrganizer,
   searchQuery,
+  activeTab,
   eventCategoriesMap,
   attendeesMap,
   expandedEvent,
@@ -68,38 +71,11 @@ export default function EventsGrid({
   onCheckin,
   onCreateEvent,
 }: EventsGridProps) {
+  // Show manager cards only on "my-events" tab for managers
+  const useManagerCards = isManager && activeTab === "my-events";
+
   return (
     <>
-      {/* ---- Section heading ---- */}
-      <div className="flex justify-between items-end mb-6">
-        <h2 className="text-2xl font-bold text-slate-900 tracking-wide">
-          {isAdmin
-            ? "All Events"
-            : isOrganizer
-              ? "My Events"
-              : "Upcoming Events"}
-        </h2>
-        <a
-          href="/events"
-          className="text-sm font-medium text-slate-800 flex items-center gap-1 hover:underline cursor-pointer"
-        >
-          View All
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </a>
-      </div>
-
       {/* ---- events grid ---- */}
       {filteredEvents.length === 0 ? (
         <EmptyEventsState
@@ -107,18 +83,7 @@ export default function EventsGrid({
           isManager={isManager}
           onCreateEvent={onCreateEvent}
         />
-      ) : !isManager ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredEvents.map((event, index) => (
-            <StudentEventCard
-              key={event.id}
-              event={event}
-              index={index}
-              eventCategories={eventCategoriesMap[event.id] || []}
-            />
-          ))}
-        </div>
-      ) : (
+      ) : useManagerCards ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredEvents.map((event, idx) => (
             <ManagerEventCard
@@ -135,6 +100,17 @@ export default function EventsGrid({
               onToggleAttendees={onToggleAttendees}
               onCancelEvent={onCancelEvent}
               onCheckin={onCheckin}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredEvents.map((event, index) => (
+            <StudentEventCard
+              key={event.id}
+              event={event}
+              index={index}
+              eventCategories={eventCategoriesMap[event.id] || []}
             />
           ))}
         </div>
