@@ -18,7 +18,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     text: string;
   } | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Lock body scroll
   useEffect(() => {
@@ -71,19 +71,44 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     [saveProfile],
   );
 
+  const cancelPendingSave = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+  }, []);
+
   const handleNameChange = (value: string) => {
     setName(value);
     if (value.trim().length > 0) {
+      setMessage((current) =>
+        current?.type === "error" && current.text === "Name cannot be empty"
+          ? null
+          : current,
+      );
       debounceSave({ name: value });
+      return;
     }
+
+    cancelPendingSave();
+    showMessage("error", "Name cannot be empty");
   };
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
     // Basic email format check before saving
     if (value.includes("@") && value.includes(".")) {
+      setMessage((current) =>
+        current?.type === "error" && current.text === "Enter a valid email address"
+          ? null
+          : current,
+      );
       debounceSave({ email: value });
+      return;
     }
+
+    cancelPendingSave();
+    showMessage("error", "Enter a valid email address");
   };
 
   const handlePhotoSelect = async (
