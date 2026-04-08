@@ -1,0 +1,562 @@
+<!doctype html>
+
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>My Tickets | The Ethereal Campus</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              outline: "#747779",
+              "on-tertiary": "#bffff5",
+              "on-tertiary-fixed": "#004e47",
+              "primary-dim": "#0046bb",
+              "on-secondary-container": "#5b00c7",
+              "error-container": "#f74b6d",
+              "tertiary-fixed": "#91feef",
+              secondary: "#702ae1",
+              "error-dim": "#a70138",
+              "primary-container": "#7b9cff",
+              "surface-container-highest": "#d9dde0",
+              "on-primary-fixed": "#000000",
+              "tertiary-container": "#91feef",
+              "surface-container": "#e5e9eb",
+              "primary-fixed-dim": "#658eff",
+              "on-primary-fixed-variant": "#00266e",
+              tertiary: "#00675e",
+              "inverse-on-surface": "#9a9d9f",
+              "surface-bright": "#f5f7f9",
+              "tertiary-dim": "#005a52",
+              "on-error-container": "#510017",
+              "surface-container-high": "#dfe3e6",
+              "inverse-surface": "#0b0f10",
+              "on-primary-container": "#001e5a",
+              "secondary-fixed-dim": "#d0b8ff",
+              "on-background": "#2c2f31",
+              "on-tertiary-container": "#006259",
+              "inverse-primary": "#618bff",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed": "#430097",
+              "on-error": "#ffefef",
+              "tertiary-fixed-dim": "#83efe1",
+              surface: "#0b0f10",
+              "secondary-container": "#dcc9ff",
+              "surface-variant": "#d9dde0",
+              "secondary-fixed": "#dcc9ff",
+              "outline-variant": "#abadaf",
+              "on-primary": "#f1f2ff",
+              "primary-fixed": "#7b9cff",
+              "surface-dim": "#d0d5d8",
+              primary: "#0050d4",
+              error: "#b41340",
+              "on-surface-variant": "#595c5e",
+              background: "#0b0f10",
+              "on-surface": "#f5f7f9",
+              "on-secondary": "#f8f0ff",
+              "secondary-dim": "#6411d5",
+              "on-secondary-fixed-variant": "#6514d6",
+              "on-tertiary-fixed-variant": "#006d64",
+              "surface-container-low": "#1e2225",
+              "surface-tint": "#0050d4",
+              "british-green": "#1B4D3E",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            fontFamily: {
+              headline: ["Manrope"],
+              body: ["Inter"],
+              label: ["Inter"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(40px);
+        border: 0.5px solid rgba(255, 255, 255, 0.1);
+      }
+      .ticket-notch {
+        mask-image: radial-gradient(
+          circle at 100% 50%,
+          transparent 12px,
+          black 13px
+        );
+        -webkit-mask-image: radial-gradient(
+          circle at 100% 50%,
+          transparent 12px,
+          black 13px
+        );
+      }
+      .stub-notch {
+        mask-image: radial-gradient(
+          circle at 0% 50%,
+          transparent 12px,
+          black 13px
+        );
+        -webkit-mask-image: radial-gradient(
+          circle at 0% 50%,
+          transparent 12px,
+          black 13px
+        );
+      }
+      .tonal-transition {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.05) 0%,
+          transparent 100%
+        );
+      }
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 300,
+          "GRAD" 0,
+          "opsz" 24;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body class="bg-surface font-body text-on-surface min-h-screen">
+    <!-- TopNavBar -->
+    <nav
+      class="fixed top-0 w-full z-40 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl tonal-transition shadow-sm shadow-emerald-900/5 flex justify-between items-center px-8 py-4"
+    >
+      <div class="flex items-center gap-8">
+        <span
+          class="text-2xl font-black text-emerald-900 dark:text-emerald-100 font-headline tracking-tight"
+          >The Ethereal Campus</span
+        >
+        <div class="hidden md:flex gap-6 items-center">
+          <a
+            class="text-slate-500 font-medium hover:backdrop-blur-2xl transition-all duration-300"
+            href="#"
+            >Dashboard</a
+          >
+          <a
+            class="text-slate-500 font-medium hover:backdrop-blur-2xl transition-all duration-300"
+            href="#"
+            >Events</a
+          >
+          <a
+            class="text-emerald-900 font-bold hover:backdrop-blur-2xl transition-all duration-300"
+            href="#"
+            >My Tickets</a
+          >
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="flex gap-2">
+          <button
+            class="p-2 hover:backdrop-blur-2xl transition-all duration-300 scale-95 active:scale-90 text-emerald-900 dark:text-emerald-400"
+          >
+            <span class="material-symbols-outlined">notifications</span>
+          </button>
+          <button
+            class="p-2 hover:backdrop-blur-2xl transition-all duration-300 scale-95 active:scale-90 text-emerald-900 dark:text-emerald-400"
+          >
+            <span class="material-symbols-outlined">calendar_month</span>
+          </button>
+        </div>
+        <img
+          alt="Student Profile"
+          class="w-10 h-10 rounded-full border border-white/20 object-cover"
+          data-alt="student profile portrait in natural light with a soft professional background"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNJNVamqa-DbENbpqyMlsmTteIgfj83SJa_aaZWOEXDF61d-tLG8YLmZUghjfOOI2ph3-7Gdd4wNsW0YaG3fJz6Vz-uFxTshFMr8IK2piAZZIvipQ7paspmUwQkkuRo7qdkkBF1Y85O23N5DXUFT2-MN4wUavvXchSZJW37ma0-NEwzCI2rjKLtwrC96H2cMMtO04DNDZOThtUYBd4XJa9utu3-g0zz9LoNrMS5dpJGIFey0Jes56QDrg6vUDmRdLp6qz4qDjZKD8"
+        />
+      </div>
+    </nav>
+    <!-- SideNavBar -->
+    <aside
+      class="h-screen w-72 fixed left-0 top-0 border-r-[0.5px] border-white/20 bg-slate-50/40 dark:bg-slate-900/40 backdrop-blur-2xl glassmorphism-stack shadow-[20px_0_40px_rgba(0,0,0,0.02)] hidden md:flex flex-col p-6 gap-2 pt-24 z-30"
+    >
+      <div class="mb-8 px-4">
+        <h2
+          class="text-xl font-extrabold text-emerald-900 dark:text-white font-headline"
+        >
+          The Ethereal Campus
+        </h2>
+        <p class="text-slate-600 dark:text-slate-400 text-xs font-semibold">
+          Digital Curator
+        </p>
+      </div>
+      <nav class="flex flex-col gap-1">
+        <a
+          class="text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/20 rounded-full transition-all hover:translate-x-1 duration-200 flex items-center gap-3 font-manrope text-sm font-semibold"
+          href="#"
+        >
+          <span class="material-symbols-outlined">dashboard</span> Dashboard
+        </a>
+        <a
+          class="text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/20 rounded-full transition-all hover:translate-x-1 duration-200 flex items-center gap-3 font-manrope text-sm font-semibold"
+          href="#"
+        >
+          <span class="material-symbols-outlined">event</span> Events
+        </a>
+        <a
+          class="bg-emerald-800 text-white rounded-full px-4 py-3 shadow-lg shadow-emerald-900/20 flex items-center gap-3 font-manrope text-sm font-semibold"
+          href="#"
+        >
+          <span
+            class="material-symbols-outlined"
+            style="font-variation-settings: &quot;FILL&quot; 1"
+            >confirmation_number</span
+          >
+          My Tickets
+        </a>
+        <a
+          class="text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/20 rounded-full transition-all hover:translate-x-1 duration-200 flex items-center gap-3 font-manrope text-sm font-semibold"
+          href="#"
+        >
+          <span class="material-symbols-outlined">admin_panel_settings</span>
+          Admin
+        </a>
+        <a
+          class="text-slate-600 dark:text-slate-400 px-4 py-3 hover:bg-white/20 rounded-full transition-all hover:translate-x-1 duration-200 flex items-center gap-3 font-manrope text-sm font-semibold"
+          href="#"
+        >
+          <span class="material-symbols-outlined">account_circle</span> Profile
+        </a>
+      </nav>
+      <div class="mt-auto p-4">
+        <button
+          class="w-full bg-emerald-800 text-white rounded-full py-3 font-semibold shadow-lg hover:shadow-emerald-900/40 transition-shadow"
+        >
+          Create Event
+        </button>
+      </div>
+    </aside>
+    <!-- Main Canvas -->
+    <main class="md:ml-72 pt-24 pb-12 px-8 min-h-screen relative">
+      <!-- Organic Background Elements -->
+      <div
+        class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none overflow-hidden"
+      >
+        <div
+          class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-900/20 rounded-full blur-[120px]"
+        ></div>
+        <div
+          class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[100px]"
+        ></div>
+      </div>
+      <!-- Header Section -->
+      <header class="mb-12">
+        <h1 class="text-5xl font-black font-headline tracking-tighter mb-2">
+          My Tickets
+        </h1>
+        <p class="text-on-surface-variant max-w-xl">
+          View and manage your upcoming campus experiences. Your digital entry
+          passes for the academic season.
+        </p>
+      </header>
+      <!-- Tickets Layout -->
+      <div class="flex flex-col gap-8 max-w-5xl">
+        <!-- Ticket 1: Pottery Workshop -->
+        <div class="flex flex-col lg:flex-row w-full group">
+          <div
+            class="glass-card ticket-notch rounded-l-3xl p-8 flex-grow relative overflow-hidden flex flex-col md:flex-row gap-8"
+          >
+            <img
+              alt="Pottery Workshop"
+              class="w-full md:w-40 h-40 object-cover rounded-2xl grayscale group-hover:grayscale-0 transition-all duration-500"
+              data-alt="close-up of hands shaping clay on a potter's wheel with warm studio lighting and soft bokeh"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2pLpuLOqFS9iKtANXBLImhIcrJhzLyPyQfJQeGqm8cu0f7Zivnh9DBTupMUtA_VKrrp4jbGNvthOaEtg57ZpkMsh1Q87RJQMeY0Wx29QQ5KatCU3kusTUaPlHyPubOlA0eKmRUwW80bvoC3YD0tKZRpC2HcK61aGpWpXoOdLh6Gaghuz_4aGI_C_-4DZRuHDVrMyIVqO96veyl9kE5VObNnPpN3L84aYfB_V9557vq7GhJCe_hsU7O7oNVd1TQ50CuGg34i4PiDU"
+            />
+            <div class="flex flex-col justify-between py-1">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-2 h-2 rounded-full bg-british-green"></span>
+                  <span
+                    class="text-xs font-bold tracking-widest text-on-surface-variant uppercase"
+                    >Creative Arts Series</span
+                  >
+                </div>
+                <h3 class="text-3xl font-bold font-headline leading-tight">
+                  Pottery Workshop
+                </h3>
+                <p class="text-on-surface-variant font-medium mt-1">
+                  Fine Arts Studio • North Wing
+                </p>
+              </div>
+              <div class="flex gap-8 mt-6">
+                <div>
+                  <span
+                    class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1"
+                    >Date</span
+                  >
+                  <span class="text-lg font-semibold">Oct 24, 2024</span>
+                </div>
+                <div>
+                  <span
+                    class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1"
+                    >Time</span
+                  >
+                  <span class="text-lg font-semibold">14:00 PM</span>
+                </div>
+                <div>
+                  <span
+                    class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1"
+                    >Station</span
+                  >
+                  <span class="text-lg font-semibold">B-12</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Perforation & Stub -->
+          <div
+            class="relative w-full lg:w-72 glass-card stub-notch rounded-r-3xl border-l-0 p-8 flex flex-col justify-between before:content-[''] before:absolute before:left-[-0.5px] before:top-4 before:bottom-4 before:border-l-[1px] before:border-dashed before:border-white/20"
+          >
+            <div>
+              <span
+                class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-4"
+                >Verification</span
+              >
+              <div class="bg-black/20 p-4 rounded-xl border border-white/5">
+                <span
+                  class="block text-[10px] text-white/40 uppercase tracking-tighter mb-1"
+                  >Conf. Number</span
+                >
+                <span
+                  class="text-xl font-mono tracking-widest font-bold text-white"
+                  >#ET-992-K</span
+                >
+              </div>
+            </div>
+            <div class="mt-8 flex flex-col gap-2">
+              <button
+                class="w-full bg-british-green text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-transform active:scale-95"
+              >
+                <span class="material-symbols-outlined text-sm">download</span>
+                Download PDF
+              </button>
+              <button
+                class="w-full border border-white/10 hover:bg-white/5 py-2 rounded-xl text-xs font-bold text-on-surface-variant transition-colors"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Ticket 2: Spring Concert -->
+        <div class="flex flex-col lg:flex-row w-full group">
+          <div
+            class="glass-card ticket-notch rounded-l-3xl p-8 flex-grow relative overflow-hidden flex flex-col md:flex-row gap-8"
+          >
+            <img
+              alt="Spring Concert"
+              class="w-full md:w-40 h-40 object-cover rounded-2xl grayscale group-hover:grayscale-0 transition-all duration-500"
+              data-alt="silhouettes of people at a concert with vibrant purple and blue stage lights and light fog"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAwR2GVTAvpbmyYPK5rvuqaWoSxxLX1jNriN42JyQY9Kgp2v1JlpsISvfigU9GG5hroVI9bkcXMsbI2B33oQuF08W_DEIkrb1_vPoQHi_63TndtpS2h-z_MOsY7HJzhPHvCHlH2kkxh5HqBw1iWGBUWdPcFqftgAkcFZPvFX2SNIa44UO8qjtvVraU6eJEAnv8EsBelR_HpRnCYxxbORXNdruwaqX9PU6V5rg4jdf0Wi7k0Gk7W6tnZ84XPayJYSssAb95lxd7OZI"
+            />
+            <div class="flex flex-col justify-between py-1">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-2 h-2 rounded-full bg-british-green"></span>
+                  <span
+                    class="text-xs font-bold tracking-widest text-on-surface-variant uppercase"
+                    >Ethereal Live Series</span
+                  >
+                </div>
+                <h3 class="text-3xl font-bold font-headline leading-tight">
+                  Spring Concert
+                </h3>
+                <p class="text-on-surface-variant font-medium mt-1">
+                  Main Auditorium • Central Plaza
+                </p>
+              </div>
+              <div class="flex gap-8 mt-6">
+                <div>
+                  <span
+                    class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1"
+                    >Date</span
+                  >
+                  <span class="text-lg font-semibold">Nov 12, 2024</span>
+                </div>
+                <div>
+                  <span
+                    class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1"
+                    >Doors</span
+                  >
+                  <span class="text-lg font-semibold">18:30 PM</span>
+                </div>
+                <div>
+                  <span
+                    class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1"
+                    >Seat</span
+                  >
+                  <span class="text-lg font-semibold">SEC-G | 42</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Perforation & Stub -->
+          <div
+            class="relative w-full lg:w-72 glass-card stub-notch rounded-r-3xl border-l-0 p-8 flex flex-col justify-between before:content-[''] before:absolute before:left-[-0.5px] before:top-4 before:bottom-4 before:border-l-[1px] before:border-dashed before:border-white/20"
+          >
+            <div>
+              <span
+                class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-4"
+                >Verification</span
+              >
+              <div class="bg-black/20 p-4 rounded-xl border border-white/5">
+                <span
+                  class="block text-[10px] text-white/40 uppercase tracking-tighter mb-1"
+                  >Conf. Number</span
+                >
+                <span
+                  class="text-xl font-mono tracking-widest font-bold text-white"
+                  >#CN-441-A</span
+                >
+              </div>
+            </div>
+            <div class="mt-8 flex flex-col gap-2">
+              <button
+                class="w-full bg-british-green text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-transform active:scale-95"
+              >
+                <span class="material-symbols-outlined text-sm">download</span>
+                Download PDF
+              </button>
+              <button
+                class="w-full border border-white/10 hover:bg-white/5 py-2 rounded-xl text-xs font-bold text-on-surface-variant transition-colors"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Ticket 3: Intermural Soccer -->
+        <div
+          class="flex flex-col lg:flex-row w-full group opacity-80 hover:opacity-100 transition-opacity"
+        >
+          <div
+            class="glass-card ticket-notch rounded-l-3xl p-8 flex-grow relative overflow-hidden flex flex-col md:flex-row gap-8"
+          >
+            <img
+              alt="Intermural Soccer"
+              class="w-full md:w-40 h-40 object-cover rounded-2xl grayscale group-hover:grayscale-0 transition-all duration-500"
+              data-alt="stadium lights shining over a green soccer field at night with a slight misty atmosphere"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBf1x40UNnEc_XrSYnOQFVKl3Pj087I3Cmgn5--Hoc-53GMv-CJvMUH5fhSfRD1UXc-VlwiTM71cf7SlylDtDIJof7rzfQmwvPN0YHl7aVrcwuEyyjYRyoMKrFvXg9fA4k38kGIgI7ALDtDK7ssmcOPm-a-S4Zu7SvZx3-LK64pMc8iAdsTcRCPl7ShJkLLtJS26E4DU9r3vw5HvddiaAcgTAC56VI84DmCWFI18K8jzshRD94bTgCpCspsYqRm0DUxqBpNeoUx6s"
+            />
+            <div class="flex flex-col justify-between py-1">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+                  <span
+                    class="text-xs font-bold tracking-widest text-on-surface-variant uppercase"
+                    >Campus Athletics</span
+                  >
+                </div>
+                <h3 class="text-3xl font-bold font-headline leading-tight">
+                  Intermural Soccer
+                </h3>
+                <p class="text-on-surface-variant font-medium mt-1">
+                  West Field • Sports Complex
+                </p>
+              </div>
+              <div class="flex gap-8 mt-6">
+                <div>
+                  <span
+                    class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1"
+                    >Date</span
+                  >
+                  <span class="text-lg font-semibold">Dec 05, 2024</span>
+                </div>
+                <div>
+                  <span
+                    class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1"
+                    >Kickoff</span
+                  >
+                  <span class="text-lg font-semibold">10:00 AM</span>
+                </div>
+                <div>
+                  <span
+                    class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-1"
+                    >Entry</span
+                  >
+                  <span class="text-lg font-semibold">Gate 4</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Perforation & Stub -->
+          <div
+            class="relative w-full lg:w-72 glass-card stub-notch rounded-r-3xl border-l-0 p-8 flex flex-col justify-between before:content-[''] before:absolute before:left-[-0.5px] before:top-4 before:bottom-4 before:border-l-[1px] before:border-dashed before:border-white/20"
+          >
+            <div>
+              <span
+                class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-4"
+                >Verification</span
+              >
+              <div class="bg-black/20 p-4 rounded-xl border border-white/5">
+                <span
+                  class="block text-[10px] text-white/40 uppercase tracking-tighter mb-1"
+                  >Conf. Number</span
+                >
+                <span
+                  class="text-xl font-mono tracking-widest font-bold text-white"
+                  >#SC-219-L</span
+                >
+              </div>
+            </div>
+            <div class="mt-8 flex flex-col gap-2">
+              <button
+                class="w-full bg-british-green text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-transform active:scale-95"
+              >
+                <span class="material-symbols-outlined text-sm">download</span>
+                Download PDF
+              </button>
+              <button
+                class="w-full border border-white/10 hover:bg-white/5 py-2 rounded-xl text-xs font-bold text-on-surface-variant transition-colors"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Pagination/Footer Actions -->
+      <footer
+        class="mt-16 border-t border-white/5 pt-8 flex justify-between items-center text-on-surface-variant"
+      >
+        <p class="text-sm">Showing 3 of 12 active tickets</p>
+        <div class="flex gap-4">
+          <button
+            class="px-6 py-2 border border-white/10 rounded-full hover:bg-white/5 transition-colors font-semibold text-sm"
+          >
+            Past Events
+          </button>
+          <button
+            class="px-6 py-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors font-semibold text-sm"
+          >
+            Load More
+          </button>
+        </div>
+      </footer>
+    </main>
+    <!-- Contextual FAB (Hidden on Tickets as per rules, but included if primary) -->
+    <!-- Suppression logic applied for this specific sub-page view -->
+  </body>
+</html>
