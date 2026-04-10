@@ -1,7 +1,5 @@
 import { Hono } from "hono";
-import { db } from "../db/client";
-import { images } from "../db/schema";
-import { eq } from "drizzle-orm";
+import sql from "../db/client";
 
 const router = new Hono();
 
@@ -9,10 +7,12 @@ const router = new Hono();
 router.get("/:filename", async (c) => {
   const filename = c.req.param("filename");
 
-  const rows = await db
-    .select({ mimeType: images.mimeType, data: images.data })
-    .from(images)
-    .where(eq(images.filename, filename));
+  // Retrieve the stored base64 image data and MIME type by unique filename
+  const rows = await sql`
+    SELECT mime_type, data
+    FROM images
+    WHERE filename = ${filename}
+  `;
 
   if (!rows.length) {
     return c.json({ error: "Image not found" }, 404);

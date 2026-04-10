@@ -159,7 +159,7 @@ We are pleased to report that CampusEvents is already well past the "simplest fo
 
 = Three-Tier Architecture Overview
 
-The system follows a textbook three-tier architecture. The *interface tier* is a React 19 single-page application served by Vite; it renders the UI, manages local state, and talks to the backend over `fetch`. The *application tier* is a TypeScript REST API running on the Bun runtime, built with the Hono framework; it validates input, enforces authorization, and issues SQL through Drizzle ORM. The *data tier* is a PostgreSQL 16 database running in Docker, owning all persistent state and enforcing integrity constraints at the schema level.
+The system follows a textbook three-tier architecture. The *interface tier* is a React 19 single-page application served by Vite; it renders the UI, manages local state, and talks to the backend over `fetch`. The *application tier* is a TypeScript REST API running on the Bun runtime, built with the Hono framework; it validates input, enforces authorization, and issues parameterized SQL through the `postgres.js` driver. The *data tier* is a PostgreSQL 16 database running in Docker, owning all persistent state and enforcing integrity constraints at the schema level.
 
 #v(0.4em)
 #table(
@@ -167,7 +167,7 @@ The system follows a textbook three-tier architecture. The *interface tier* is a
   align: left,
   table.header[Tier][Technology][Port][Responsibility],
   [Interface], [React 19 + Vite + Tailwind v4], [`:5173`], [Rendering, routing, client-side state],
-  [Application], [Bun + Hono (REST, TypeScript)], [`:3000`], [Validation, auth, SQL execution via Drizzle],
+  [Application], [Bun + Hono (REST, TypeScript)], [`:3000`], [Validation, auth, SQL queries via `postgres.js`],
   [Data], [PostgreSQL 16 (Docker)], [`:5432`], [Storage, constraints, referential integrity],
 )
 
@@ -198,23 +198,23 @@ The system follows a textbook three-tier architecture. The *interface tier* is a
       height: 16mm,
     ),
     edge((0, 0), (1, 0), "->", [`fetch` / JSON], label-pos: 0.5, label-side: center),
-    edge((1, 0), (2, 0), "->", [Drizzle / SQL], label-pos: 0.5, label-side: center),
+    edge((1, 0), (2, 0), "->", [`postgres.js` / SQL], label-pos: 0.5, label-side: center),
     edge((1, 0), (0, 0), "->", [JSON], label-pos: 0.5, label-side: center, bend: 30deg),
     edge((2, 0), (1, 0), "->", [rows], label-pos: 0.5, label-side: center, bend: 30deg),
   ),
-  caption: [Three-tier architecture --- browser calls the Hono API, which issues SQL to PostgreSQL via Drizzle ORM.],
+  caption: [Three-tier architecture --- browser calls the Hono API, which issues parameterized SQL to PostgreSQL via the `postgres.js` driver.],
 )
 
 #v(0.3em)
 #note[
-  Drizzle ORM plays the role of JDBC/ODBC in this stack: it is a lightweight TypeScript-native data access layer sitting on top of the `postgres.js` driver, translating typed query builders into parameterized SQL. The course requirement to "utilize JDBC/ODBC or other communication protocols to connect to the database and send in queries" is satisfied through this driver.
+  `postgres.js` plays the role of JDBC/ODBC in this stack: a lightweight PostgreSQL client for JavaScript that sends parameterized SQL directly to the database. All queries are written as tagged template literals (e.g. `` sql\`SELECT \* FROM users WHERE id = \${id}\` ``), which automatically escape parameters to prevent SQL injection. The course requirement to "utilize JDBC/ODBC or other communication protocols to connect to the database and send in queries" is satisfied through this driver.
 ]
 
 // ============================================================
 // 4. DATA TIER
 // ============================================================
 
-= Data Tier --- PostgreSQL + Drizzle
+= Data Tier --- PostgreSQL + Raw SQL
 
 == Running Database
 
@@ -235,27 +235,28 @@ postgres:
     - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
 ```
 
-== Schema (Drizzle, TypeScript-native)
+== Schema (Raw SQL)
 
-The authoritative schema definition lives in `backend/src/db/schema.ts` as a Drizzle `pgTable` description. Drizzle generates migration SQL from this file via `drizzle-kit generate`, and the generated migrations are committed under `backend/src/db/migrations/`. At backend startup, the server runs any pending migrations automatically, so a fresh clone of the repo always boots into a consistent state.
+The authoritative schema definition lives in `schema.sql` at the project root as standard PostgreSQL DDL. This file defines all enums, tables, constraints, indexes, and sample data. At backend startup, the server applies `schema.sql` directly using `postgres.js`'s `unsafe()` method. All statements use `IF NOT EXISTS` / `ON CONFLICT DO NOTHING` guards, making the file idempotent and safe to run on every boot.
 
-```ts
-// backend/src/db/schema.ts (excerpt)
-export const events = pgTable("events", {
-  id:          serial("id").primaryKey(),
-  title:       text("title").notNull(),
-  description: text("description"),
-  location:    text("location").notNull(),
-  startTime:   timestamp("start_time").notNull(),
-  endTime:     timestamp("end_time").notNull(),
-  capacity:    integer("capacity").notNull(),
-  ticketPrice: numeric("ticket_price", { precision: 10, scale: 2 })
-                 .notNull().default("0.00"),
-  status:      eventStatusEnum("status").notNull().default("upcoming"),
-  organizerId: integer("organizer_id")
-                 .references(() => users.id).notNull(),
-  createdAt:   timestamp("created_at").defaultNow().notNull(),
-});
+```sql
+-- schema.sql (excerpt)
+CREATE TABLE IF NOT EXISTS events (
+    id            SERIAL          PRIMARY KEY,
+    title         VARCHAR(200)    NOT NULL,
+    description   TEXT,
+    location      VARCHAR(200)    NOT NULL,
+    start_time    TIMESTAMP       NOT NULL,
+    end_time      TIMESTAMP       NOT NULL,
+    capacity      INTEGER         NOT NULL CHECK (capacity > 0),
+    ticket_price  NUMERIC(10, 2)  NOT NULL DEFAULT 0.00
+                                  CHECK (ticket_price >= 0),
+    status        event_status    NOT NULL DEFAULT 'upcoming',
+    organizer_id  INTEGER         NOT NULL REFERENCES users(id)
+                                  ON DELETE CASCADE,
+    created_at    TIMESTAMP       NOT NULL DEFAULT NOW(),
+    CONSTRAINT valid_time_range CHECK (end_time > start_time)
+);
 ```
 
 == Tables & Seed Data
@@ -264,7 +265,7 @@ All five tables from the mini report are live: `users`, `events`, `tickets`, `ca
 
 #figure(
   image("screenshots/db_tables.png", alt: "psql \dt output showing all CampusEvents tables"),
-  caption: [PostgreSQL 16 running inside Docker after `docker compose up`. Output of `\dt` in `psql` shows the seven relations created by Drizzle migrations --- the five from the ER diagram, plus `images` and the Drizzle migration bookkeeping table.],
+  caption: [PostgreSQL 16 running inside Docker after `docker compose up`. Output of `\dt` in `psql` shows the six relations created by `schema.sql` --- the five from the ER diagram, plus `images` for uploaded event banners and profile photos.],
 )
 
 == Integrity Constraints
@@ -274,9 +275,12 @@ The constraints promised in the mini report are enforced at the schema level. Fo
 ```ts
 // backend/src/routes/tickets.ts --- catching unique-constraint violation
 try {
-  const inserted = await db.insert(tickets)
-    .values({ userId, eventId, confirmationCode }).returning();
-  return c.json(inserted[0], 201);
+  const [inserted] = await sql`
+    INSERT INTO tickets (user_id, event_id, confirmation_code)
+    VALUES (${userId}, ${eventId}, ${confirmationCode})
+    RETURNING *
+  `;
+  return c.json(inserted, 201);
 } catch (err) {
   const pgErr = err as { code?: string };
   if (pgErr.code === "23505") {
@@ -294,7 +298,7 @@ try {
 
 == Server Entry Point
 
-The backend is a TypeScript application that runs on the Bun runtime. Its entry point is `backend/src/index.ts`, which wires a Hono `App` with logger and CORS middleware, runs database migrations on startup, mounts five sub-routers under `/api/*`, and exposes a `/health` probe. Bun's `--hot` flag gives us hot reload during development; the Docker service reuses the same `bun run src/index.ts` command in production.
+The backend is a TypeScript application that runs on the Bun runtime. Its entry point is `backend/src/index.ts`, which applies `schema.sql` on startup, then creates a Hono `App` with logger and CORS middleware, mounts five sub-routers under `/api/*`, and exposes a `/health` probe. All database queries use `postgres.js` tagged template literals. Bun's `--hot` flag gives us hot reload during development; the Docker service reuses the same `bun run src/index.ts` command in production.
 
 ```ts
 // backend/src/index.ts (excerpt)
@@ -491,40 +495,43 @@ All ten SQL query types planned in the mini report are implemented as real REST 
   [Q10], [`SELECT + BETWEEN`], [`GET /api/events?from=&to=`       \ `routes/events.ts`], [`BrowseEvents.tsx`],
 )
 
-Some representative SQL is shown below. Each snippet is the actual Drizzle query the backend issues; the comments indicate which query number and endpoint it backs.
+Some representative SQL is shown below. Each snippet is the actual query the backend issues via `postgres.js` tagged templates; the comments indicate which query number and endpoint it backs.
 
 ```ts
 // Q1 + Q10: events list with optional BETWEEN date filtering
-db.select({
-    id: events.id, title: events.title, location: events.location,
-    startTime: events.startTime, organizerName: users.name,
-  })
-  .from(events)
-  .innerJoin(users, eq(events.organizerId, users.id))
-  .where(and(
-    from ? gte(events.startTime, new Date(from)) : undefined,
-    to   ? lte(events.startTime, new Date(to))   : undefined,
-  ));
+// postgres.js fragment composition builds a safe dynamic WHERE clause.
+const conditions = [sql`TRUE`];
+if (from) conditions.push(sql`e.start_time >= ${new Date(from)}`);
+if (to)   conditions.push(sql`e.start_time <= ${new Date(to)}`);
+const where = conditions.reduce((a, c) => sql`${a} AND ${c}`);
+
+const rows = await sql`
+  SELECT e.*, u.name AS organizer_name
+  FROM events e
+  INNER JOIN users u ON e.organizer_id = u.id
+  WHERE ${where}
+  ORDER BY e.start_time
+`;
 
 // Q2: tickets sold per event (GROUP BY + COUNT)
-db.select({
-    eventId: events.id, title: events.title,
-    ticketsSold: sql<number>`cast(count(${tickets.id}) as int)`,
-    capacity: events.capacity,
-  })
-  .from(events)
-  .leftJoin(tickets, eq(events.id, tickets.eventId))
-  .groupBy(events.id, events.title, events.capacity);
+const stats = await sql`
+  SELECT e.id AS event_id, e.title,
+         COUNT(t.id)::int AS tickets_sold, e.capacity
+  FROM events e
+  LEFT JOIN tickets t ON e.id = t.event_id
+  WHERE e.status != 'cancelled'
+  GROUP BY e.id, e.title, e.capacity
+`;
 
 // Q9: categories with more than one event (SELECT + HAVING)
-db.select({
-    categoryId: categories.id, name: categories.name,
-    eventCount: sql<number>`count(${eventCategories.eventId})`,
-  })
-  .from(categories)
-  .innerJoin(eventCategories, eq(categories.id, eventCategories.categoryId))
-  .groupBy(categories.id, categories.name)
-  .having(sql`count(${eventCategories.eventId}) > 1`);
+const popular = await sql`
+  SELECT c.id AS category_id, c.name,
+         COUNT(ec.event_id)::int AS event_count
+  FROM categories c
+  INNER JOIN event_categories ec ON c.id = ec.category_id
+  GROUP BY c.id, c.name
+  HAVING COUNT(ec.event_id) > 1
+`;
 ```
 
 // ============================================================
@@ -570,7 +577,7 @@ The assignment handout lists four graded features and a set of optional bonuses.
   [1], [DBMS-backed database with #sym.gt.eq 3 relations loaded with data], [#status-ok Done (5 tables + seed)],
   [2], [#sym.gt.eq 8 distinct SQL query types, including state-modifying], [#status-ok Done (10 implemented)],
   [3], [Web-based interface with #sym.gt.eq 3 distinct pages], [#status-ok Done (8 pages)],
-  [4], [JDBC/ODBC-style connection to send queries to the DB], [#status-ok Done (Drizzle + `postgres.js`)],
+  [4], [JDBC/ODBC-style connection to send queries to the DB], [#status-ok Done (`postgres.js` raw SQL)],
   [---], [*Bonus* --- user accounts with ID/password], [#status-ok Done (bcrypt + JWT)],
   [---], [*Bonus* --- different privileges per user], [#status-ok Done (role middleware)],
   [---], [*Bonus* --- client-side scripts for application logic], [#status-ok Done (React SPA)],
@@ -589,10 +596,10 @@ The progress reported here puts us comfortably past the "simplest form" threshol
 - *Database-side logic.* Add a small set of PL/pgSQL stored procedures (e.g., atomic ticket purchase with capacity check) and a handful of `CREATE VIEW` definitions exposing role-specific projections. These pick up two of the remaining bonus points.
 - *Admin panel polish.* The `AdminPanel.tsx` page currently lists users and events; we will flesh out role assignment, bulk category editing, and a simple analytics dashboard on top of Q2 and Q9.
 - *Demo script.* Prepare a 10-minute guided walkthrough that hits every query type, including the state-modifying ones, and shows a deliberate failure (e.g., double-booking) to demonstrate database constraints firing.
-- *Test coverage.* Add a small integration test suite against the running API with Bun's built-in test runner, so the demo environment can be verified with `bun test` before the live session.
+- *Test coverage.* An integration test suite against the running API has been added using Bun's built-in test runner, covering all ten query types and key error paths. The demo environment can be verified with `bun test` before the live session.
 - *Report polish.* Expand this document into the final report with a revised ER diagram, schema diff from the mini report, and a complete user manual.
 
 #v(0.5em)
 #note[
-  *TL;DR.* All three tiers are running, communicate end-to-end, and cover every requirement on the rubric plus three of the five bonus items. The remaining work for May 1 is additive: database-side procedures, an admin panel pass, a demo script, and a small test suite.
+  *TL;DR.* All three tiers are running, communicate end-to-end, and cover every requirement on the rubric plus three of the five bonus items. All SQL queries are written directly using `postgres.js` tagged templates. The remaining work for May 1 is additive: database-side procedures, an admin panel pass, and a demo script.
 ]

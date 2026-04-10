@@ -1,11 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 import { hash, verify as verifyPassword } from "@node-rs/bcrypt";
 import { sign } from "hono/jwt";
 
-import { db } from "../db/client";
-import { users } from "../db/schema";
+import sql from "../db/client";
 import { authMiddleware, JWT_SECRET, type AuthEnv } from "../middleware/auth";
 
 const authRouter = new Hono<AuthEnv>();
@@ -37,12 +35,10 @@ authRouter.post("/register", async (c) => {
 
   const { netId, name, email, password, role } = parsed.data;
 
-  // Check for existing user
-  const existing = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+  // Check for existing user by email to provide a friendly error message
+  const existing = await sql`
+    SELECT id FROM users WHERE email = ${email} LIMIT 1
+  `;
 
   if (existing.length > 0) {
     return c.json({ error: "A user with this email already exists" }, 409);
@@ -50,16 +46,12 @@ authRouter.post("/register", async (c) => {
 
   const passwordHash = await hash(password, 10);
 
-  const [user] = await db
-    .insert(users)
-    .values({
-      netId,
-      name,
-      email,
-      passwordHash,
-      role: role ?? "student",
-    })
-    .returning();
+  // INSERT a new user with hashed password and return all columns
+  const [user] = await sql`
+    INSERT INTO users (net_id, name, email, password_hash, role)
+    VALUES (${netId}, ${name}, ${email}, ${passwordHash}, ${role ?? "student"})
+    RETURNING *
+  `;
 
   const { passwordHash: _, ...userWithoutPassword } = user;
   return c.json(userWithoutPassword, 201);
@@ -77,11 +69,10 @@ authRouter.post("/login", async (c) => {
 
   const { email, password } = parsed.data;
 
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+  // SELECT user by email for credential verification
+  const [user] = await sql`
+    SELECT * FROM users WHERE email = ${email} LIMIT 1
+  `;
 
   if (!user) {
     return c.json({ error: "Invalid email or password" }, 401);
@@ -103,11 +94,10 @@ authRouter.post("/login", async (c) => {
 authRouter.get("/me", authMiddleware, async (c) => {
   const userId = c.get("userId");
 
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
+  // SELECT the authenticated user's profile by their JWT-derived ID
+  const [user] = await sql`
+    SELECT * FROM users WHERE id = ${userId} LIMIT 1
+  `;
 
   if (!user) {
     return c.json({ error: "User not found" }, 404);

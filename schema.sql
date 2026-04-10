@@ -2,15 +2,26 @@
 -- CampusEvents: Campus Event & Ticket Booking System
 -- COP 4710 Spring 2026 — Term Project
 -- PostgreSQL Schema
+--
+-- This file is the authoritative DDL for the project.
+-- It is applied on every backend startup and is idempotent
+-- (safe to run repeatedly) thanks to IF NOT EXISTS / ON CONFLICT
+-- guards on every statement.
 -- ============================================================
 
 -- ──────────────────────────────────────────────────────────────
 -- ENUMS
 -- ──────────────────────────────────────────────────────────────
 
-CREATE TYPE user_role AS ENUM ('admin', 'organizer', 'student');
+DO $$ BEGIN
+  CREATE TYPE user_role AS ENUM ('admin', 'organizer', 'student');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE event_status AS ENUM ('upcoming', 'ongoing', 'completed', 'cancelled');
+DO $$ BEGIN
+  CREATE TYPE event_status AS ENUM ('upcoming', 'ongoing', 'completed', 'cancelled');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ──────────────────────────────────────────────────────────────
 -- TABLE: users
@@ -18,7 +29,7 @@ CREATE TYPE event_status AS ENUM ('upcoming', 'ongoing', 'completed', 'cancelled
 --   net_id corresponds to a university NetID (unique identifier).
 -- ──────────────────────────────────────────────────────────────
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id            SERIAL          PRIMARY KEY,
     net_id        VARCHAR(50)     NOT NULL UNIQUE,
     name          VARCHAR(100)    NOT NULL,
@@ -34,7 +45,7 @@ CREATE TABLE users (
 --   Lookup table for event categories (e.g. Music, Academic).
 -- ──────────────────────────────────────────────────────────────
 
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
     id    SERIAL        PRIMARY KEY,
     name  VARCHAR(100)  NOT NULL UNIQUE
 );
@@ -47,7 +58,7 @@ CREATE TABLE categories (
 --   organizer_id: FK to users (must be role = 'organizer' or 'admin').
 -- ──────────────────────────────────────────────────────────────
 
-CREATE TABLE events (
+CREATE TABLE IF NOT EXISTS events (
     id            SERIAL          PRIMARY KEY,
     title         VARCHAR(200)    NOT NULL,
     description   TEXT,
@@ -72,7 +83,7 @@ CREATE TABLE events (
 --   An event can belong to multiple categories.
 -- ──────────────────────────────────────────────────────────────
 
-CREATE TABLE event_categories (
+CREATE TABLE IF NOT EXISTS event_categories (
     event_id     INTEGER  NOT NULL REFERENCES events(id)     ON DELETE CASCADE,
     category_id  INTEGER  NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
     PRIMARY KEY (event_id, category_id)
@@ -85,7 +96,7 @@ CREATE TABLE event_categories (
 --   checked_in: toggled to TRUE when the user arrives at the event.
 -- ──────────────────────────────────────────────────────────────
 
-CREATE TABLE tickets (
+CREATE TABLE IF NOT EXISTS tickets (
     id                 SERIAL       PRIMARY KEY,
     user_id            INTEGER      NOT NULL REFERENCES users(id)  ON DELETE CASCADE,
     event_id           INTEGER      NOT NULL REFERENCES events(id) ON DELETE CASCADE,
@@ -102,7 +113,7 @@ CREATE TABLE tickets (
 -- survive branch switches, container restarts, and reseeds.
 -- ──────────────────────────────────────────────────────────────
 
-CREATE TABLE images (
+CREATE TABLE IF NOT EXISTS images (
     id          SERIAL      PRIMARY KEY,
     filename    TEXT        NOT NULL UNIQUE,
     mime_type   TEXT        NOT NULL,
@@ -116,22 +127,23 @@ CREATE TABLE images (
 -- ============================================================
 
 -- Find all upcoming events quickly
-CREATE INDEX idx_events_status ON events(status);
+CREATE INDEX IF NOT EXISTS idx_events_status ON events(status);
 
 -- Find events by organizer
-CREATE INDEX idx_events_organizer ON events(organizer_id);
+CREATE INDEX IF NOT EXISTS idx_events_organizer ON events(organizer_id);
 
 -- Find events in a time window
-CREATE INDEX idx_events_start_time ON events(start_time);
+CREATE INDEX IF NOT EXISTS idx_events_start_time ON events(start_time);
 
 -- Find all tickets for a user (e.g. "My Tickets" page)
-CREATE INDEX idx_tickets_user ON tickets(user_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_user ON tickets(user_id);
 
 -- Find all tickets for an event (e.g. attendee list)
-CREATE INDEX idx_tickets_event ON tickets(event_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_event ON tickets(event_id);
 
 -- ============================================================
 -- SAMPLE DATA (for development & demo)
+-- ON CONFLICT DO NOTHING makes this safe to re-run.
 -- ============================================================
 
 INSERT INTO categories (name) VALUES
@@ -141,14 +153,19 @@ INSERT INTO categories (name) VALUES
     ('Career'),
     ('Social'),
     ('Arts'),
-    ('Technology');
+    ('Technology')
+ON CONFLICT DO NOTHING;
 
+-- Note: sample users use placeholder password hashes.
+-- For real logins, use the seed script (bun run src/db/seed.ts)
+-- which hashes passwords with bcrypt.
 INSERT INTO users (net_id, name, email, password_hash, role) VALUES
     ('admin1',     'Admin User',       'admin@usf.edu',      'hashed_pw_admin',  'admin'),
     ('jsmith22',   'Jane Smith',       'jsmith22@usf.edu',   'hashed_pw_jane',   'organizer'),
     ('trev123',    'Trevor Flahardy',  'trev123@usf.edu',    'hashed_pw_trev',   'student'),
     ('alex456',    'Alex Johnson',     'alex456@usf.edu',    'hashed_pw_alex',   'student'),
-    ('maria789',   'Maria Garcia',     'maria789@usf.edu',   'hashed_pw_maria',  'student');
+    ('maria789',   'Maria Garcia',     'maria789@usf.edu',   'hashed_pw_maria',  'student')
+ON CONFLICT DO NOTHING;
 
 INSERT INTO events (title, description, location, start_time, end_time, capacity, ticket_price, status, organizer_id) VALUES
     (
@@ -186,7 +203,8 @@ INSERT INTO events (title, description, location, start_time, end_time, capacity
         '2026-05-02 11:00:00',
         200, 10.00, 'upcoming',
         (SELECT id FROM users WHERE net_id = 'admin1')
-    );
+    )
+ON CONFLICT DO NOTHING;
 
 INSERT INTO event_categories (event_id, category_id) VALUES
     ((SELECT id FROM events WHERE title = 'Spring Career Fair 2026'),    (SELECT id FROM categories WHERE name = 'Career')),
@@ -194,7 +212,8 @@ INSERT INTO event_categories (event_id, category_id) VALUES
     ((SELECT id FROM events WHERE title = 'Bulls After Dark: Spring Concert'), (SELECT id FROM categories WHERE name = 'Social')),
     ((SELECT id FROM events WHERE title = 'Hackathon @ USF 2026'),       (SELECT id FROM categories WHERE name = 'Technology')),
     ((SELECT id FROM events WHERE title = 'Hackathon @ USF 2026'),       (SELECT id FROM categories WHERE name = 'Academic')),
-    ((SELECT id FROM events WHERE title = 'Campus 5K Fun Run'),          (SELECT id FROM categories WHERE name = 'Sports'));
+    ((SELECT id FROM events WHERE title = 'Campus 5K Fun Run'),          (SELECT id FROM categories WHERE name = 'Sports'))
+ON CONFLICT DO NOTHING;
 
 INSERT INTO tickets (user_id, event_id, confirmation_code) VALUES
     (
@@ -216,7 +235,8 @@ INSERT INTO tickets (user_id, event_id, confirmation_code) VALUES
         (SELECT id FROM users WHERE net_id = 'maria789'),
         (SELECT id FROM events WHERE title = 'Bulls After Dark: Spring Concert'),
         'CONC2601'
-    );
+    )
+ON CONFLICT DO NOTHING;
 
 -- ============================================================
 -- EXAMPLE QUERIES (demonstrates the 8+ required query types)
