@@ -25,6 +25,8 @@ services:
       DATABASE_URL: postgres://campus:campus123@postgres:5432/campusevents
       JWT_SECRET: campusevents-dev-secret-change-in-prod
       PORT: "3000"
+    volumes:
+      - ./schema.sql:/app/schema.sql:ro
     depends_on:
       - postgres
     develop:

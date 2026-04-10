@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS categories (
 
 CREATE TABLE IF NOT EXISTS events (
     id            SERIAL          PRIMARY KEY,
-    title         VARCHAR(200)    NOT NULL,
+    title         VARCHAR(200)    NOT NULL UNIQUE,
     description   TEXT,
     location      VARCHAR(200)    NOT NULL,
     start_time    TIMESTAMP       NOT NULL,
