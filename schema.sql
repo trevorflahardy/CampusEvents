@@ -58,9 +58,12 @@ CREATE TABLE IF NOT EXISTS categories (
 --   organizer_id: FK to users (must be role = 'organizer' or 'admin').
 -- ──────────────────────────────────────────────────────────────
 
+-- Note: titles are intentionally not globally UNIQUE — in the real world
+-- multiple organizers may run events with the same name (e.g. "Open House").
+-- Seed data uses ON CONFLICT on PK/other natural keys instead of title.
 CREATE TABLE IF NOT EXISTS events (
     id            SERIAL          PRIMARY KEY,
-    title         VARCHAR(200)    NOT NULL UNIQUE,
+    title         VARCHAR(200)    NOT NULL,
     description   TEXT,
     location      VARCHAR(200)    NOT NULL,
     start_time    TIMESTAMP       NOT NULL,
@@ -76,6 +79,23 @@ CREATE TABLE IF NOT EXISTS events (
 
     CONSTRAINT valid_time_range CHECK (end_time > start_time)
 );
+
+-- Drop the old UNIQUE(title) constraint if it exists from earlier deployments.
+DO $$ BEGIN
+  ALTER TABLE events DROP CONSTRAINT events_title_key;
+EXCEPTION WHEN undefined_object THEN NULL;
+END $$;
+
+-- A single organizer can't schedule two events with the same title at the
+-- same start time. This is what the seed data's ON CONFLICT targets — it
+-- prevents re-runs from duplicating seed events while still allowing two
+-- different organizers to use identical titles in production.
+DO $$ BEGIN
+  ALTER TABLE events
+    ADD CONSTRAINT events_organizer_title_start_key
+    UNIQUE (organizer_id, title, start_time);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ──────────────────────────────────────────────────────────────
 -- TABLE: event_categories
@@ -142,8 +162,9 @@ CREATE INDEX IF NOT EXISTS idx_tickets_user ON tickets(user_id);
 CREATE INDEX IF NOT EXISTS idx_tickets_event ON tickets(event_id);
 
 -- ============================================================
--- SAMPLE DATA (for development & demo)
--- ON CONFLICT DO NOTHING makes this safe to re-run.
+-- REFERENCE DATA (always present — the frontend's category dropdown
+-- expects these rows to exist on a fresh DB). ON CONFLICT DO NOTHING
+-- keeps this idempotent across restarts.
 -- ============================================================
 
 INSERT INTO categories (name) VALUES
@@ -156,87 +177,11 @@ INSERT INTO categories (name) VALUES
     ('Technology')
 ON CONFLICT DO NOTHING;
 
--- Note: sample users use placeholder password hashes.
--- For real logins, use the seed script (bun run src/db/seed.ts)
--- which hashes passwords with bcrypt.
-INSERT INTO users (net_id, name, email, password_hash, role) VALUES
-    ('admin1',     'Admin User',       'admin@usf.edu',      'hashed_pw_admin',  'admin'),
-    ('jsmith22',   'Jane Smith',       'jsmith22@usf.edu',   'hashed_pw_jane',   'organizer'),
-    ('trev123',    'Trevor Flahardy',  'trev123@usf.edu',    'hashed_pw_trev',   'student'),
-    ('alex456',    'Alex Johnson',     'alex456@usf.edu',    'hashed_pw_alex',   'student'),
-    ('maria789',   'Maria Garcia',     'maria789@usf.edu',   'hashed_pw_maria',  'student')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO events (title, description, location, start_time, end_time, capacity, ticket_price, status, organizer_id) VALUES
-    (
-        'Spring Career Fair 2026',
-        'Meet top employers hiring USF students for internships and full-time roles.',
-        'Marshall Student Center Ballroom',
-        '2026-04-10 10:00:00',
-        '2026-04-10 16:00:00',
-        500, 0.00, 'upcoming',
-        (SELECT id FROM users WHERE net_id = 'jsmith22')
-    ),
-    (
-        'Bulls After Dark: Spring Concert',
-        'Live performances by student bands and special guest artists.',
-        'USF Amphitheater',
-        '2026-04-18 19:00:00',
-        '2026-04-18 23:00:00',
-        300, 5.00, 'upcoming',
-        (SELECT id FROM users WHERE net_id = 'jsmith22')
-    ),
-    (
-        'Hackathon @ USF 2026',
-        '24-hour coding competition — form teams, build projects, win prizes.',
-        'ENB 118',
-        '2026-04-25 09:00:00',
-        '2026-04-26 09:00:00',
-        150, 0.00, 'upcoming',
-        (SELECT id FROM users WHERE net_id = 'jsmith22')
-    ),
-    (
-        'Campus 5K Fun Run',
-        'Annual charity 5K run around the USF Tampa campus. All skill levels welcome.',
-        'USF Track & Field',
-        '2026-05-02 08:00:00',
-        '2026-05-02 11:00:00',
-        200, 10.00, 'upcoming',
-        (SELECT id FROM users WHERE net_id = 'admin1')
-    )
-ON CONFLICT DO NOTHING;
-
-INSERT INTO event_categories (event_id, category_id) VALUES
-    ((SELECT id FROM events WHERE title = 'Spring Career Fair 2026'),    (SELECT id FROM categories WHERE name = 'Career')),
-    ((SELECT id FROM events WHERE title = 'Bulls After Dark: Spring Concert'), (SELECT id FROM categories WHERE name = 'Music')),
-    ((SELECT id FROM events WHERE title = 'Bulls After Dark: Spring Concert'), (SELECT id FROM categories WHERE name = 'Social')),
-    ((SELECT id FROM events WHERE title = 'Hackathon @ USF 2026'),       (SELECT id FROM categories WHERE name = 'Technology')),
-    ((SELECT id FROM events WHERE title = 'Hackathon @ USF 2026'),       (SELECT id FROM categories WHERE name = 'Academic')),
-    ((SELECT id FROM events WHERE title = 'Campus 5K Fun Run'),          (SELECT id FROM categories WHERE name = 'Sports'))
-ON CONFLICT DO NOTHING;
-
-INSERT INTO tickets (user_id, event_id, confirmation_code) VALUES
-    (
-        (SELECT id FROM users WHERE net_id = 'trev123'),
-        (SELECT id FROM events WHERE title = 'Spring Career Fair 2026'),
-        'CF26A001'
-    ),
-    (
-        (SELECT id FROM users WHERE net_id = 'alex456'),
-        (SELECT id FROM events WHERE title = 'Spring Career Fair 2026'),
-        'CF26A002'
-    ),
-    (
-        (SELECT id FROM users WHERE net_id = 'trev123'),
-        (SELECT id FROM events WHERE title = 'Hackathon @ USF 2026'),
-        'HACK2601'
-    ),
-    (
-        (SELECT id FROM users WHERE net_id = 'maria789'),
-        (SELECT id FROM events WHERE title = 'Bulls After Dark: Spring Concert'),
-        'CONC2601'
-    )
-ON CONFLICT DO NOTHING;
+-- Demo users, events, event_categories, and tickets live in
+-- backend/src/db/seed.ts. Run `bun run db:seed` to load them; the seed
+-- script uses real bcrypt hashes so the documented credentials actually
+-- authenticate. Keeping this DDL file free of placeholder password
+-- hashes prevents accounts that can exist but never log in.
 
 -- ============================================================
 -- EXAMPLE QUERIES (demonstrates the 8+ required query types)

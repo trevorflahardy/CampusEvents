@@ -181,7 +181,9 @@ router.get("/:id", async (c) => {
   return c.json({ ...computed, categories: eventCats });
 });
 
-// POST /api/events — create event with Zod validation
+// POST /api/events — create event with Zod validation.
+// organizerId is optional in the body: non-admins always create events
+// under their own JWT-derived user id; admins may assign another organizer.
 const createEventSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().optional(),
@@ -194,7 +196,7 @@ const createEventSchema = z.object({
     .transform((v) => String(v))
     .optional()
     .default("0.00"),
-  organizerId: z.number().int().positive(),
+  organizerId: z.number().int().positive().optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
 });
@@ -209,6 +211,23 @@ router.post(
     if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
 
     const d = parsed.data;
+    const callerId = c.get("userId");
+    const callerRole = c.get("userRole");
+
+    // Derive organizer from JWT for non-admins; reject attempts to create
+    // events under someone else's account (prevents ownership spoofing).
+    let organizerId: number;
+    if (callerRole === "admin") {
+      organizerId = d.organizerId ?? callerId;
+    } else {
+      if (d.organizerId !== undefined && d.organizerId !== callerId) {
+        return c.json(
+          { error: "Cannot create an event on behalf of another organizer" },
+          403,
+        );
+      }
+      organizerId = callerId;
+    }
 
     // INSERT a new event and return all columns of the created row
     const [inserted] = await sql`
@@ -216,7 +235,7 @@ router.post(
                           capacity, ticket_price, organizer_id, latitude, longitude)
       VALUES (${d.title}, ${d.description ?? null}, ${d.location},
               ${d.startTime}, ${d.endTime}, ${d.capacity}, ${d.ticketPrice},
-              ${d.organizerId}, ${d.latitude ?? null}, ${d.longitude ?? null})
+              ${organizerId}, ${d.latitude ?? null}, ${d.longitude ?? null})
       RETURNING *
     `;
     return c.json(inserted, 201);

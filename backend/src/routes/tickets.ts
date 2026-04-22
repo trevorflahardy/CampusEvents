@@ -5,9 +5,12 @@ import { authMiddleware, type AuthEnv } from "../middleware/auth";
 
 const router = new Hono<AuthEnv>();
 
-// Q5: POST /api/tickets — purchase a ticket (INSERT) with capacity check
+// Q5: POST /api/tickets — purchase a ticket (INSERT) with capacity check.
+// The purchaser is always the JWT-authenticated caller; the body's userId
+// is accepted for backward compatibility but must match the caller or be
+// absent (prevents buying tickets on another user's behalf).
 const purchaseSchema = z.object({
-  userId: z.number().int().positive(),
+  userId: z.number().int().positive().optional(),
   eventId: z.number().int().positive(),
 });
 
@@ -16,38 +19,73 @@ router.post("/", authMiddleware, async (c) => {
   const parsed = purchaseSchema.safeParse(body);
   if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
 
-  const { userId, eventId } = parsed.data;
+  const callerId = c.get("userId");
+  const callerRole = c.get("userRole");
+  const { userId: bodyUserId, eventId } = parsed.data;
 
-  // Q5 pre-flight: SELECT with correlated subquery to check event capacity.
-  // The subquery counts existing tickets for this event inline,
-  // avoiding a separate COUNT query and potential race condition window.
-  const event = await sql`
-    SELECT e.id, e.capacity, e.status,
-           (SELECT COUNT(*)::int FROM tickets WHERE event_id = e.id) AS tickets_sold
-    FROM events e
-    WHERE e.id = ${eventId}
-  `;
-
-  if (!event.length) return c.json({ error: "Event not found" }, 404);
-  if (event[0].status === "cancelled")
-    return c.json({ error: "Event is cancelled" }, 400);
-  if (event[0].ticketsSold >= event[0].capacity)
-    return c.json({ error: "Event is sold out" }, 400);
+  // Non-admins may only purchase tickets for themselves.
+  if (callerRole !== "admin" && bodyUserId !== undefined && bodyUserId !== callerId) {
+    return c.json(
+      { error: "Cannot purchase a ticket on behalf of another user" },
+      403,
+    );
+  }
+  const userId = callerRole === "admin" ? (bodyUserId ?? callerId) : callerId;
 
   const confirmationCode = crypto.randomUUID().slice(0, 8).toUpperCase();
 
+  type PurchaseOutcome =
+    | { kind: "not_found" }
+    | { kind: "cancelled" }
+    | { kind: "sold_out" }
+    | { kind: "ok"; ticket: Record<string, unknown> };
+
   try {
-    // Q5: INSERT a new ticket with a unique confirmation code.
-    // The UNIQUE(user_id, event_id) constraint prevents double bookings —
-    // if violated, PostgreSQL raises error code 23505.
-    const [inserted] = await sql`
-      INSERT INTO tickets (user_id, event_id, confirmation_code)
-      VALUES (${userId}, ${eventId}, ${confirmationCode})
-      RETURNING *
-    `;
-    return c.json(inserted, 201);
+    // Wrap capacity check + insert in a transaction with a row-level lock
+    // on the event. SELECT ... FOR UPDATE blocks concurrent purchasers until
+    // this transaction commits, so the ticket count we read is the count
+    // that will be authoritative at insert time. This is what actually
+    // prevents oversell under concurrent requests.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const outcome: PurchaseOutcome = await sql.begin(async (tx: any) => {
+      const [event] = await tx`
+        SELECT id, capacity, status
+        FROM events
+        WHERE id = ${eventId}
+        FOR UPDATE
+      `;
+
+      if (!event) return { kind: "not_found" };
+      if (event.status === "cancelled") return { kind: "cancelled" };
+
+      const [{ ticketsSold }] = await tx`
+        SELECT COUNT(*)::int AS tickets_sold
+        FROM tickets
+        WHERE event_id = ${eventId}
+      `;
+      if (ticketsSold >= event.capacity) return { kind: "sold_out" };
+
+      const [inserted] = await tx`
+        INSERT INTO tickets (user_id, event_id, confirmation_code)
+        VALUES (${userId}, ${eventId}, ${confirmationCode})
+        RETURNING *
+      `;
+      return { kind: "ok", ticket: inserted };
+    });
+
+    if (outcome.kind === "not_found") {
+      return c.json({ error: "Event not found" }, 404);
+    }
+    if (outcome.kind === "cancelled") {
+      return c.json({ error: "Event is cancelled" }, 400);
+    }
+    if (outcome.kind === "sold_out") {
+      return c.json({ error: "Event is sold out" }, 400);
+    }
+    return c.json(outcome.ticket, 201);
   } catch (err) {
     const pgErr = err as { code?: string };
+    // UNIQUE(user_id, event_id) constraint — user already has a ticket.
     if (pgErr.code === "23505") {
       return c.json({ error: "You already have a ticket for this event" }, 409);
     }
@@ -56,9 +94,19 @@ router.post("/", authMiddleware, async (c) => {
   }
 });
 
-// Q4: GET /api/tickets/user/:userId — user's tickets with event info and categories (multiple JOINs)
+// Q4: GET /api/tickets/user/:userId — user's tickets with event info and categories (multiple JOINs).
+// Authz: a user may only view their own tickets; admins may view any.
 router.get("/user/:userId", authMiddleware, async (c) => {
   const userId = Number(c.req.param("userId"));
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return c.json({ error: "Invalid user id" }, 400);
+  }
+
+  const callerId = c.get("userId");
+  const callerRole = c.get("userRole");
+  if (callerRole !== "admin" && callerId !== userId) {
+    return c.json({ error: "Forbidden" }, 403);
+  }
 
   // Q4: SELECT with multiple JOINs — tickets joined with events
   // to retrieve full event details alongside each ticket.
@@ -73,20 +121,33 @@ router.get("/user/:userId", authMiddleware, async (c) => {
     ORDER BY e.start_time
   `;
 
-  // For each ticket, fetch the event's categories via the join table.
-  // This uses a separate query per event to get category names.
-  const enriched = await Promise.all(
-    rows.map(async (row) => {
-      const eventId = (row as Record<string, unknown>).eventId as number;
-      const cats = await sql`
-        SELECT c.id, c.name
-        FROM categories c
-        INNER JOIN event_categories ec ON c.id = ec.category_id
-        WHERE ec.event_id = ${eventId}
-      `;
-      return { ...row, categories: cats };
-    }),
-  );
+  // Batch-fetch categories for all referenced events in one query to avoid
+  // the N+1 pattern. Group them into a map keyed by event_id for O(1) lookup.
+  const eventIds = rows.map((r) => (r as Record<string, unknown>).eventId as number);
+  const categoryRows =
+    eventIds.length > 0
+      ? await sql`
+          SELECT ec.event_id, c.id, c.name
+          FROM categories c
+          INNER JOIN event_categories ec ON c.id = ec.category_id
+          WHERE ec.event_id = ANY(${eventIds})
+        `
+      : [];
+
+  const categoryMap: Record<number, { id: number; name: string }[]> = {};
+  for (const row of categoryRows) {
+    const eid = (row as Record<string, unknown>).eventId as number;
+    if (!categoryMap[eid]) categoryMap[eid] = [];
+    categoryMap[eid].push({
+      id: (row as Record<string, unknown>).id as number,
+      name: (row as Record<string, unknown>).name as string,
+    });
+  }
+
+  const enriched = rows.map((row) => {
+    const eventId = (row as Record<string, unknown>).eventId as number;
+    return { ...row, categories: categoryMap[eventId] ?? [] };
+  });
 
   return c.json(enriched);
 });

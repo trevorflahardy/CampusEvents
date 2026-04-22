@@ -181,7 +181,9 @@ router.post("/:id/photo", authMiddleware, async (c) => {
   return c.json(safe);
 });
 
-// POST /api/users — register a new user with Zod validation
+// POST /api/users — register a new user with Zod validation.
+// Public endpoint: role is always forced to 'student'. Admins assign
+// elevated roles via PATCH /api/users/:id/role.
 const registerUserSchema = z.object({
   netId: z
     .string()
@@ -191,7 +193,6 @@ const registerUserSchema = z.object({
   name: z.string().min(1).max(200),
   email: z.string().email(),
   passwordHash: z.string().min(1),
-  role: z.enum(["admin", "organizer", "student"]).optional().default("student"),
 });
 
 
@@ -200,10 +201,11 @@ router.post("/", async (c) => {
   const parsed = registerUserSchema.safeParse(body);
   if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
   try {
-    // INSERT a new user and return the created row
+    // INSERT a new user and return the created row. Role hard-coded to
+    // 'student' to prevent self-promotion through the public endpoint.
     const [inserted] = await sql`
       INSERT INTO users (net_id, name, email, password_hash, role)
-      VALUES (${parsed.data.netId}, ${parsed.data.name}, ${parsed.data.email}, ${parsed.data.passwordHash}, ${parsed.data.role})
+      VALUES (${parsed.data.netId}, ${parsed.data.name}, ${parsed.data.email}, ${parsed.data.passwordHash}, 'student')
       RETURNING *
     `;
 

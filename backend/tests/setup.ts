@@ -108,8 +108,12 @@ export async function request(
 }
 
 /**
- * Close the database connection. Call in afterAll.
+ * Intentional no-op. The DB client is a module-level singleton shared
+ * across every test file in the same Bun test process, so ending it in
+ * one file's afterAll leaves every subsequent file talking to a closed
+ * pool (CONNECTION_ENDED). The process exit handler in postgres.js
+ * closes the pool cleanly when the test run finishes.
  */
 export async function closeDatabase() {
-  await sql.end();
+  // no-op — see comment above
 }

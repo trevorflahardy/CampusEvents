@@ -10,12 +10,13 @@ const authRouter = new Hono<AuthEnv>();
 
 // ── Validation schemas ──────────────────────────────────────────────────────
 
+// Public registration is always student-level. Elevated roles must be
+// granted by an admin via PATCH /api/users/:id/role.
 const registerSchema = z.object({
   netId: z.string().min(1),
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(["admin", "organizer", "student"]).optional(),
 });
 
 const loginSchema = z.object({
@@ -33,7 +34,7 @@ authRouter.post("/register", async (c) => {
     return c.json({ error: parsed.error.flatten().fieldErrors }, 400);
   }
 
-  const { netId, name, email, password, role } = parsed.data;
+  const { netId, name, email, password } = parsed.data;
 
   // Check for existing user by email to provide a friendly error message
   const existing = await sql`
@@ -46,10 +47,11 @@ authRouter.post("/register", async (c) => {
 
   const passwordHash = await hash(password, 10);
 
-  // INSERT a new user with hashed password and return all columns
+  // INSERT a new user with hashed password. Role is forced to 'student';
+  // an admin must promote accounts via PATCH /api/users/:id/role.
   const [user] = await sql`
     INSERT INTO users (net_id, name, email, password_hash, role)
-    VALUES (${netId}, ${name}, ${email}, ${passwordHash}, ${role ?? "student"})
+    VALUES (${netId}, ${name}, ${email}, ${passwordHash}, 'student')
     RETURNING *
   `;
 
