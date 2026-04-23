@@ -91,10 +91,13 @@ END $$;
 -- prevents re-runs from duplicating seed events while still allowing two
 -- different organizers to use identical titles in production.
 DO $$ BEGIN
-  ALTER TABLE events
-    ADD CONSTRAINT events_organizer_title_start_key
-    UNIQUE (organizer_id, title, start_time);
-EXCEPTION WHEN duplicate_object THEN NULL;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'events_organizer_title_start_key'
+  ) THEN
+    ALTER TABLE events
+      ADD CONSTRAINT events_organizer_title_start_key
+      UNIQUE (organizer_id, title, start_time);
+  END IF;
 END $$;
 
 -- ──────────────────────────────────────────────────────────────
