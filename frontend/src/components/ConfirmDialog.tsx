@@ -79,9 +79,7 @@ export default function ConfirmDialog({
             onClick={onConfirm}
             disabled={loading}
             className={`cursor-pointer px-5 py-2 rounded-full text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-              isDangerous
-                ? "btn-danger"
-                : "bg-accent hover:bg-accent-dark"
+              isDangerous ? "btn-danger" : "bg-accent hover:bg-accent-dark"
             }`}
           >
             {loading ? (

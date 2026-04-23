@@ -14,9 +14,17 @@ let studentToken: string;
 
 beforeAll(async () => {
   await cleanDatabase();
-  admin = await createTestUser({ netId: "usradmin1", email: "usradmin1@usf.edu", role: "admin" });
+  admin = await createTestUser({
+    netId: "usradmin1",
+    email: "usradmin1@usf.edu",
+    role: "admin",
+  });
   adminToken = await getAuthToken(admin.id as number, "admin");
-  student = await createTestUser({ netId: "usrstud1", email: "usrstud1@usf.edu", role: "student" });
+  student = await createTestUser({
+    netId: "usrstud1",
+    email: "usrstud1@usf.edu",
+    role: "student",
+  });
   studentToken = await getAuthToken(student.id as number, "student");
 });
 

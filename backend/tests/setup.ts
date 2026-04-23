@@ -24,13 +24,15 @@ export async function cleanDatabase() {
 /**
  * Insert a test user and return the full row (with camelCase keys).
  */
-export async function createTestUser(overrides: {
-  netId?: string;
-  name?: string;
-  email?: string;
-  password?: string;
-  role?: "admin" | "organizer" | "student";
-} = {}) {
+export async function createTestUser(
+  overrides: {
+    netId?: string;
+    name?: string;
+    email?: string;
+    password?: string;
+    role?: "admin" | "organizer" | "student";
+  } = {},
+) {
   const passwordHash = await hash(overrides.password ?? "password123", 4); // low rounds for speed
   const [user] = await sql`
     INSERT INTO users (net_id, name, email, password_hash, role)
@@ -66,7 +68,10 @@ export async function createTestCategory(name: string) {
 /**
  * Create a test event and return the row.
  */
-export async function createTestEvent(organizerId: number, overrides: Record<string, unknown> = {}) {
+export async function createTestEvent(
+  organizerId: number,
+  overrides: Record<string, unknown> = {},
+) {
   const [event] = await sql`
     INSERT INTO events (title, description, location, start_time, end_time, capacity, ticket_price, organizer_id)
     VALUES (

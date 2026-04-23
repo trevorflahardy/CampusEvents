@@ -15,7 +15,6 @@ router.get("/", authMiddleware, requireRole("admin"), async (c) => {
   return c.json(rows);
 });
 
-
 // GET /api/users/:id — get a user profile
 router.get("/:id", async (c) => {
   const id = Number(c.req.param("id"));
@@ -28,12 +27,10 @@ router.get("/:id", async (c) => {
   return c.json(safe);
 });
 
-
 // PATCH /api/users/:id/role — update user role (admin only)
 const updateRoleSchema = z.object({
   role: z.enum(["admin", "organizer", "student"]),
 });
-
 
 router.patch("/:id/role", authMiddleware, requireRole("admin"), async (c) => {
   const id = Number(c.req.param("id"));
@@ -57,13 +54,11 @@ router.patch("/:id/role", authMiddleware, requireRole("admin"), async (c) => {
   return c.json(safe);
 });
 
-
 // PATCH /api/users/:id/profile — update own profile (name, email)
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   email: z.string().email().optional(),
 });
-
 
 router.patch("/:id/profile", authMiddleware, async (c) => {
   const id = Number(c.req.param("id"));
@@ -110,7 +105,6 @@ router.patch("/:id/profile", authMiddleware, async (c) => {
     throw err;
   }
 });
-
 
 const MIME_TO_EXT: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -195,7 +189,6 @@ const registerUserSchema = z.object({
   passwordHash: z.string().min(1),
 });
 
-
 router.post("/", async (c) => {
   const body = await c.req.json();
   const parsed = registerUserSchema.safeParse(body);
@@ -224,6 +217,5 @@ router.post("/", async (c) => {
     return c.json({ error: "Failed to register user" }, 500);
   }
 });
-
 
 export default router;

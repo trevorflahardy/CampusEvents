@@ -16,9 +16,17 @@ let testEvent: Record<string, unknown>;
 
 beforeAll(async () => {
   await cleanDatabase();
-  organizer = await createTestUser({ netId: "tktorg1", email: "tktorg1@usf.edu", role: "organizer" });
+  organizer = await createTestUser({
+    netId: "tktorg1",
+    email: "tktorg1@usf.edu",
+    role: "organizer",
+  });
   orgToken = await getAuthToken(organizer.id as number, "organizer");
-  student = await createTestUser({ netId: "tktstud1", email: "tktstud1@usf.edu", role: "student" });
+  student = await createTestUser({
+    netId: "tktstud1",
+    email: "tktstud1@usf.edu",
+    role: "student",
+  });
   studentToken = await getAuthToken(student.id as number, "student");
   testEvent = await createTestEvent(organizer.id as number, { capacity: 2 });
 });
@@ -49,7 +57,10 @@ describe("POST /api/tickets (Q5: INSERT with capacity check)", () => {
 
   it("returns 400 for sold-out event", async () => {
     // Purchase second ticket (capacity is 2)
-    const student2 = await createTestUser({ netId: "tktstud2", email: "tktstud2@usf.edu" });
+    const student2 = await createTestUser({
+      netId: "tktstud2",
+      email: "tktstud2@usf.edu",
+    });
     const token2 = await getAuthToken(student2.id as number, "student");
     await request("POST", "/api/tickets", {
       token: token2,
@@ -57,7 +68,10 @@ describe("POST /api/tickets (Q5: INSERT with capacity check)", () => {
     });
 
     // Third ticket should fail — sold out
-    const student3 = await createTestUser({ netId: "tktstud3", email: "tktstud3@usf.edu" });
+    const student3 = await createTestUser({
+      netId: "tktstud3",
+      email: "tktstud3@usf.edu",
+    });
     const token3 = await getAuthToken(student3.id as number, "student");
     const res = await request("POST", "/api/tickets", {
       token: token3,
@@ -118,8 +132,13 @@ describe("PATCH /api/tickets/:id/checkin (Q6: UPDATE)", () => {
 describe("DELETE /api/tickets/:id (Q8: DELETE)", () => {
   it("cancels a ticket", async () => {
     // Create a new ticket to delete
-    const newEvent = await createTestEvent(organizer.id as number, { title: "Delete Ticket Event" });
-    const student4 = await createTestUser({ netId: "tktstud4", email: "tktstud4@usf.edu" });
+    const newEvent = await createTestEvent(organizer.id as number, {
+      title: "Delete Ticket Event",
+    });
+    const student4 = await createTestUser({
+      netId: "tktstud4",
+      email: "tktstud4@usf.edu",
+    });
     const token4 = await getAuthToken(student4.id as number, "student");
 
     const purchaseRes = await request("POST", "/api/tickets", {

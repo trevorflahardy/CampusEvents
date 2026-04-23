@@ -32,7 +32,11 @@ describe("GET /api/categories", () => {
 
 describe("GET /api/categories/popular (Q9: HAVING)", () => {
   it("returns categories with more than 1 event", async () => {
-    const organizer = await createTestUser({ netId: "catorg1", email: "catorg1@usf.edu", role: "organizer" });
+    const organizer = await createTestUser({
+      netId: "catorg1",
+      email: "catorg1@usf.edu",
+      role: "organizer",
+    });
     const cat = await createTestCategory("Academic");
     const event1 = await createTestEvent(organizer.id, { title: "Event A" });
     const event2 = await createTestEvent(organizer.id, { title: "Event B" });
@@ -44,7 +48,9 @@ describe("GET /api/categories/popular (Q9: HAVING)", () => {
     const res = await request("GET", "/api/categories/popular");
     expect(res.status).toBe(200);
     const data = await res.json();
-    const academic = data.find((c: Record<string, unknown>) => c.name === "Academic");
+    const academic = data.find(
+      (c: Record<string, unknown>) => c.name === "Academic",
+    );
     expect(academic).toBeDefined();
     expect(academic.eventCount).toBeGreaterThanOrEqual(2);
   });
@@ -52,7 +58,11 @@ describe("GET /api/categories/popular (Q9: HAVING)", () => {
 
 describe("POST /api/categories", () => {
   it("creates a category when admin", async () => {
-    const admin = await createTestUser({ netId: "catadmin1", email: "catadmin1@usf.edu", role: "admin" });
+    const admin = await createTestUser({
+      netId: "catadmin1",
+      email: "catadmin1@usf.edu",
+      role: "admin",
+    });
     const token = await getAuthToken(admin.id, "admin");
 
     const res = await request("POST", "/api/categories", {
@@ -65,7 +75,11 @@ describe("POST /api/categories", () => {
   });
 
   it("returns 403 for non-admin", async () => {
-    const student = await createTestUser({ netId: "catstud1", email: "catstud1@usf.edu", role: "student" });
+    const student = await createTestUser({
+      netId: "catstud1",
+      email: "catstud1@usf.edu",
+      role: "student",
+    });
     const token = await getAuthToken(student.id, "student");
 
     const res = await request("POST", "/api/categories", {

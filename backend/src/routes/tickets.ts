@@ -24,7 +24,11 @@ router.post("/", authMiddleware, async (c) => {
   const { userId: bodyUserId, eventId } = parsed.data;
 
   // Non-admins may only purchase tickets for themselves.
-  if (callerRole !== "admin" && bodyUserId !== undefined && bodyUserId !== callerId) {
+  if (
+    callerRole !== "admin" &&
+    bodyUserId !== undefined &&
+    bodyUserId !== callerId
+  ) {
     return c.json(
       { error: "Cannot purchase a ticket on behalf of another user" },
       403,
@@ -123,7 +127,9 @@ router.get("/user/:userId", authMiddleware, async (c) => {
 
   // Batch-fetch categories for all referenced events in one query to avoid
   // the N+1 pattern. Group them into a map keyed by event_id for O(1) lookup.
-  const eventIds = rows.map((r) => (r as Record<string, unknown>).eventId as number);
+  const eventIds = rows.map(
+    (r) => (r as Record<string, unknown>).eventId as number,
+  );
   const categoryRows =
     eventIds.length > 0
       ? await sql`

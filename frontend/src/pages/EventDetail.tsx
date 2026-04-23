@@ -142,9 +142,7 @@ export default function EventDetail() {
       setBookingSuccess(
         `Ticket booked! Confirmation: ${ticket.confirmationCode}`,
       );
-      toast.success(
-        "Ticket booked! Confirmation: " + ticket.confirmationCode,
-      );
+      toast.success("Ticket booked! Confirmation: " + ticket.confirmationCode);
       setHasRegistered(true);
       const updated = await api.getEvent(event.id);
       setEvent(updated);

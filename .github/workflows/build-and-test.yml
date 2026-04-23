@@ -44,6 +44,29 @@ jobs:
     defaults:
       run:
         working-directory: backend
+
+    # Integration tests run against a real Postgres instance. DATABASE_URL
+    # points at the service container below; schema.sql is applied before
+    # `bun test` so every suite starts with the production schema.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: campus
+          POSTGRES_PASSWORD: campus123
+          POSTGRES_DB: campusevents
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U campus"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://campus:campus123@localhost:5432/campusevents
+      JWT_SECRET: campusevents-dev-secret
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,6 +81,9 @@ jobs:
 
       - name: Build
         run: bun run build
+
+      - name: Apply schema
+        run: bun run db:migrate
 
       - name: Test
         run: bun run test

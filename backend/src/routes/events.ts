@@ -40,7 +40,12 @@ router.get("/", async (c) => {
   // ILIKE search — case-insensitive partial match on event title
   if (search) conditions.push(sql`e.title ILIKE ${"%" + search + "%"}`);
 
-  const validStatuses = ["upcoming", "ongoing", "completed", "cancelled"] as const;
+  const validStatuses = [
+    "upcoming",
+    "ongoing",
+    "completed",
+    "cancelled",
+  ] as const;
   const status =
     statusQuery &&
     validStatuses.includes(statusQuery as (typeof validStatuses)[number])
@@ -312,16 +317,25 @@ router.patch(
     // We map camelCase Zod output keys to snake_case SQL column names.
     const updates: Record<string, unknown> = {};
     if (parsed.data.title !== undefined) updates.title = parsed.data.title;
-    if (parsed.data.description !== undefined) updates.description = parsed.data.description;
-    if (parsed.data.location !== undefined) updates.location = parsed.data.location;
-    if (parsed.data.startTime !== undefined) updates.start_time = parsed.data.startTime;
-    if (parsed.data.endTime !== undefined) updates.end_time = parsed.data.endTime;
-    if (parsed.data.capacity !== undefined) updates.capacity = parsed.data.capacity;
-    if (parsed.data.ticketPrice !== undefined) updates.ticket_price = parsed.data.ticketPrice;
-    if (parsed.data.organizerId !== undefined) updates.organizer_id = parsed.data.organizerId;
+    if (parsed.data.description !== undefined)
+      updates.description = parsed.data.description;
+    if (parsed.data.location !== undefined)
+      updates.location = parsed.data.location;
+    if (parsed.data.startTime !== undefined)
+      updates.start_time = parsed.data.startTime;
+    if (parsed.data.endTime !== undefined)
+      updates.end_time = parsed.data.endTime;
+    if (parsed.data.capacity !== undefined)
+      updates.capacity = parsed.data.capacity;
+    if (parsed.data.ticketPrice !== undefined)
+      updates.ticket_price = parsed.data.ticketPrice;
+    if (parsed.data.organizerId !== undefined)
+      updates.organizer_id = parsed.data.organizerId;
     if (parsed.data.status !== undefined) updates.status = parsed.data.status;
-    if (parsed.data.latitude !== undefined) updates.latitude = parsed.data.latitude;
-    if (parsed.data.longitude !== undefined) updates.longitude = parsed.data.longitude;
+    if (parsed.data.latitude !== undefined)
+      updates.latitude = parsed.data.latitude;
+    if (parsed.data.longitude !== undefined)
+      updates.longitude = parsed.data.longitude;
 
     if (Object.keys(updates).length === 0) {
       return c.json({ error: "No fields to update" }, 400);
@@ -468,16 +482,10 @@ router.get("/:id/checkins", authMiddleware, async (c) => {
     );
     const windowEnd = new Date(ev.endTime);
     if (now < windowStart) {
-      return c.json(
-        { error: "Check-in data is not available yet" },
-        403,
-      );
+      return c.json({ error: "Check-in data is not available yet" }, 403);
     }
     if (now > windowEnd) {
-      return c.json(
-        { error: "This event has ended" },
-        403,
-      );
+      return c.json({ error: "This event has ended" }, 403);
     }
   }
 

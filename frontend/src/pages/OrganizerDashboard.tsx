@@ -83,15 +83,17 @@ export default function OrganizerDashboard() {
   const [checkingInTicketId, setCheckingInTicketId] = useState<number | null>(
     null,
   );
-  const [showCancelConfirm, setShowCancelConfirm] = useState<number | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState<number | null>(
+    null,
+  );
 
   // user's registered events (for "My Registered Events" section)
   const [userTickets, setUserTickets] = useState<UserTicket[]>([]);
 
   // tab state: which event view is active
-  const [activeTab, setActiveTab] = useState<"my-events" | "registered" | "all">(
-    isManager ? "my-events" : "all"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "my-events" | "registered" | "all"
+  >(isManager ? "my-events" : "all");
 
   /* ---------- data fetching ---------- */
 
@@ -190,13 +192,41 @@ export default function OrganizerDashboard() {
     setFormError("");
     setSubmitting(true);
 
-    if (!title.trim()) { setFormError("Title is required."); setSubmitting(false); return; }
-    if (!location.trim()) { setFormError("Location is required."); setSubmitting(false); return; }
-    if (!startTime) { setFormError("Start time is required."); setSubmitting(false); return; }
-    if (!endTime) { setFormError("End time is required."); setSubmitting(false); return; }
-    if (new Date(endTime) <= new Date(startTime)) { setFormError("End time must be after start time."); setSubmitting(false); return; }
-    if (!capacity || Number(capacity) <= 0) { setFormError("Capacity must be a positive number."); setSubmitting(false); return; }
-    if (ticketPrice && Number(ticketPrice) < 0) { setFormError("Price cannot be negative."); setSubmitting(false); return; }
+    if (!title.trim()) {
+      setFormError("Title is required.");
+      setSubmitting(false);
+      return;
+    }
+    if (!location.trim()) {
+      setFormError("Location is required.");
+      setSubmitting(false);
+      return;
+    }
+    if (!startTime) {
+      setFormError("Start time is required.");
+      setSubmitting(false);
+      return;
+    }
+    if (!endTime) {
+      setFormError("End time is required.");
+      setSubmitting(false);
+      return;
+    }
+    if (new Date(endTime) <= new Date(startTime)) {
+      setFormError("End time must be after start time.");
+      setSubmitting(false);
+      return;
+    }
+    if (!capacity || Number(capacity) <= 0) {
+      setFormError("Capacity must be a positive number.");
+      setSubmitting(false);
+      return;
+    }
+    if (ticketPrice && Number(ticketPrice) < 0) {
+      setFormError("Price cannot be negative.");
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const newEvent = await api.createEvent({
@@ -222,7 +252,8 @@ export default function OrganizerDashboard() {
       await fetchEvents();
       toast.success("Event created successfully!");
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "Failed to create event.";
+      const message =
+        err instanceof ApiError ? err.message : "Failed to create event.";
       setFormError(message);
       toast.error(message);
     } finally {
@@ -290,7 +321,9 @@ export default function OrganizerDashboard() {
 
   const myOwnEvents = events.filter((e) => e.organizerId === user?.id);
   const totalEvents = isManager ? myOwnEvents.length : events.length;
-  const upcomingCount = (isManager ? myOwnEvents : events).filter((e) => e.status === "upcoming").length;
+  const upcomingCount = (isManager ? myOwnEvents : events).filter(
+    (e) => e.status === "upcoming",
+  ).length;
   const totalAttendees = Object.values(attendeesMap).reduce(
     (sum, list) => sum + list.length,
     0,
@@ -328,13 +361,35 @@ export default function OrganizerDashboard() {
   // Tab definitions
   const tabs = isManager
     ? [
-        { key: "my-events" as const, label: "My Events", count: activeEvents.filter((e) => e.organizerId === user?.id).length },
-        { key: "registered" as const, label: "Registered", count: activeEvents.filter((e) => registeredEventIds.has(e.id)).length },
-        { key: "all" as const, label: "All Events", count: activeEvents.length },
+        {
+          key: "my-events" as const,
+          label: "My Events",
+          count: activeEvents.filter((e) => e.organizerId === user?.id).length,
+        },
+        {
+          key: "registered" as const,
+          label: "Registered",
+          count: activeEvents.filter((e) => registeredEventIds.has(e.id))
+            .length,
+        },
+        {
+          key: "all" as const,
+          label: "All Events",
+          count: activeEvents.length,
+        },
       ]
     : [
-        { key: "registered" as const, label: "Registered", count: activeEvents.filter((e) => registeredEventIds.has(e.id)).length },
-        { key: "all" as const, label: "All Events", count: activeEvents.length },
+        {
+          key: "registered" as const,
+          label: "Registered",
+          count: activeEvents.filter((e) => registeredEventIds.has(e.id))
+            .length,
+        },
+        {
+          key: "all" as const,
+          label: "All Events",
+          count: activeEvents.length,
+        },
       ];
 
   // Tickets eligible for self-check-in (30min before start → end, not checked in)
@@ -515,8 +570,6 @@ export default function OrganizerDashboard() {
             <EventsGrid
               filteredEvents={filteredEvents}
               isManager={isManager}
-              isAdmin={isAdmin}
-              isOrganizer={isOrganizer}
               searchQuery={searchQuery}
               activeTab={activeTab}
               eventCategoriesMap={eventCategoriesMap}
@@ -552,7 +605,9 @@ export default function OrganizerDashboard() {
         confirmText="Cancel Event"
         isDangerous={true}
         loading={cancellingEventId !== null}
-        onConfirm={() => { if (showCancelConfirm !== null) handleCancelEvent(showCancelConfirm); }}
+        onConfirm={() => {
+          if (showCancelConfirm !== null) handleCancelEvent(showCancelConfirm);
+        }}
         onCancel={() => setShowCancelConfirm(null)}
       />
     </div>

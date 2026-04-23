@@ -48,7 +48,9 @@ export default function AdminPanel() {
   const [addingCategory, setAddingCategory] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const [eventSearch, setEventSearch] = useState("");
-  const [confirmCancelEventId, setConfirmCancelEventId] = useState<number | null>(null);
+  const [confirmCancelEventId, setConfirmCancelEventId] = useState<
+    number | null
+  >(null);
 
   useEffect(() => {
     loadData();
@@ -104,7 +106,8 @@ export default function AdminPanel() {
       setNewCategoryName("");
       toast.success("Category added");
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "Failed to add category.";
+      const message =
+        err instanceof ApiError ? err.message : "Failed to add category.";
       setCategoryError(message);
       toast.error(message);
     } finally {
@@ -447,8 +450,13 @@ export default function AdminPanel() {
                   ))}
                   {filteredEvents.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-6 py-10 text-center text-slate-400 dark:text-slate-500 text-sm">
-                        {eventSearch ? `No events matching "${eventSearch}"` : "No events yet."}
+                      <td
+                        colSpan={5}
+                        className="px-6 py-10 text-center text-slate-400 dark:text-slate-500 text-sm"
+                      >
+                        {eventSearch
+                          ? `No events matching "${eventSearch}"`
+                          : "No events yet."}
                       </td>
                     </tr>
                   )}
@@ -565,7 +573,8 @@ export default function AdminPanel() {
         isDangerous={true}
         loading={cancellingEventId !== null}
         onConfirm={() => {
-          if (confirmCancelEventId !== null) handleCancelEvent(confirmCancelEventId);
+          if (confirmCancelEventId !== null)
+            handleCancelEvent(confirmCancelEventId);
         }}
         onCancel={() => setConfirmCancelEventId(null)}
       />

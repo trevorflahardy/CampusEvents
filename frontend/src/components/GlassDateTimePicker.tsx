@@ -12,10 +12,20 @@ export interface GlassDateTimePickerProps {
 }
 
 const MONTHS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
-const DAY_HDRS = ["S","M","T","W","T","F","S"];
+const DAY_HDRS = ["S", "M", "T", "W", "T", "F", "S"];
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -23,7 +33,9 @@ function pad(n: number) {
 
 function toInputValue(d: Date, showTime: boolean): string {
   const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  return showTime ? `${datePart}T${pad(d.getHours())}:${pad(d.getMinutes())}` : datePart;
+  return showTime
+    ? `${datePart}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+    : datePart;
 }
 
 function parseValue(v: string): Date | null {
@@ -79,10 +91,15 @@ export default function GlassDateTimePicker({
     const timer = setTimeout(() => {
       if (hourRef.current && selected) {
         const idx = display12(selected.getHours()) - 1;
-        (hourRef.current.children[idx] as HTMLElement)?.scrollIntoView({ block: "center", behavior: "instant" });
+        (hourRef.current.children[idx] as HTMLElement)?.scrollIntoView({
+          block: "center",
+          behavior: "instant",
+        });
       }
       if (minRef.current && selected) {
-        (minRef.current.children[selected.getMinutes()] as HTMLElement)?.scrollIntoView({ block: "center", behavior: "instant" });
+        (
+          minRef.current.children[selected.getMinutes()] as HTMLElement
+        )?.scrollIntoView({ block: "center", behavior: "instant" });
       }
     }, 0);
     return () => clearTimeout(timer);
@@ -113,34 +130,53 @@ export default function GlassDateTimePicker({
   function setHourDisplay(displayH: number) {
     const base = selected ?? new Date(year, month, 1, 8, 0);
     const h24 =
-      displayH === 12
-        ? isPM ? 12 : 0
-        : isPM ? displayH + 12 : displayH;
-    onChange(toInputValue(
-      new Date(base.getFullYear(), base.getMonth(), base.getDate(), h24, base.getMinutes()),
-      showTime,
-    ));
+      displayH === 12 ? (isPM ? 12 : 0) : isPM ? displayH + 12 : displayH;
+    onChange(
+      toInputValue(
+        new Date(
+          base.getFullYear(),
+          base.getMonth(),
+          base.getDate(),
+          h24,
+          base.getMinutes(),
+        ),
+        showTime,
+      ),
+    );
   }
 
   function setMinuteVal(m: number) {
     const base = selected ?? new Date(year, month, 1, 8, 0);
-    onChange(toInputValue(
-      new Date(base.getFullYear(), base.getMonth(), base.getDate(), base.getHours(), m),
-      showTime,
-    ));
+    onChange(
+      toInputValue(
+        new Date(
+          base.getFullYear(),
+          base.getMonth(),
+          base.getDate(),
+          base.getHours(),
+          m,
+        ),
+        showTime,
+      ),
+    );
   }
 
   function togglePeriod(period: "AM" | "PM") {
     if (!selected) return;
     const h = selected.getHours();
-    const h24 =
-      period === "AM"
-        ? h >= 12 ? h - 12 : h
-        : h < 12 ? h + 12 : h;
-    onChange(toInputValue(
-      new Date(selected.getFullYear(), selected.getMonth(), selected.getDate(), h24, selected.getMinutes()),
-      showTime,
-    ));
+    const h24 = period === "AM" ? (h >= 12 ? h - 12 : h) : h < 12 ? h + 12 : h;
+    onChange(
+      toInputValue(
+        new Date(
+          selected.getFullYear(),
+          selected.getMonth(),
+          selected.getDate(),
+          h24,
+          selected.getMinutes(),
+        ),
+        showTime,
+      ),
+    );
   }
 
   const radius = pill ? "rounded-full" : "rounded-xl";
@@ -197,8 +233,18 @@ export default function GlassDateTimePicker({
                 onClick={() => setViewDate(new Date(year, month - 1, 1))}
                 className="w-7 h-7 rounded-lg hover:bg-black/8 transition-colors flex items-center justify-center cursor-pointer"
               >
-                <svg className="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                <svg
+                  className="w-3.5 h-3.5 text-slate-600"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
               </button>
               <span className="text-sm font-semibold text-slate-800 min-w-[140px] text-center">
@@ -209,8 +255,18 @@ export default function GlassDateTimePicker({
                 onClick={() => setViewDate(new Date(year, month + 1, 1))}
                 className="w-7 h-7 rounded-lg hover:bg-black/8 transition-colors flex items-center justify-center cursor-pointer"
               >
-                <svg className="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                <svg
+                  className="w-3.5 h-3.5 text-slate-600"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </button>
             </div>
@@ -218,7 +274,10 @@ export default function GlassDateTimePicker({
             {/* Day headers */}
             <div className="grid grid-cols-7 gap-0.5 mb-1">
               {DAY_HDRS.map((d, i) => (
-                <div key={i} className="w-8 h-7 flex items-center justify-center text-xs font-medium text-slate-400">
+                <div
+                  key={i}
+                  className="w-8 h-7 flex items-center justify-center text-xs font-medium text-slate-400"
+                >
                   {d}
                 </div>
               ))}
@@ -248,8 +307,8 @@ export default function GlassDateTimePicker({
                       isSel
                         ? "bg-[#1a4f3b] text-white shadow-sm"
                         : isTod
-                        ? "border border-[#1a4f3b]/50 text-[#1a4f3b] font-semibold"
-                        : "text-slate-700 hover:bg-black/8"
+                          ? "border border-[#1a4f3b]/50 text-[#1a4f3b] font-semibold"
+                          : "text-slate-700 hover:bg-black/8"
                     }`}
                   >
                     {day}
@@ -262,7 +321,10 @@ export default function GlassDateTimePicker({
             <div className="flex justify-between mt-3 pt-3 border-t border-slate-200/60">
               <button
                 type="button"
-                onClick={() => { onChange(""); setOpen(false); }}
+                onClick={() => {
+                  onChange("");
+                  setOpen(false);
+                }}
                 className="text-xs text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
               >
                 Clear
@@ -285,7 +347,9 @@ export default function GlassDateTimePicker({
           {/* ── Time picker ── */}
           {showTime && (
             <div className="border-l border-slate-200/60 pl-4 select-none">
-              <div className="text-xs font-medium text-slate-500 mb-2 text-center">Time</div>
+              <div className="text-xs font-medium text-slate-500 mb-2 text-center">
+                Time
+              </div>
               <div className="flex gap-1 items-start">
                 {/* Hours 1-12 */}
                 <div
@@ -309,7 +373,9 @@ export default function GlassDateTimePicker({
                   ))}
                 </div>
 
-                <div className="text-slate-400 text-sm font-bold self-center px-0.5">:</div>
+                <div className="text-slate-400 text-sm font-bold self-center px-0.5">
+                  :
+                </div>
 
                 {/* Minutes 00-59 */}
                 <div

@@ -18,9 +18,17 @@ let testEvent: Record<string, unknown>;
 
 beforeAll(async () => {
   await cleanDatabase();
-  organizer = await createTestUser({ netId: "evtorg1", email: "evtorg1@usf.edu", role: "organizer" });
+  organizer = await createTestUser({
+    netId: "evtorg1",
+    email: "evtorg1@usf.edu",
+    role: "organizer",
+  });
   orgToken = await getAuthToken(organizer.id as number, "organizer");
-  student = await createTestUser({ netId: "evtstud1", email: "evtstud1@usf.edu", role: "student" });
+  student = await createTestUser({
+    netId: "evtstud1",
+    email: "evtstud1@usf.edu",
+    role: "student",
+  });
   studentToken = await getAuthToken(student.id as number, "student");
   testEvent = await createTestEvent(organizer.id as number);
 });
@@ -41,7 +49,10 @@ describe("GET /api/events (Q1: SELECT + JOIN)", () => {
 
 describe("GET /api/events?from=&to= (Q10: BETWEEN)", () => {
   it("filters events by date range", async () => {
-    const res = await request("GET", "/api/events?from=2026-05-01&to=2026-07-01");
+    const res = await request(
+      "GET",
+      "/api/events?from=2026-05-01&to=2026-07-01",
+    );
     expect(res.status).toBe(200);
     const data = await res.json();
     // Our test event is on 2026-06-01, should be in range
@@ -49,7 +60,10 @@ describe("GET /api/events?from=&to= (Q10: BETWEEN)", () => {
   });
 
   it("returns empty for out-of-range dates", async () => {
-    const res = await request("GET", "/api/events?from=2020-01-01&to=2020-02-01");
+    const res = await request(
+      "GET",
+      "/api/events?from=2020-01-01&to=2020-02-01",
+    );
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.length).toBe(0);
@@ -140,7 +154,9 @@ describe("PATCH /api/events/:id (Q7: UPDATE)", () => {
   });
 
   it("can cancel an event", async () => {
-    const ev = await createTestEvent(organizer.id as number, { title: "To Cancel" });
+    const ev = await createTestEvent(organizer.id as number, {
+      title: "To Cancel",
+    });
     const res = await request("PATCH", `/api/events/${ev.id}`, {
       token: orgToken,
       body: { status: "cancelled" },
@@ -153,7 +169,9 @@ describe("PATCH /api/events/:id (Q7: UPDATE)", () => {
 
 describe("DELETE /api/events/:id", () => {
   it("deletes an event", async () => {
-    const ev = await createTestEvent(organizer.id as number, { title: "To Delete" });
+    const ev = await createTestEvent(organizer.id as number, {
+      title: "To Delete",
+    });
     const res = await request("DELETE", `/api/events/${ev.id}`, {
       token: orgToken,
     });
