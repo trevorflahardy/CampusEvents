@@ -49,7 +49,10 @@ export default function BrowseEvents() {
         if (!cancelled) setLoading(false);
       }
     }, 300);
-    return () => { cancelled = true; clearTimeout(timer); };
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [search, categoryId, from, to, status]);
 
   useEffect(() => {
@@ -65,15 +68,25 @@ export default function BrowseEvents() {
     setSort("date-desc");
   };
 
-  const hasFilters = search || categoryId || from || to || status || sort !== "date-desc";
+  const hasFilters =
+    search || categoryId || from || to || status || sort !== "date-desc";
 
   const sortedEvents = [...events].sort((a, b) => {
     switch (sort) {
-      case "date-asc": return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-      case "date-desc": return new Date(b.startTime).getTime() - new Date(a.startTime).getTime();
-      case "title-asc": return a.title.localeCompare(b.title);
-      case "title-desc": return b.title.localeCompare(a.title);
-      default: return 0;
+      case "date-asc":
+        return (
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        );
+      case "date-desc":
+        return (
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+        );
+      case "title-asc":
+        return a.title.localeCompare(b.title);
+      case "title-desc":
+        return b.title.localeCompare(a.title);
+      default:
+        return 0;
     }
   });
 
@@ -95,7 +108,8 @@ export default function BrowseEvents() {
                 Events
               </h1>
               <p className="text-slate-500 mt-1 text-sm">
-                {sortedEvents.length} event{sortedEvents.length !== 1 ? "s" : ""} found
+                {sortedEvents.length} event
+                {sortedEvents.length !== 1 ? "s" : ""} found
               </p>
             </div>
           </div>
@@ -213,7 +227,7 @@ export default function BrowseEvents() {
               {hasMore && (
                 <div className="text-center mt-8">
                   <button
-                    onClick={() => setVisibleCount(v => v + EVENTS_PER_PAGE)}
+                    onClick={() => setVisibleCount((v) => v + EVENTS_PER_PAGE)}
                     className="cursor-pointer glass-heavy rounded-full px-8 py-3 text-sm font-semibold text-slate-700 hover:bg-white/80 dark:hover:bg-white/10 transition-all hover-lift"
                   >
                     Load More ({sortedEvents.length - visibleCount} remaining)

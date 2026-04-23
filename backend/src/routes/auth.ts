@@ -1,23 +1,22 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 import { hash, verify as verifyPassword } from "@node-rs/bcrypt";
 import { sign } from "hono/jwt";
 
-import { db } from "../db/client";
-import { users } from "../db/schema";
+import sql from "../db/client";
 import { authMiddleware, JWT_SECRET, type AuthEnv } from "../middleware/auth";
 
 const authRouter = new Hono<AuthEnv>();
 
 // ── Validation schemas ──────────────────────────────────────────────────────
 
+// Public registration is always student-level. Elevated roles must be
+// granted by an admin via PATCH /api/users/:id/role.
 const registerSchema = z.object({
   netId: z.string().min(1),
   name: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(["admin", "organizer", "student"]).optional(),
 });
 
 const loginSchema = z.object({
@@ -35,14 +34,12 @@ authRouter.post("/register", async (c) => {
     return c.json({ error: parsed.error.flatten().fieldErrors }, 400);
   }
 
-  const { netId, name, email, password, role } = parsed.data;
+  const { netId, name, email, password } = parsed.data;
 
-  // Check for existing user
-  const existing = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+  // Check for existing user by email to provide a friendly error message
+  const existing = await sql`
+    SELECT id FROM users WHERE email = ${email} LIMIT 1
+  `;
 
   if (existing.length > 0) {
     return c.json({ error: "A user with this email already exists" }, 409);
@@ -50,16 +47,13 @@ authRouter.post("/register", async (c) => {
 
   const passwordHash = await hash(password, 10);
 
-  const [user] = await db
-    .insert(users)
-    .values({
-      netId,
-      name,
-      email,
-      passwordHash,
-      role: role ?? "student",
-    })
-    .returning();
+  // INSERT a new user with hashed password. Role is forced to 'student';
+  // an admin must promote accounts via PATCH /api/users/:id/role.
+  const [user] = await sql`
+    INSERT INTO users (net_id, name, email, password_hash, role)
+    VALUES (${netId}, ${name}, ${email}, ${passwordHash}, 'student')
+    RETURNING *
+  `;
 
   const { passwordHash: _, ...userWithoutPassword } = user;
   return c.json(userWithoutPassword, 201);
@@ -77,11 +71,10 @@ authRouter.post("/login", async (c) => {
 
   const { email, password } = parsed.data;
 
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+  // SELECT user by email for credential verification
+  const [user] = await sql`
+    SELECT * FROM users WHERE email = ${email} LIMIT 1
+  `;
 
   if (!user) {
     return c.json({ error: "Invalid email or password" }, 401);
@@ -103,11 +96,10 @@ authRouter.post("/login", async (c) => {
 authRouter.get("/me", authMiddleware, async (c) => {
   const userId = c.get("userId");
 
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
+  // SELECT the authenticated user's profile by their JWT-derived ID
+  const [user] = await sql`
+    SELECT * FROM users WHERE id = ${userId} LIMIT 1
+  `;
 
   if (!user) {
     return c.json({ error: "User not found" }, 404);

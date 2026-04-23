@@ -27,25 +27,38 @@ function formatTime(dateStr: string): string {
   });
 }
 
-function getRelativeTime(dateStr: string, endDateStr: string, status: string): { label: string; color: string } {
+function getRelativeTime(
+  dateStr: string,
+  endDateStr: string,
+  status: string,
+): { label: string; color: string } {
   const now = Date.now();
   const start = new Date(dateStr).getTime();
   const end = new Date(endDateStr).getTime();
   const diff = start - now;
 
-  if (status === "cancelled") return { label: "Cancelled", color: "text-red-500" };
-  if (status === "completed" || now > end) return { label: "Event ended", color: "text-slate-400" };
-  if (status === "ongoing" || (now >= start && now <= end)) return { label: "Happening now", color: "text-emerald-600" };
+  if (status === "cancelled")
+    return { label: "Cancelled", color: "text-red-500" };
+  if (status === "completed" || now > end)
+    return { label: "Event ended", color: "text-slate-400" };
+  if (status === "ongoing" || (now >= start && now <= end))
+    return { label: "Happening now", color: "text-emerald-600" };
 
   const absDiff = Math.abs(diff);
   const minutes = Math.floor(absDiff / 60000);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (minutes < 60) return { label: `Starts in ${minutes}m`, color: "text-amber-600" };
-  if (hours < 24) return { label: `Starts in ${hours}h ${minutes % 60}m`, color: "text-blue-600" };
+  if (minutes < 60)
+    return { label: `Starts in ${minutes}m`, color: "text-amber-600" };
+  if (hours < 24)
+    return {
+      label: `Starts in ${hours}h ${minutes % 60}m`,
+      color: "text-blue-600",
+    };
   if (days === 1) return { label: "Starts tomorrow", color: "text-blue-500" };
-  if (days < 7) return { label: `Starts in ${days} days`, color: "text-slate-600" };
+  if (days < 7)
+    return { label: `Starts in ${days} days`, color: "text-slate-600" };
   return { label: `Starts in ${days} days`, color: "text-slate-500" };
 }
 
@@ -54,7 +67,9 @@ export default function MyTickets() {
   const [tickets, setTickets] = useState<UserTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [cancellingTicketId, setCancellingTicketId] = useState<number | null>(null);
+  const [cancellingTicketId, setCancellingTicketId] = useState<number | null>(
+    null,
+  );
   const [cancelling, setCancelling] = useState(false);
   const [checkingInId, setCheckingInId] = useState<number | null>(null);
 
@@ -82,8 +97,8 @@ export default function MyTickets() {
       await api.checkinTicket(ticketId);
       setTickets((prev) =>
         prev.map((t) =>
-          t.ticketId === ticketId ? { ...t, checkedIn: true } : t
-        )
+          t.ticketId === ticketId ? { ...t, checkedIn: true } : t,
+        ),
       );
       toast.success("Checked in successfully!");
     } catch {
@@ -198,9 +213,17 @@ export default function MyTickets() {
               ticket.eventStatus === "cancelled" ||
               now > end;
             const effectiveStatus = isPast
-              ? ticket.eventStatus === "cancelled" ? "cancelled" : "completed"
-              : isHappeningNow ? "ongoing" : ticket.eventStatus;
-            const relative = getRelativeTime(ticket.eventStartTime, ticket.eventEndTime, effectiveStatus);
+              ? ticket.eventStatus === "cancelled"
+                ? "cancelled"
+                : "completed"
+              : isHappeningNow
+                ? "ongoing"
+                : ticket.eventStatus;
+            const relative = getRelativeTime(
+              ticket.eventStartTime,
+              ticket.eventEndTime,
+              effectiveStatus,
+            );
             const canCheckin = isHappeningNow && !ticket.checkedIn && !isPast;
 
             return (
@@ -214,7 +237,9 @@ export default function MyTickets() {
                     <div>
                       {/* Category + Status row */}
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <span className={`w-2 h-2 rounded-full ${isPast ? "bg-slate-400" : "bg-[#1a4f3b]"}`} />
+                        <span
+                          className={`w-2 h-2 rounded-full ${isPast ? "bg-slate-400" : "bg-[#1a4f3b]"}`}
+                        />
                         {ticket.categories.length > 0 ? (
                           ticket.categories.map((cat) => (
                             <span
@@ -249,16 +274,33 @@ export default function MyTickets() {
 
                       {/* Location */}
                       <p className="text-slate-500 font-medium mt-1 flex items-center gap-1.5">
-                        <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <svg
+                          className="w-4 h-4 text-slate-400 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
                         </svg>
                         {ticket.eventLocation}
                       </p>
                     </div>
 
                     {/* Relative time indicator */}
-                    <div className={`mt-3 flex items-center gap-2 text-sm font-semibold ${relative.color}`}>
+                    <div
+                      className={`mt-3 flex items-center gap-2 text-sm font-semibold ${relative.color}`}
+                    >
                       {isHappeningNow && !isPast && (
                         <span className="relative flex h-2.5 w-2.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -349,16 +391,41 @@ export default function MyTickets() {
                       >
                         {checkingInId === ticket.ticketId ? (
                           <>
-                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            <svg
+                              className="w-4 h-4 animate-spin"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                              />
                             </svg>
                             Checking in...
                           </>
                         ) : (
                           <>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                             Check In Now
                           </>
@@ -366,8 +433,18 @@ export default function MyTickets() {
                       </button>
                     ) : ticket.checkedIn && isHappeningNow ? (
                       <div className="w-full bg-emerald-50 text-emerald-700 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-emerald-200">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
                         </svg>
                         Checked In
                       </div>
@@ -377,9 +454,24 @@ export default function MyTickets() {
                         state={{ from: "dashboard" }}
                         className="cursor-pointer w-full bg-[#1a4f3b] text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-150 hover:bg-[#2b5c50] active:scale-95"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
                         </svg>
                         View Event
                       </Link>
@@ -405,7 +497,8 @@ export default function MyTickets() {
       {tickets.length > 0 && (
         <footer className="mt-12 border-t border-slate-200/40 pt-6 flex justify-between items-center text-slate-500 max-w-5xl">
           <p className="text-sm">
-            Showing {tickets.length} active ticket{tickets.length !== 1 ? "s" : ""}
+            Showing {tickets.length} active ticket
+            {tickets.length !== 1 ? "s" : ""}
           </p>
         </footer>
       )}
@@ -417,7 +510,9 @@ export default function MyTickets() {
         confirmText="Cancel Booking"
         isDangerous={true}
         loading={cancelling}
-        onConfirm={() => { if (cancellingTicketId) handleCancel(cancellingTicketId); }}
+        onConfirm={() => {
+          if (cancellingTicketId) handleCancel(cancellingTicketId);
+        }}
         onCancel={() => setCancellingTicketId(null)}
       />
     </div>

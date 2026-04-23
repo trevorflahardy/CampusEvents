@@ -1,11 +1,15 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
+/**
+ * Standalone migration script — run with: bun run src/db/migrate.ts
+ * Applies schema.sql to the database. Safe to run repeatedly
+ * thanks to IF NOT EXISTS / ON CONFLICT DO NOTHING guards.
+ */
 import postgres from "postgres";
+import { resolveSchemaPath } from "./schema-path";
 
 const connectionString = process.env.DATABASE_URL!;
-const client = postgres(connectionString, { max: 1 });
-const db = drizzle(client);
+const sql = postgres(connectionString, { max: 1 });
 
-await migrate(db, { migrationsFolder: "./src/db/migrations" });
-console.log("✅ Migrations applied");
-await client.end();
+const schemaPath = resolveSchemaPath();
+await sql.unsafe(await Bun.file(schemaPath).text());
+console.log(`✅ Schema applied from ${schemaPath}`);
+await sql.end();

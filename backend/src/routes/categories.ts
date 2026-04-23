@@ -1,9 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { eq, sql } from "drizzle-orm";
-
-import { db } from "../db/client";
-import { categories, eventCategories, events } from "../db/schema";
+import sql from "../db/client";
 import { authMiddleware, requireRole, type AuthEnv } from "../middleware/auth";
 
 const categoriesRouter = new Hono<AuthEnv>();
@@ -11,23 +8,25 @@ const categoriesRouter = new Hono<AuthEnv>();
 // ── GET / — list all categories (public) ────────────────────────────────────
 
 categoriesRouter.get("/", async (c) => {
-  const rows = await db.select().from(categories);
+  // Simple SELECT to retrieve every category row
+  const rows = await sql`SELECT id, name FROM categories`;
   return c.json(rows);
 });
 
 // ── GET /popular — categories with more than 1 event (SELECT + HAVING) ──────
 
 categoriesRouter.get("/popular", async (c) => {
-  const rows = await db
-    .select({
-      categoryId: categories.id,
-      name: categories.name,
-      eventCount: sql<number>`count(${eventCategories.eventId})`,
-    })
-    .from(categories)
-    .innerJoin(eventCategories, eq(categories.id, eventCategories.categoryId))
-    .groupBy(categories.id, categories.name)
-    .having(sql`count(${eventCategories.eventId}) > 1`);
+  // Q9: SELECT with GROUP BY + HAVING
+  // Groups categories by their event count via the join table,
+  // then filters to only those appearing in more than one event.
+  const rows = await sql`
+    SELECT c.id AS category_id, c.name,
+           COUNT(ec.event_id)::int AS event_count
+    FROM categories c
+    INNER JOIN event_categories ec ON c.id = ec.category_id
+    GROUP BY c.id, c.name
+    HAVING COUNT(ec.event_id) > 1
+  `;
 
   return c.json(rows);
 });
@@ -41,13 +40,16 @@ categoriesRouter.get("/:id/events", async (c) => {
     return c.json({ error: "Invalid category ID" }, 400);
   }
 
-  const rows = await db
-    .select({ event: events })
-    .from(events)
-    .innerJoin(eventCategories, eq(events.id, eventCategories.eventId))
-    .where(eq(eventCategories.categoryId, id));
+  // SELECT with JOIN through the event_categories many-to-many table
+  // to find all events belonging to the given category
+  const rows = await sql`
+    SELECT e.*
+    FROM events e
+    INNER JOIN event_categories ec ON e.id = ec.event_id
+    WHERE ec.category_id = ${id}
+  `;
 
-  return c.json(rows.map((r) => r.event));
+  return c.json(rows);
 });
 
 // ── POST / — create category (admin only) ───────────────────────────────────
@@ -64,10 +66,12 @@ categoriesRouter.post("/", authMiddleware, requireRole("admin"), async (c) => {
     return c.json({ error: parsed.error.flatten().fieldErrors }, 400);
   }
 
-  const [category] = await db
-    .insert(categories)
-    .values({ name: parsed.data.name })
-    .returning();
+  // INSERT a new category and return the created row
+  const [category] = await sql`
+    INSERT INTO categories (name)
+    VALUES (${parsed.data.name})
+    RETURNING *
+  `;
 
   return c.json(category, 201);
 });

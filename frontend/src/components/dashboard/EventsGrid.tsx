@@ -16,10 +16,6 @@ export interface EventsGridProps {
   filteredEvents: Event[];
   /** Whether the current user is a manager (organizer or admin) */
   isManager: boolean;
-  /** Whether the current user is an admin */
-  isAdmin: boolean;
-  /** Whether the current user is an organizer */
-  isOrganizer: boolean;
   /** Current search query */
   searchQuery: string;
   /** Active tab key */
@@ -55,8 +51,6 @@ export interface EventsGridProps {
 export default function EventsGrid({
   filteredEvents,
   isManager,
-  isAdmin,
-  isOrganizer,
   searchQuery,
   activeTab,
   eventCategoriesMap,

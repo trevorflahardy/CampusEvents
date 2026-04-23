@@ -1,26 +1,18 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { db } from "../db/client";
-import {
-  events,
-  users,
-  tickets,
-  eventCategories,
-  categories,
-  images,
-} from "../db/schema";
-import { eq, sql, and, gte, lte, inArray } from "drizzle-orm";
+import sql from "../db/client";
+import type { EventStatus } from "../db/types";
 import { authMiddleware, requireRole, type AuthEnv } from "../middleware/auth";
 
 const router = new Hono<AuthEnv>();
 
 // Auto-compute event status from dates (cancelled is always preserved)
 function computeStatus(
-  stored: "upcoming" | "ongoing" | "completed" | "cancelled",
+  stored: EventStatus,
   startTime: Date,
   endTime: Date,
   now: Date,
-): "upcoming" | "ongoing" | "completed" | "cancelled" {
+): EventStatus {
   if (stored === "cancelled") return "cancelled";
   if (now >= endTime) return "completed";
   if (now >= startTime) return "ongoing";
@@ -35,12 +27,19 @@ router.get("/", async (c) => {
   const search = c.req.query("search");
   const categoryId = c.req.query("categoryId");
 
-  // Build conditions array
-  const conditions = [];
+  // Build a dynamic WHERE clause using postgres.js fragment composition.
+  // Each condition is a safe tagged template fragment; they are composed
+  // with AND to form the full predicate. This is SQL-injection-safe because
+  // all user values go through parameterized placeholders.
+  const conditions: ReturnType<typeof sql>[] = [sql`TRUE`];
 
-  // Q10: BETWEEN date filtering
-  if (from) conditions.push(gte(events.startTime, new Date(from)));
-  if (to) conditions.push(lte(events.startTime, new Date(to)));
+  // Q10: BETWEEN date filtering — filter events by start_time range
+  if (from) conditions.push(sql`e.start_time >= ${new Date(from)}`);
+  if (to) conditions.push(sql`e.start_time <= ${new Date(to)}`);
+
+  // ILIKE search — case-insensitive partial match on event title
+  if (search) conditions.push(sql`e.title ILIKE ${"%" + search + "%"}`);
+
   const validStatuses = [
     "upcoming",
     "ongoing",
@@ -52,99 +51,73 @@ router.get("/", async (c) => {
     validStatuses.includes(statusQuery as (typeof validStatuses)[number])
       ? (statusQuery as (typeof validStatuses)[number])
       : undefined;
-  if (search) conditions.push(sql`${events.title} ILIKE ${"%" + search + "%"}`);
 
-  // Base query: Q1 — SELECT + JOIN with users for organizer name
-  let query;
+  // Reduce conditions array into a single WHERE fragment: TRUE AND cond1 AND cond2 ...
+  const where = conditions.reduce((acc, cond) => sql`${acc} AND ${cond}`);
+
+  // Q1: SELECT + JOIN — list events with organizer names.
+  // When a categoryId filter is provided, we additionally JOIN through
+  // the event_categories table to restrict results to that category.
+  let rows;
   if (categoryId) {
-    // Join through eventCategories to filter by category
-    query = db
-      .select({
-        id: events.id,
-        title: events.title,
-        description: events.description,
-        location: events.location,
-        startTime: events.startTime,
-        endTime: events.endTime,
-        capacity: events.capacity,
-        ticketPrice: events.ticketPrice,
-        status: events.status,
-        organizerId: events.organizerId,
-        createdAt: events.createdAt,
-        organizerName: users.name,
-        bannerUrl: events.bannerUrl,
-        latitude: events.latitude,
-        longitude: events.longitude,
-      })
-      .from(events)
-      .innerJoin(users, eq(events.organizerId, users.id))
-      .innerJoin(eventCategories, eq(events.id, eventCategories.eventId))
-      .where(
-        conditions.length > 0
-          ? and(
-              ...conditions,
-              eq(eventCategories.categoryId, Number(categoryId)),
-            )
-          : eq(eventCategories.categoryId, Number(categoryId)),
-      )
-      .orderBy(events.startTime);
+    rows = await sql`
+      SELECT e.id, e.title, e.description, e.location,
+             e.start_time, e.end_time, e.capacity, e.ticket_price,
+             e.status, e.organizer_id, e.created_at, e.banner_url,
+             e.latitude, e.longitude,
+             u.name AS organizer_name
+      FROM events e
+      INNER JOIN users u ON e.organizer_id = u.id
+      INNER JOIN event_categories ec ON e.id = ec.event_id
+      WHERE ${where} AND ec.category_id = ${Number(categoryId)}
+      ORDER BY e.start_time
+    `;
   } else {
-    query = db
-      .select({
-        id: events.id,
-        title: events.title,
-        description: events.description,
-        location: events.location,
-        startTime: events.startTime,
-        endTime: events.endTime,
-        capacity: events.capacity,
-        ticketPrice: events.ticketPrice,
-        status: events.status,
-        organizerId: events.organizerId,
-        createdAt: events.createdAt,
-        organizerName: users.name,
-        bannerUrl: events.bannerUrl,
-        latitude: events.latitude,
-        longitude: events.longitude,
-      })
-      .from(events)
-      .innerJoin(users, eq(events.organizerId, users.id))
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(events.startTime);
+    rows = await sql`
+      SELECT e.id, e.title, e.description, e.location,
+             e.start_time, e.end_time, e.capacity, e.ticket_price,
+             e.status, e.organizer_id, e.created_at, e.banner_url,
+             e.latitude, e.longitude,
+             u.name AS organizer_name
+      FROM events e
+      INNER JOIN users u ON e.organizer_id = u.id
+      WHERE ${where}
+      ORDER BY e.start_time
+    `;
   }
 
-  const rows = await query;
-  const eventIds = rows.map((row) => row.id);
+  // Batch-fetch categories for all returned events using ANY(array).
+  // This avoids N+1 queries by fetching all category links in one shot.
+  const eventIds = rows.map((row: Record<string, unknown>) => row.id as number);
   const categoryRows =
     eventIds.length > 0
-      ? await db
-          .select({
-            eventId: eventCategories.eventId,
-            id: categories.id,
-            name: categories.name,
-          })
-          .from(eventCategories)
-          .innerJoin(categories, eq(eventCategories.categoryId, categories.id))
-          .where(inArray(eventCategories.eventId, eventIds))
+      ? await sql`
+          SELECT ec.event_id, c.id, c.name
+          FROM event_categories ec
+          INNER JOIN categories c ON ec.category_id = c.id
+          WHERE ec.event_id = ANY(${eventIds})
+        `
       : [];
 
+  // Build a lookup map: eventId -> [{ id, name }]
   const categoryMap: Record<number, { id: number; name: string }[]> = {};
   for (const row of categoryRows) {
-    if (!categoryMap[row.eventId]) categoryMap[row.eventId] = [];
-    categoryMap[row.eventId].push({ id: row.id, name: row.name });
+    const eid = row.eventId as number;
+    if (!categoryMap[eid]) categoryMap[eid] = [];
+    categoryMap[eid].push({ id: row.id as number, name: row.name as string });
   }
 
   const now = new Date();
   const enriched = rows
-    .map((row) => ({
+    .map((row: Record<string, unknown>) => ({
       ...row,
       status: computeStatus(
-        row.status,
-        new Date(row.startTime),
-        new Date(row.endTime),
+        row.status as EventStatus,
+        new Date(row.startTime as string),
+        new Date(row.endTime as string),
         now,
       ),
-      categories: categoryMap[row.id] ?? [],
+      categories: categoryMap[row.id as number] ?? [],
     }))
     .filter((row) => (status ? row.status === status : true));
   return c.json(enriched);
@@ -154,17 +127,19 @@ router.get("/", async (c) => {
 // IMPORTANT: This route MUST be defined before /:id to avoid matching "stats" as an id
 router.get("/stats", async (c) => {
   const now = new Date();
-  const rows = await db
-    .select({
-      eventId: events.id,
-      title: events.title,
-      ticketsSold: sql<number>`cast(count(${tickets.id}) as int)`,
-      capacity: events.capacity,
-    })
-    .from(events)
-    .leftJoin(tickets, eq(events.id, tickets.eventId))
-    .where(and(sql`${events.status} != 'cancelled'`, gte(events.endTime, now)))
-    .groupBy(events.id, events.title, events.capacity);
+
+  // Q2: SELECT with GROUP BY + COUNT — aggregate ticket sales per event.
+  // Uses LEFT JOIN so events with zero tickets still appear.
+  // The ::int cast converts the bigint COUNT result to a JavaScript number.
+  const rows = await sql`
+    SELECT e.id AS event_id, e.title,
+           COUNT(t.id)::int AS tickets_sold,
+           e.capacity
+    FROM events e
+    LEFT JOIN tickets t ON e.id = t.event_id
+    WHERE e.status != 'cancelled' AND e.end_time >= ${now}
+    GROUP BY e.id, e.title, e.capacity
+  `;
   return c.json(rows);
 });
 
@@ -172,28 +147,19 @@ router.get("/stats", async (c) => {
 router.get("/:id", async (c) => {
   const id = Number(c.req.param("id"));
 
-  const rows = await db
-    .select({
-      id: events.id,
-      title: events.title,
-      description: events.description,
-      location: events.location,
-      startTime: events.startTime,
-      endTime: events.endTime,
-      capacity: events.capacity,
-      ticketPrice: events.ticketPrice,
-      status: events.status,
-      organizerId: events.organizerId,
-      createdAt: events.createdAt,
-      organizerName: users.name,
-      bannerUrl: events.bannerUrl,
-      latitude: events.latitude,
-      longitude: events.longitude,
-      spotsRemaining: sql<number>`${events.capacity} - (SELECT count(*) FROM tickets WHERE tickets.event_id = ${events.id})`,
-    })
-    .from(events)
-    .innerJoin(users, eq(events.organizerId, users.id))
-    .where(eq(events.id, id));
+  // Q3: SELECT with correlated subquery — computes spots_remaining
+  // by subtracting the ticket count from the event's capacity, all in one query.
+  const rows = await sql`
+    SELECT e.id, e.title, e.description, e.location,
+           e.start_time, e.end_time, e.capacity, e.ticket_price,
+           e.status, e.organizer_id, e.created_at, e.banner_url,
+           e.latitude, e.longitude,
+           u.name AS organizer_name,
+           (e.capacity - (SELECT COUNT(*)::int FROM tickets WHERE event_id = e.id)) AS spots_remaining
+    FROM events e
+    INNER JOIN users u ON e.organizer_id = u.id
+    WHERE e.id = ${id}
+  `;
 
   if (!rows.length) return c.json({ error: "Event not found" }, 404);
 
@@ -202,24 +168,27 @@ router.get("/:id", async (c) => {
   const computed = {
     ...row,
     status: computeStatus(
-      row.status,
-      new Date(row.startTime),
-      new Date(row.endTime),
+      row.status as EventStatus,
+      new Date(row.startTime as string),
+      new Date(row.endTime as string),
       now,
     ),
   };
 
-  // Also fetch categories for this event
-  const eventCats = await db
-    .select({ id: categories.id, name: categories.name })
-    .from(categories)
-    .innerJoin(eventCategories, eq(categories.id, eventCategories.categoryId))
-    .where(eq(eventCategories.eventId, id));
+  // Also fetch categories for this event via the join table
+  const eventCats = await sql`
+    SELECT c.id, c.name
+    FROM categories c
+    INNER JOIN event_categories ec ON c.id = ec.category_id
+    WHERE ec.event_id = ${id}
+  `;
 
   return c.json({ ...computed, categories: eventCats });
 });
 
-// POST /api/events — create event with Zod validation
+// POST /api/events — create event with Zod validation.
+// organizerId is optional in the body: non-admins always create events
+// under their own JWT-derived user id; admins may assign another organizer.
 const createEventSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().optional(),
@@ -232,7 +201,7 @@ const createEventSchema = z.object({
     .transform((v) => String(v))
     .optional()
     .default("0.00"),
-  organizerId: z.number().int().positive(),
+  organizerId: z.number().int().positive().optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
 });
@@ -245,8 +214,36 @@ router.post(
     const body = await c.req.json();
     const parsed = createEventSchema.safeParse(body);
     if (!parsed.success) return c.json({ error: parsed.error.flatten() }, 400);
-    const inserted = await db.insert(events).values(parsed.data).returning();
-    return c.json(inserted[0], 201);
+
+    const d = parsed.data;
+    const callerId = c.get("userId");
+    const callerRole = c.get("userRole");
+
+    // Derive organizer from JWT for non-admins; reject attempts to create
+    // events under someone else's account (prevents ownership spoofing).
+    let organizerId: number;
+    if (callerRole === "admin") {
+      organizerId = d.organizerId ?? callerId;
+    } else {
+      if (d.organizerId !== undefined && d.organizerId !== callerId) {
+        return c.json(
+          { error: "Cannot create an event on behalf of another organizer" },
+          403,
+        );
+      }
+      organizerId = callerId;
+    }
+
+    // INSERT a new event and return all columns of the created row
+    const [inserted] = await sql`
+      INSERT INTO events (title, description, location, start_time, end_time,
+                          capacity, ticket_price, organizer_id, latitude, longitude)
+      VALUES (${d.title}, ${d.description ?? null}, ${d.location},
+              ${d.startTime}, ${d.endTime}, ${d.capacity}, ${d.ticketPrice},
+              ${organizerId}, ${d.latitude ?? null}, ${d.longitude ?? null})
+      RETURNING *
+    `;
+    return c.json(inserted, 201);
   },
 );
 
@@ -305,23 +302,53 @@ router.patch(
       );
     }
 
+    // Ownership check: organizers can only update their own events
     if (userRole !== "admin") {
-      const owned = await db
-        .select({ id: events.id })
-        .from(events)
-        .where(and(eq(events.id, id), eq(events.organizerId, userId)));
+      const owned = await sql`
+        SELECT id FROM events
+        WHERE id = ${id} AND organizer_id = ${userId}
+      `;
       if (!owned.length) {
         return c.json({ error: "Forbidden" }, 403);
       }
     }
 
-    const updated = await db
-      .update(events)
-      .set(parsed.data)
-      .where(eq(events.id, id))
-      .returning();
-    if (!updated.length) return c.json({ error: "Event not found" }, 404);
-    return c.json(updated[0]);
+    // Q7: UPDATE — build a dynamic SET clause from the validated fields.
+    // We map camelCase Zod output keys to snake_case SQL column names.
+    const updates: Record<string, unknown> = {};
+    if (parsed.data.title !== undefined) updates.title = parsed.data.title;
+    if (parsed.data.description !== undefined)
+      updates.description = parsed.data.description;
+    if (parsed.data.location !== undefined)
+      updates.location = parsed.data.location;
+    if (parsed.data.startTime !== undefined)
+      updates.start_time = parsed.data.startTime;
+    if (parsed.data.endTime !== undefined)
+      updates.end_time = parsed.data.endTime;
+    if (parsed.data.capacity !== undefined)
+      updates.capacity = parsed.data.capacity;
+    if (parsed.data.ticketPrice !== undefined)
+      updates.ticket_price = parsed.data.ticketPrice;
+    if (parsed.data.organizerId !== undefined)
+      updates.organizer_id = parsed.data.organizerId;
+    if (parsed.data.status !== undefined) updates.status = parsed.data.status;
+    if (parsed.data.latitude !== undefined)
+      updates.latitude = parsed.data.latitude;
+    if (parsed.data.longitude !== undefined)
+      updates.longitude = parsed.data.longitude;
+
+    if (Object.keys(updates).length === 0) {
+      return c.json({ error: "No fields to update" }, 400);
+    }
+
+    const [updated] = await sql`
+      UPDATE events
+      SET ${sql(updates, ...Object.keys(updates))}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    if (!updated) return c.json({ error: "Event not found" }, 404);
+    return c.json(updated);
   },
 );
 
@@ -337,10 +364,10 @@ router.post(
 
     // Ownership check (admins bypass)
     if (userRole !== "admin") {
-      const owned = await db
-        .select({ id: events.id })
-        .from(events)
-        .where(and(eq(events.id, id), eq(events.organizerId, userId)));
+      const owned = await sql`
+        SELECT id FROM events
+        WHERE id = ${id} AND organizer_id = ${userId}
+      `;
       if (!owned.length) return c.json({ error: "Forbidden" }, 403);
     }
 
@@ -365,23 +392,25 @@ router.post(
     const buffer = await file.arrayBuffer();
     const base64Data = Buffer.from(buffer).toString("base64");
 
-    // Store image data in the database
-    await db
-      .insert(images)
-      .values({ filename, mimeType: file.type, data: base64Data })
-      .onConflictDoUpdate({
-        target: images.filename,
-        set: { mimeType: file.type, data: base64Data },
-      });
+    // INSERT image data into the images table (upsert on filename conflict)
+    await sql`
+      INSERT INTO images (filename, mime_type, data)
+      VALUES (${filename}, ${file.type}, ${base64Data})
+      ON CONFLICT (filename) DO UPDATE
+      SET mime_type = EXCLUDED.mime_type, data = EXCLUDED.data
+    `;
 
     const bannerUrl = `/uploads/${filename}`;
-    const updated = await db
-      .update(events)
-      .set({ bannerUrl })
-      .where(eq(events.id, id))
-      .returning();
 
-    if (!updated.length) return c.json({ error: "Event not found" }, 404);
+    // UPDATE the event's banner_url to point to the new image
+    const [updated] = await sql`
+      UPDATE events
+      SET banner_url = ${bannerUrl}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+
+    if (!updated) return c.json({ error: "Event not found" }, 404);
     return c.json({ bannerUrl });
   },
 );
@@ -393,10 +422,11 @@ router.delete(
   requireRole("organizer", "admin"),
   async (c) => {
     const id = Number(c.req.param("id"));
-    const deleted = await db
-      .delete(events)
-      .where(eq(events.id, id))
-      .returning();
+
+    // DELETE an event by primary key and return the deleted row
+    const deleted = await sql`
+      DELETE FROM events WHERE id = ${id} RETURNING *
+    `;
     if (!deleted.length) return c.json({ error: "Event not found" }, 404);
     return c.json({ success: true });
   },
@@ -409,19 +439,17 @@ router.get(
   requireRole("organizer", "admin"),
   async (c) => {
     const id = Number(c.req.param("id"));
-    const rows = await db
-      .select({
-        ticketId: tickets.id,
-        userId: tickets.userId,
-        userName: users.name,
-        userEmail: users.email,
-        purchasedAt: tickets.purchasedAt,
-        checkedIn: tickets.checkedIn,
-        confirmationCode: tickets.confirmationCode,
-      })
-      .from(tickets)
-      .innerJoin(users, eq(tickets.userId, users.id))
-      .where(eq(tickets.eventId, id));
+
+    // SELECT with JOIN — fetch all ticket holders for an event,
+    // joining with the users table to get attendee names and emails.
+    const rows = await sql`
+      SELECT t.id AS ticket_id, t.user_id, u.name AS user_name,
+             u.email AS user_email, t.purchased_at, t.checked_in,
+             t.confirmation_code
+      FROM tickets t
+      INNER JOIN users u ON t.user_id = u.id
+      WHERE t.event_id = ${id}
+    `;
     return c.json(rows);
   },
 );
@@ -435,15 +463,12 @@ router.get("/:id/checkins", authMiddleware, async (c) => {
   const callerId = c.get("userId");
   const callerRole = c.get("userRole");
 
-  const eventRows = await db
-    .select({
-      startTime: events.startTime,
-      endTime: events.endTime,
-      organizerId: events.organizerId,
-      capacity: events.capacity,
-    })
-    .from(events)
-    .where(eq(events.id, id));
+  // Fetch event timing info for the check-in window validation
+  const eventRows = await sql`
+    SELECT start_time, end_time, organizer_id, capacity
+    FROM events
+    WHERE id = ${id}
+  `;
 
   if (!eventRows.length) return c.json({ error: "Event not found" }, 404);
 
@@ -457,34 +482,27 @@ router.get("/:id/checkins", authMiddleware, async (c) => {
     );
     const windowEnd = new Date(ev.endTime);
     if (now < windowStart) {
-      return c.json(
-        { error: "Check-in data is not available yet" },
-        403,
-      );
+      return c.json({ error: "Check-in data is not available yet" }, 403);
     }
     if (now > windowEnd) {
-      return c.json(
-        { error: "This event has ended" },
-        403,
-      );
+      return c.json({ error: "This event has ended" }, 403);
     }
   }
 
-  const checkedInRows = await db
-    .select({
-      ticketId: tickets.id,
-      userId: tickets.userId,
-      userName: users.name,
-      checkedIn: tickets.checkedIn,
-    })
-    .from(tickets)
-    .innerJoin(users, eq(tickets.userId, users.id))
-    .where(and(eq(tickets.eventId, id), eq(tickets.checkedIn, true)));
+  // SELECT with JOIN + WHERE — fetch only checked-in attendees
+  const checkedInRows = await sql`
+    SELECT t.id AS ticket_id, t.user_id, u.name AS user_name, t.checked_in
+    FROM tickets t
+    INNER JOIN users u ON t.user_id = u.id
+    WHERE t.event_id = ${id} AND t.checked_in = TRUE
+  `;
 
-  const totalRows = await db
-    .select({ count: sql<number>`cast(count(*) as int)` })
-    .from(tickets)
-    .where(eq(tickets.eventId, id));
+  // COUNT total tickets for this event (checked in or not)
+  const totalRows = await sql`
+    SELECT COUNT(*)::int AS count
+    FROM tickets
+    WHERE event_id = ${id}
+  `;
 
   return c.json({
     checkedInCount: checkedInRows.length,
@@ -511,11 +529,12 @@ router.put(
     const userRole = c.get("userRole");
     const userId = c.get("userId");
 
+    // Ownership check
     if (userRole !== "admin") {
-      const owned = await db
-        .select({ id: events.id })
-        .from(events)
-        .where(and(eq(events.id, id), eq(events.organizerId, userId)));
+      const owned = await sql`
+        SELECT id FROM events
+        WHERE id = ${id} AND organizer_id = ${userId}
+      `;
       if (!owned.length) {
         return c.json({ error: "Forbidden" }, 403);
       }
@@ -527,24 +546,31 @@ router.put(
 
     const categoryIds = [...new Set(parsed.data.categoryIds)];
 
-    await db.transaction(async (tx) => {
-      await tx.delete(eventCategories).where(eq(eventCategories.eventId, id));
+    // Transaction: atomically replace all category links for this event.
+    // sql.begin() reserves a connection and auto-commits on success
+    // or rolls back on error, ensuring the event never has a partially
+    // updated category list.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await sql.begin(async (tx: any) => {
+      // Delete all existing category links for this event
+      await tx`DELETE FROM event_categories WHERE event_id = ${id}`;
 
-      if (categoryIds.length > 0) {
-        await tx.insert(eventCategories).values(
-          categoryIds.map((categoryId) => ({
-            eventId: id,
-            categoryId,
-          })),
-        );
+      // Insert new category links one by one within the transaction
+      for (const catId of categoryIds) {
+        await tx`
+          INSERT INTO event_categories (event_id, category_id)
+          VALUES (${id}, ${catId})
+        `;
       }
     });
 
-    const cats = await db
-      .select({ id: categories.id, name: categories.name })
-      .from(categories)
-      .innerJoin(eventCategories, eq(categories.id, eventCategories.categoryId))
-      .where(eq(eventCategories.eventId, id));
+    // Re-fetch the updated category list to return to the client
+    const cats = await sql`
+      SELECT c.id, c.name
+      FROM categories c
+      INNER JOIN event_categories ec ON c.id = ec.category_id
+      WHERE ec.event_id = ${id}
+    `;
 
     return c.json(cats);
   },

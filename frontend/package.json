@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "bun test",
+    "test": "echo 'no frontend tests yet'",
     "typecheck": "tsc -b --pretty false",
     "format:check": "bunx prettier --check ."
   },

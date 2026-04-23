@@ -2,9 +2,9 @@
 
 > **COP 4710 Spring 2026 — Term Project**
 > A full-stack online enterprise information system built for USF students and event organizers.
-<img width="1280" height="794" alt="image" src="https://github.com/user-attachments/assets/e16ce4ae-072d-4ca5-bc42-882d068b2c1f" />
-<img width="1285" height="796" alt="image" src="https://github.com/user-attachments/assets/bd7ea582-21ae-4dc9-83e9-d2ca44d31dc1" />
-<img width="1284" height="790" alt="image" src="https://github.com/user-attachments/assets/c698e2c1-8e94-485a-85de-10a6ece8348c" />
+> <img width="1280" height="794" alt="image" src="https://github.com/user-attachments/assets/e16ce4ae-072d-4ca5-bc42-882d068b2c1f" />
+> <img width="1285" height="796" alt="image" src="https://github.com/user-attachments/assets/bd7ea582-21ae-4dc9-83e9-d2ca44d31dc1" />
+> <img width="1284" height="790" alt="image" src="https://github.com/user-attachments/assets/c698e2c1-8e94-485a-85de-10a6ece8348c" />
 
 ---
 
@@ -15,7 +15,6 @@
 | Frontend | React 19 + Vite + TypeScript + Tailwind CSS v4 |
 | Backend  | Bun + Hono (REST API)                          |
 | Database | PostgreSQL 16                                  |
-| ORM      | Drizzle ORM                                    |
 | Auth     | JWT + bcrypt                                   |
 | Dev DB   | Docker Compose                                 |
 
@@ -212,7 +211,6 @@ See `backend/src/db/schema.ts` for the full Drizzle schema.
 - [x] Database with >= 3 tables (we have 5)
 - [x] > = 8 distinct SQL query types (we have 10)
 - [x] > = 3 different UI pages/screens (we have 5 + auth pages)
-- [x] JDBC/ODBC equivalent (Drizzle ORM over postgres.js)
 - [x] User accounts with login/password _(bonus)_
 - [ ] Database views + user privileges _(bonus)_
 - [ ] Stored procedures/functions _(bonus)_

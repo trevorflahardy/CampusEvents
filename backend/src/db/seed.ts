@@ -1,138 +1,153 @@
 /**
  * Seed script — run with: bun run src/db/seed.ts
- * Populates the DB with sample data for development/demo.
+ *
+ * Populates the DB with sample data for development/demo. Uses UPSERTs
+ * throughout so the script is re-runnable against an existing database
+ * (it will refresh password hashes and fill in any missing rows).
+ *
+ * All seed users share the password "password123".
  */
-import { db } from "./client";
-import { users, events, tickets, categories, eventCategories } from "./schema";
-import { randomUUID } from "crypto";
+import sql from "./client";
 import { hash } from "@node-rs/bcrypt";
 
-// ── Categories ──────────────────────────────────────────────────────────────
-const categoryData = [
-  { name: "Academic" },
-  { name: "Music" },
-  { name: "Sports" },
-  { name: "Career" },
-  { name: "Social" },
-];
-
-// ── Users ────────────────────────────────────────────────────────────────────
-// All seed users share the password "password123" for development/testing.
 const SEED_PASSWORD = "password123";
-
-async function buildUserData() {
-  const passwordHash = await hash(SEED_PASSWORD, 10);
-  return [
-    {
-      netId: "admin1",
-      name: "Admin User",
-      email: "admin@usf.edu",
-      passwordHash,
-      role: "admin" as const,
-    },
-    {
-      netId: "organizer1",
-      name: "Jane Organizer",
-      email: "jane@usf.edu",
-      passwordHash,
-      role: "organizer" as const,
-    },
-    {
-      netId: "student1",
-      name: "Trevor Student",
-      email: "trevor@usf.edu",
-      passwordHash,
-      role: "student" as const,
-    },
-    {
-      netId: "student2",
-      name: "Alex Student",
-      email: "alex@usf.edu",
-      passwordHash,
-      role: "student" as const,
-    },
-  ];
-}
 
 async function seed() {
   console.log("🌱 Seeding database...");
 
-  const insertedCategories = await db
-    .insert(categories)
-    .values(categoryData)
-    .returning();
-  console.log(`  ✓ Inserted ${insertedCategories.length} categories`);
+  // Categories — referenced by name from event_categories below.
+  // Schema.sql already inserts the default set on startup; this is a
+  // safety net in case the seed runs against a DB that skipped schema.sql.
+  await sql`
+    INSERT INTO categories (name) VALUES
+      ('Academic'), ('Music'), ('Sports'), ('Career'),
+      ('Social'), ('Arts'), ('Technology')
+    ON CONFLICT (name) DO NOTHING
+  `;
 
-  const userData = await buildUserData();
-  const insertedUsers = await db.insert(users).values(userData).returning();
-  console.log(`  ✓ Inserted ${insertedUsers.length} users`);
+  const passwordHash = await hash(SEED_PASSWORD, 10);
 
-  const organizer = insertedUsers.find((u) => u.role === "organizer")!;
+  // Users — upsert on net_id so re-running refreshes the password hash
+  // (this is how placeholder or rotated passwords get fixed up).
+  const insertedUsers = await sql`
+    INSERT INTO users (net_id, name, email, password_hash, role) VALUES
+      ('admin1',     'Admin User',      'admin@usf.edu',    ${passwordHash}, 'admin'),
+      ('jsmith22',   'Jane Smith',      'jsmith22@usf.edu', ${passwordHash}, 'organizer'),
+      ('trev123',    'Trevor Flahardy', 'trev123@usf.edu',  ${passwordHash}, 'student'),
+      ('alex456',    'Alex Johnson',    'alex456@usf.edu',  ${passwordHash}, 'student'),
+      ('maria789',   'Maria Garcia',    'maria789@usf.edu', ${passwordHash}, 'student')
+    ON CONFLICT (net_id) DO UPDATE SET
+      name = EXCLUDED.name,
+      email = EXCLUDED.email,
+      password_hash = EXCLUDED.password_hash,
+      role = EXCLUDED.role
+    RETURNING *
+  `;
+  console.log(`  ✓ Upserted ${insertedUsers.length} users`);
 
-  const eventData = [
-    {
-      title: "Spring Career Fair 2026",
-      description:
-        "Meet top employers hiring USF students for internships and full-time roles.",
-      location: "Marshall Student Center Ballroom",
-      startTime: new Date("2026-04-10T10:00:00"),
-      endTime: new Date("2026-04-10T16:00:00"),
-      capacity: 500,
-      ticketPrice: "0.00",
-      status: "upcoming" as const,
-      organizerId: organizer.id,
-    },
-    {
-      title: "Bulls After Dark: Spring Concert",
-      description:
-        "Live performances by student bands and special guest artists.",
-      location: "USF Amphitheater",
-      startTime: new Date("2026-04-18T19:00:00"),
-      endTime: new Date("2026-04-18T23:00:00"),
-      capacity: 300,
-      ticketPrice: "5.00",
-      status: "upcoming" as const,
-      organizerId: organizer.id,
-    },
-    {
-      title: "Hackathon @ USF 2026",
-      description:
-        "24-hour coding competition — form teams, build projects, win prizes.",
-      location: "ENB 118",
-      startTime: new Date("2026-04-25T09:00:00"),
-      endTime: new Date("2026-04-26T09:00:00"),
-      capacity: 150,
-      ticketPrice: "0.00",
-      status: "upcoming" as const,
-      organizerId: organizer.id,
-    },
+  const userByNetId = new Map<string, number>();
+  for (const u of insertedUsers) {
+    userByNetId.set(u.netId as string, u.id as number);
+  }
+
+  const organizer = userByNetId.get("jsmith22")!;
+  const admin = userByNetId.get("admin1")!;
+
+  // Events — upsert on (organizer_id, title, start_time) so re-runs are
+  // idempotent without duplicating rows.
+  const insertedEvents = await sql`
+    INSERT INTO events
+      (title, description, location, start_time, end_time, capacity, ticket_price, status, organizer_id)
+    VALUES
+      ('Spring Career Fair 2026',
+       'Meet top employers hiring USF students for internships and full-time roles.',
+       'Marshall Student Center Ballroom',
+       '2026-04-10 10:00:00', '2026-04-10 16:00:00',
+       500, 0.00, 'upcoming', ${organizer}),
+      ('Bulls After Dark: Spring Concert',
+       'Live performances by student bands and special guest artists.',
+       'USF Amphitheater',
+       '2026-04-18 19:00:00', '2026-04-18 23:00:00',
+       300, 5.00, 'upcoming', ${organizer}),
+      ('Hackathon @ USF 2026',
+       '24-hour coding competition — form teams, build projects, win prizes.',
+       'ENB 118',
+       '2026-04-25 09:00:00', '2026-04-26 09:00:00',
+       150, 0.00, 'upcoming', ${organizer}),
+      ('Campus 5K Fun Run',
+       'Annual charity 5K run around the USF Tampa campus. All skill levels welcome.',
+       'USF Track & Field',
+       '2026-05-02 08:00:00', '2026-05-02 11:00:00',
+       200, 10.00, 'upcoming', ${admin})
+    ON CONFLICT (organizer_id, title, start_time) DO UPDATE SET
+      description = EXCLUDED.description,
+      location = EXCLUDED.location,
+      end_time = EXCLUDED.end_time,
+      capacity = EXCLUDED.capacity,
+      ticket_price = EXCLUDED.ticket_price,
+      status = EXCLUDED.status
+    RETURNING *
+  `;
+  console.log(`  ✓ Upserted ${insertedEvents.length} events`);
+
+  const eventIdByTitle = new Map<string, number>();
+  for (const e of insertedEvents) {
+    eventIdByTitle.set(e.title as string, e.id as number);
+  }
+
+  // Category lookups by name — we just inserted the full set above.
+  const categoryRows = await sql`
+    SELECT id, name FROM categories
+    WHERE name IN ('Career', 'Music', 'Social', 'Technology', 'Academic', 'Sports')
+  `;
+  const categoryIdByName = new Map<string, number>();
+  for (const c of categoryRows) {
+    categoryIdByName.set(c.name as string, c.id as number);
+  }
+
+  const eventCategoryPairs: Array<[string, string]> = [
+    ["Spring Career Fair 2026", "Career"],
+    ["Bulls After Dark: Spring Concert", "Music"],
+    ["Bulls After Dark: Spring Concert", "Social"],
+    ["Hackathon @ USF 2026", "Technology"],
+    ["Hackathon @ USF 2026", "Academic"],
+    ["Campus 5K Fun Run", "Sports"],
   ];
-
-  const insertedEvents = await db.insert(events).values(eventData).returning();
-  console.log(`  ✓ Inserted ${insertedEvents.length} events`);
-
-  // Link events to categories
-  await db.insert(eventCategories).values([
-    { eventId: insertedEvents[0].id, categoryId: insertedCategories[3].id }, // Career Fair -> Career
-    { eventId: insertedEvents[1].id, categoryId: insertedCategories[1].id }, // Concert -> Music
-    { eventId: insertedEvents[1].id, categoryId: insertedCategories[4].id }, // Concert -> Social
-    { eventId: insertedEvents[2].id, categoryId: insertedCategories[0].id }, // Hackathon -> Academic
-  ]);
+  for (const [title, cat] of eventCategoryPairs) {
+    const eid = eventIdByTitle.get(title)!;
+    const cid = categoryIdByName.get(cat)!;
+    await sql`
+      INSERT INTO event_categories (event_id, category_id)
+      VALUES (${eid}, ${cid})
+      ON CONFLICT DO NOTHING
+    `;
+  }
   console.log("  ✓ Linked events to categories");
 
-  // Add a sample ticket
-  const student = insertedUsers.find((u) => u.netId === "student1")!;
-  await db.insert(tickets).values({
-    userId: student.id,
-    eventId: insertedEvents[0].id,
-    confirmationCode: randomUUID().slice(0, 8).toUpperCase(),
-  });
-  console.log("  ✓ Inserted sample ticket");
+  // Sample tickets — UNIQUE(user_id, event_id) makes these idempotent.
+  const ticketSeeds: Array<[string, string, string]> = [
+    ["trev123", "Spring Career Fair 2026", "CF26A001"],
+    ["alex456", "Spring Career Fair 2026", "CF26A002"],
+    ["trev123", "Hackathon @ USF 2026", "HACK2601"],
+    ["maria789", "Bulls After Dark: Spring Concert", "CONC2601"],
+  ];
+  for (const [netId, title, code] of ticketSeeds) {
+    const uid = userByNetId.get(netId)!;
+    const eid = eventIdByTitle.get(title)!;
+    await sql`
+      INSERT INTO tickets (user_id, event_id, confirmation_code)
+      VALUES (${uid}, ${eid}, ${code})
+      ON CONFLICT (user_id, event_id) DO NOTHING
+    `;
+  }
+  console.log("  ✓ Seeded sample tickets");
 
   console.log("✅ Seed complete!");
+  await sql.end();
 }
 
-seed().catch((err) => {
+seed().catch(async (err) => {
   console.error("❌ Seed failed:", err);
+  await sql.end();
   process.exit(1);
 });
