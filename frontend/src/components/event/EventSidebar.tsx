@@ -70,7 +70,7 @@ export default function EventSidebar({
         <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
           Event Organizer
         </h3>
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-brand-glow flex items-center justify-center shrink-0">
             <svg
               className="w-6 h-6 text-[#1a4f3b]"
@@ -93,12 +93,6 @@ export default function EventSidebar({
             <div className="text-sm text-slate-500">Event Organizer</div>
           </div>
         </div>
-        <button
-          type="button"
-          className="cursor-pointer w-full py-2.5 rounded-xl btn-secondary text-sm font-semibold transition-all"
-        >
-          View Profile
-        </button>
       </div>
 
       {/* Event Timing Card */}

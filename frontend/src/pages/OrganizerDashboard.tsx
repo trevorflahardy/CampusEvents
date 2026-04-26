@@ -346,8 +346,8 @@ export default function OrganizerDashboard() {
   } else if (activeTab === "registered") {
     baseEvents = activeEvents.filter((e) => registeredEventIds.has(e.id));
   } else {
-    // "all" tab — show everything
-    baseEvents = activeEvents;
+    // "all" tab — show everything, including completed/cancelled
+    baseEvents = events;
   }
 
   const filteredEvents = searchQuery.trim()
@@ -375,7 +375,7 @@ export default function OrganizerDashboard() {
         {
           key: "all" as const,
           label: "All Events",
-          count: activeEvents.length,
+          count: events.length,
         },
       ]
     : [
@@ -388,7 +388,7 @@ export default function OrganizerDashboard() {
         {
           key: "all" as const,
           label: "All Events",
-          count: activeEvents.length,
+          count: events.length,
         },
       ];
 
