@@ -62,12 +62,13 @@ router.post("/", authMiddleware, async (c) => {
       if (!event) return { kind: "not_found" };
       if (event.status === "cancelled") return { kind: "cancelled" };
 
-      const [{ ticketsSold }] = await tx`
-        SELECT COUNT(*)::int AS tickets_sold
-        FROM tickets
-        WHERE event_id = ${eventId}
-      `;
-      if (ticketsSold >= event.capacity) return { kind: "sold_out" };
+      // Call the stored function to get current capacity stats.
+      // check_event_capacity() counts tickets and returns spots_remaining
+      // and is_available. Running it inside the FOR UPDATE transaction means
+      // the ticket count it reads is authoritative — no other transaction
+      // can insert a ticket for this event until we commit.
+      const [cap] = await tx`SELECT * FROM check_event_capacity(${eventId})`;
+      if (!cap || !cap.isAvailable) return { kind: "sold_out" };
 
       const [inserted] = await tx`
         INSERT INTO tickets (user_id, event_id, confirmation_code)

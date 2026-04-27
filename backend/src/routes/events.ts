@@ -128,17 +128,14 @@ router.get("/", async (c) => {
 router.get("/stats", async (c) => {
   const now = new Date();
 
-  // Q2: SELECT with GROUP BY + COUNT — aggregate ticket sales per event.
-  // Uses LEFT JOIN so events with zero tickets still appear.
-  // The ::int cast converts the bigint COUNT result to a JavaScript number.
+  // Q2: Query the v_event_stats view, which pre-aggregates ticket counts per
+  // event using GROUP BY + COUNT on the underlying events + tickets join.
+  // The view is defined in schema.sql; using it here keeps the route lean
+  // and demonstrates the DB-side view bonus feature.
   const rows = await sql`
-    SELECT e.id AS event_id, e.title,
-           COUNT(t.id)::int AS tickets_sold,
-           e.capacity
-    FROM events e
-    LEFT JOIN tickets t ON e.id = t.event_id
-    WHERE e.status != 'cancelled' AND e.end_time >= ${now}
-    GROUP BY e.id, e.title, e.capacity
+    SELECT event_id, title, status, capacity, tickets_sold, spots_remaining
+    FROM v_event_stats
+    WHERE status != 'cancelled' AND end_time >= ${now}
   `;
   return c.json(rows);
 });

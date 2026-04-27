@@ -249,3 +249,83 @@ ON CONFLICT DO NOTHING;
 -- FROM events
 -- WHERE start_time BETWEEN '2026-04-01' AND '2026-04-30'
 -- ORDER BY start_time;
+
+-- ============================================================
+-- VIEWS (bonus feature — role-scoped projections)
+-- ============================================================
+
+-- v_upcoming_events: public-facing view — upcoming events with organizer info.
+-- Used by the Browse Events page. Students and anonymous visitors query this
+-- projection; it hides internal fields like organizer_id and created_at.
+CREATE OR REPLACE VIEW v_upcoming_events AS
+    SELECT e.id,
+           e.title,
+           e.description,
+           e.location,
+           e.start_time,
+           e.end_time,
+           e.capacity,
+           e.ticket_price,
+           e.status,
+           e.banner_url,
+           e.latitude,
+           e.longitude,
+           u.name  AS organizer_name,
+           u.email AS organizer_email
+    FROM events e
+    INNER JOIN users u ON e.organizer_id = u.id
+    WHERE e.status = 'upcoming'
+    ORDER BY e.start_time;
+
+-- v_event_stats: organizer-facing view — per-event ticket sales summary.
+-- Aggregates ticket counts so organizers get capacity utilisation at a glance
+-- without being able to query raw user data from the tickets table directly.
+CREATE OR REPLACE VIEW v_event_stats AS
+    SELECT e.id          AS event_id,
+           e.title,
+           e.status,
+           e.capacity,
+           e.ticket_price,
+           e.end_time,
+           e.organizer_id,
+           u.name        AS organizer_name,
+           COUNT(t.id)::int                        AS tickets_sold,
+           (e.capacity - COUNT(t.id)::int)         AS spots_remaining
+    FROM events e
+    INNER JOIN users u ON e.organizer_id = u.id
+    LEFT  JOIN tickets t ON e.id = t.event_id
+    GROUP BY e.id, e.title, e.status, e.capacity, e.ticket_price,
+             e.end_time, e.organizer_id, u.name;
+
+-- ============================================================
+-- STORED FUNCTION (bonus feature — DB-side application logic)
+-- ============================================================
+
+-- check_event_capacity(p_event_id)
+-- Returns capacity, tickets sold, spots remaining, and availability flag
+-- for the given event. Called before a ticket purchase to decide whether
+-- the event can still accept registrations. Declared STABLE because it
+-- reads but does not modify data within a single transaction.
+CREATE OR REPLACE FUNCTION check_event_capacity(p_event_id INTEGER)
+RETURNS TABLE (
+    event_id        INTEGER,
+    title           VARCHAR,
+    capacity        INTEGER,
+    tickets_sold    BIGINT,
+    spots_remaining BIGINT,
+    is_available    BOOLEAN
+) LANGUAGE plpgsql STABLE AS $$
+BEGIN
+    RETURN QUERY
+        SELECT e.id,
+               e.title,
+               e.capacity,
+               COUNT(t.id)                           AS tickets_sold,
+               (e.capacity - COUNT(t.id))            AS spots_remaining,
+               (e.capacity - COUNT(t.id)) > 0        AS is_available
+        FROM events e
+        LEFT JOIN tickets t ON e.id = t.event_id
+        WHERE e.id = p_event_id
+        GROUP BY e.id, e.title, e.capacity;
+END;
+$$;
