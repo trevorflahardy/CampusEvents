@@ -160,17 +160,20 @@ The system follows a standard three-tier architecture. The *interface tier* is a
     node(
       (0, 0),
       [*Browser*\ #text(size: 8pt, fill: luma(100))[React 19 SPA\ `localhost:5173`]],
-      width: 38mm, height: 16mm,
+      width: 38mm,
+      height: 16mm,
     ),
     node(
       (1, 0),
       [*REST API*\ #text(size: 8pt, fill: luma(100))[Bun + Hono\ `localhost:3000`]],
-      width: 38mm, height: 16mm,
+      width: 38mm,
+      height: 16mm,
     ),
     node(
       (2, 0),
       [*Database*\ #text(size: 8pt, fill: luma(100))[PostgreSQL 16\ `localhost:5432`]],
-      width: 38mm, height: 16mm,
+      width: 38mm,
+      height: 16mm,
     ),
     edge((0, 0), (1, 0), "->", [`fetch` / JSON], label-pos: 0.5, label-side: center),
     edge((1, 0), (2, 0), "->", [`postgres.js` / SQL], label-pos: 0.5, label-side: center),
@@ -280,10 +283,19 @@ The entity-relationship diagram below represents the conceptual data model for C
   columns: (1fr, 1.15fr, 1.1fr, 0.8fr, 2.6fr),
   align: left,
   table.header[Entity A][Entity B][Name][Cardinality][Description],
-  [USERS], [EVENTS], [_organizes_], [1 : N], [An organizer may create many events; each event has exactly one organizer],
+  [USERS],
+  [EVENTS],
+  [_organizes_],
+  [1 : N],
+  [An organizer may create many events; each event has exactly one organizer],
+
   [USERS], [TICKETS], [_books_], [1 : N], [A student may hold tickets to many events; each ticket belongs to one user],
   [EVENTS], [TICKETS], [_has_], [1 : N], [An event may have many tickets; each ticket corresponds to exactly one event],
-  [EVENTS], [CATEGORIES], [_tagged with_], [M : N], [Resolved via EVENT\_CATEGORIES; an event may belong to multiple categories],
+  [EVENTS],
+  [CATEGORIES],
+  [_tagged with_],
+  [M : N],
+  [Resolved via EVENT\_CATEGORIES; an event may belong to multiple categories],
 )
 
 == Constraints & Indexes
@@ -707,9 +719,9 @@ curl http://localhost:3000/health   # → {"status":"ok"}
   columns: (1.6fr, 1fr, 2.6fr),
   align: left,
   table.header[Email][Password][Role],
-  [`admin\@usf.edu`], [`password123`], [Administrator --- full system access],
-  [`jsmith22\@usf.edu`], [`password123`], [Organizer --- event creation and management],
-  [`trev123\@usf.edu`], [`password123`], [Student --- browse, register, check in],
+  [`admin@usf.edu`], [`password123`], [Administrator --- full system access],
+  [`jsmith22@usf.edu`], [`password123`], [Organizer --- event creation and management],
+  [`trev123@usf.edu`], [`password123`], [Student --- browse, register, check in],
 )
 
 #figure(

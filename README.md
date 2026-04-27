@@ -52,10 +52,9 @@ This starts a Postgres 16 instance at `localhost:5432` with:
 cd backend
 bun install
 export DATABASE_URL="postgres://campus:campus123@localhost:5432/campusevents"
-bun run db:generate    # generate migration files from schema
-bun run db:migrate     # apply migrations to the DB
-bun run src/db/seed.ts # (optional) seed with sample data
-bun run dev            # start the API server on :3000
+bun run db:migrate   # apply schema to the DB
+bun run db:seed      # (optional) seed with sample data
+bun run dev          # start the API server on :3000
 ```
 
 ### 4. Install & run the frontend
@@ -84,12 +83,13 @@ This starts:
 
 All seed users share the password `password123`:
 
-| Email          | Role      |
-| -------------- | --------- |
-| admin@usf.edu  | admin     |
-| jane@usf.edu   | organizer |
-| trevor@usf.edu | student   |
-| alex@usf.edu   | student   |
+| Name            | Email              | Role      |
+| --------------- | ------------------ | --------- |
+| Admin User      | admin@usf.edu      | admin     |
+| Jane Smith      | jsmith22@usf.edu   | organizer |
+| Trevor Flahardy | trev123@usf.edu    | student   |
+| Alex Johnson    | alex456@usf.edu    | student   |
+| Maria Garcia    | maria789@usf.edu   | student   |
 
 ---
 
@@ -175,7 +175,9 @@ All seed users share the password `password123`:
 
 ## Database Schema
 
-See `backend/src/db/schema.ts` for the full Drizzle schema.
+See `schema.sql` at the project root for the full DDL.
+
+### Tables
 
 | Table              | Description                                      |
 | ------------------ | ------------------------------------------------ |
@@ -184,6 +186,14 @@ See `backend/src/db/schema.ts` for the full Drizzle schema.
 | `tickets`          | Tickets linking users to events                  |
 | `categories`       | Event categories (Music, Sports, Academic, etc.) |
 | `event_categories` | Many-to-many join between events and categories  |
+| `images`           | Uploaded images stored as base64                 |
+
+### Views (bonus)
+
+| View              | Description                                     |
+| ----------------- | ----------------------------------------------- |
+| `v_upcoming_events` | Public-facing view of non-cancelled events    |
+| `v_event_stats`     | Aggregated ticket counts per event (organizer use) |
 
 ---
 
@@ -208,10 +218,10 @@ See `backend/src/db/schema.ts` for the full Drizzle schema.
 
 ## Grading Checklist
 
-- [x] Database with >= 3 tables (we have 5)
-- [x] > = 8 distinct SQL query types (we have 10)
-- [x] > = 3 different UI pages/screens (we have 5 + auth pages)
+- [x] Database with >= 3 tables (we have 6)
+- [x] >= 8 distinct SQL query types (we have 10)
+- [x] >= 3 different UI pages/screens (we have 5 + auth pages)
 - [x] User accounts with login/password _(bonus)_
-- [ ] Database views + user privileges _(bonus)_
-- [ ] Stored procedures/functions _(bonus)_
+- [x] Database views _(bonus — `v_upcoming_events`, `v_event_stats`)_
+- [x] Stored procedures/functions _(bonus — PL/pgSQL function in `schema.sql`)_
 - [x] Client-side JavaScript logic _(bonus — React handles this)_
