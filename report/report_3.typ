@@ -153,7 +153,7 @@ The system follows a standard three-tier architecture. The *interface tier* is a
 #v(0.6em)
 #figure(
   diagram(
-    spacing: (30mm, 11mm),
+    spacing: (40mm, 11mm),
     node-stroke: 0.6pt,
     node-fill: luma(248),
     node-corner-radius: 3pt,
