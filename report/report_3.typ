@@ -195,12 +195,23 @@ The system follows a standard three-tier architecture. The *interface tier* is a
 
 == ER Diagram
 
-The entity-relationship diagram below represents the conceptual data model for CampusEvents. The physical schema implements five of the six entities directly; the sixth (`images`) is a supporting table for uploaded media storage.
+The entity-relationship diagram on the next page represents the conceptual data model for CampusEvents in *Chen notation*. Strong entities are drawn as single rectangles, weak entities as double rectangles; relationships are diamonds (double diamonds when identifying); attributes are ellipses, with key attributes underlined and composite attributes shown as nested ellipses. Edge style indicates participation: a single line is partial, a double line is total. Cardinality ratios (1, N, M) are labelled directly on each edge. Every column from `schema.sql` is represented; SQL data types and constraints are documented in the *Tables & Attributes* section that follows.
 
-#figure(
-  image("schema_diagram.png", alt: "ER Diagram for CampusEvents"),
-  caption: [ER diagram for CampusEvents --- entity sets, attributes, and cardinality annotations. The `images` table is omitted from the ER diagram as it is a supporting storage relation with no direct business-logic relationships.],
-)
+`TICKETS` is modelled as a *weak entity* because every ticket's existence is bound to both its owning user and its event --- the schema enforces this via `ON DELETE CASCADE` on both foreign keys, and the natural identifier of a ticket is the (user, event) pair. The Chen diagram captures this by giving `TICKETS` a partial key (`confirmation_code`) and connecting it to `USERS` and `EVENTS` through identifying relationships. The `event_categories` SQL bridge table is correspondingly resolved into the M:N `categorized-as` relationship rather than a standalone entity, since it carries no attributes of its own.
+
+The `IMAGES` entity persists uploaded image binaries (avatars and event banners) so that media survive container restarts and reseeds. The physical schema stores these as URL strings in `USERS.profile_photo` and `EVENTS.banner_url` rather than enforced foreign-key columns, but the conceptual relationships are real and are modelled at the Chen level as `has-avatar` and `has-banner` (both 0:1 from the parent side). The diagram is rotated onto a landscape page so that all attribute ellipses remain legible at print size.
+
+#pagebreak(weak: true)
+
+#page(flipped: false, margin: 0.6in)[
+  #figure(
+    image(
+      "schema_diagram.png",
+      height: 8.8in,
+    ),
+    caption: [ER diagram for CampusEvents. Strong entities: `USERS`, `EVENTS`, `CATEGORIES`, `IMAGES`. Weak entity: `TICKETS` (identified through `USERS` and `EVENTS` via `books` and `is-for`). Relationships: `organizes` (USERS→EVENTS, 1:N, total on EVENTS); `books`, `is-for` (identifying, 1:N, total on TICKETS); `categorized-as` (EVENTS↔CATEGORIES, M:N); `has-avatar` (USERS→IMAGES, N:1), `has-banner` (EVENTS→IMAGES, N:1) --- the latter two capture URL-based references that exist conceptually even though the physical schema does not enforce them with foreign keys.],
+  )
+]
 
 == Tables & Attributes
 

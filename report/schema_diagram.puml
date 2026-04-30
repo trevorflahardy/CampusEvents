@@ -1,0 +1,176 @@
+@startchen
+!pragma layout neato
+left to right direction
+skinparam nodesep 18
+skinparam ranksep 35
+
+' ============================================================
+' CampusEvents — Conceptual ER Diagram (Chen notation)
+' COP 4710 — Spring 2026 Term Project
+'
+' Notation key:
+'   rectangle           = strong entity
+'   double rectangle    = weak entity (<<weak>>)
+'   diamond             = relationship
+'   double diamond      = identifying relationship (<<identifying>>)
+'   ellipse             = attribute
+'   underlined ellipse  = key attribute (<<key>>)
+'   nested ellipses     = composite attribute
+'   single line  ( - )  = partial participation
+'   double line  ( = )  = total participation
+'   1, N, M             = cardinality ratios
+'
+' Every column from schema.sql is represented as a Chen attribute.
+' SQL types and constraints (NOT NULL, UNIQUE, CHECK, DEFAULT, etc.)
+' are documented separately in the report's "Tables & Attributes"
+' section to keep the diagram readable.
+' ============================================================
+
+' ──────────────────────────────────────────────────────────────
+' STRONG ENTITIES
+' ──────────────────────────────────────────────────────────────
+
+entity "USERS" as USERS {
+    id <<key>>
+    net_id
+    name
+    email
+    password_hash
+    role
+    profile_photo
+    created_at
+}
+
+entity "EVENTS" as EVENTS {
+    id <<key>>
+    "title" as event_title
+    "description" as event_description
+    location
+    start_time
+    end_time
+    capacity
+    ticket_price
+    status
+    banner_url
+    coordinates {
+        latitude
+        longitude
+    }
+    created_at
+}
+
+entity "CATEGORIES" as CATEGORIES {
+    id <<key>>
+    name
+}
+
+' IMAGES is a supporting storage relation that persists uploaded
+' image binaries (profile photos, event banners) so they survive
+' container restarts and DB reseeds.  The physical schema stores
+' URL strings of the form "/api/images/:id" in USERS.profile_photo
+' and EVENTS.banner_url instead of FK columns, so the references
+' are by URL convention rather than relational integrity.  Chen
+' captures the conceptual relationships regardless — modelled here
+' as has-avatar and has-banner.
+entity "IMAGES" as IMAGES {
+    id <<key>>
+    filename
+    mime_type
+    data
+    created_at
+}
+
+' ──────────────────────────────────────────────────────────────
+' WEAK ENTITY
+' TICKETS cannot exist without both an owning USER and EVENT
+' (ON DELETE CASCADE on both FKs). The natural identifier is
+' the (user_id, event_id) pair — UNIQUE in SQL — but Chen models
+' this with the partial key confirmation_code, since it uniquely
+' identifies a ticket and is shown to the holder.
+' ──────────────────────────────────────────────────────────────
+
+entity "TICKETS" as TICKETS <<weak>> {
+    confirmation_code <<key>>
+    purchased_at
+    checked_in
+}
+
+' ──────────────────────────────────────────────────────────────
+' RELATIONSHIPS
+' ──────────────────────────────────────────────────────────────
+
+' A USER (organizer or admin) creates / runs many EVENTS.
+' Every EVENT must have exactly one organizer (NOT NULL FK).
+relationship "organizes" as ORGANIZES {
+}
+
+' A USER books many TICKETS. Identifying — a TICKET cannot
+' exist without its owning USER (CASCADE on user_id).
+relationship "books" as BOOKS <<identifying>> {
+}
+
+' An EVENT is referenced by many TICKETS. Identifying — a
+' TICKET cannot exist without its EVENT (CASCADE on event_id).
+relationship "is-for" as TICKET_FOR <<identifying>> {
+}
+
+' EVENTS are tagged with CATEGORIES. M:N — an event may have
+' several categories, and a category applies to many events.
+' This relationship has no attributes, so the SQL bridge table
+' event_categories is not modeled as a separate entity.
+relationship "categorized-as" as CATEGORIZED_AS {
+}
+
+' Conceptual relationships to IMAGES — referenced by URL string
+' (profile_photo, banner_url) rather than by FK. Modelled at the
+' Chen level because the connection is real even when the physical
+' schema does not enforce it.
+relationship "has-avatar" as HAS_AVATAR {
+}
+
+relationship "has-banner" as HAS_BANNER {
+}
+
+' ──────────────────────────────────────────────────────────────
+' CARDINALITY + PARTICIPATION
+'   '-' = partial participation, '=' = total participation
+'   The mark sits on the side of the entity it describes.
+' ──────────────────────────────────────────────────────────────
+
+' organizes : USERS (0..N) ───── (1..1) EVENTS
+'   USERS partial — a user (e.g. a student) may organize zero events
+'   EVENTS total   — every event must have an organizer
+ORGANIZES -1- USERS
+ORGANIZES =N= EVENTS
+
+' books : USERS (0..N) ═══ (1..1) TICKETS  [identifying]
+'   USERS partial — a user may hold zero tickets
+'   TICKETS total — every ticket has an owning user
+BOOKS -1- USERS
+BOOKS =N= TICKETS
+
+' is-for : EVENTS (0..N) ═══ (1..1) TICKETS  [identifying]
+'   EVENTS partial — an event may have zero ticket sales
+'   TICKETS total  — every ticket is for exactly one event
+TICKET_FOR -1- EVENTS
+TICKET_FOR =N= TICKETS
+
+' categorized-as : EVENTS (0..M) ──── (0..N) CATEGORIES
+'   Both sides partial — events may have no categories yet,
+'   and categories may currently apply to no event.
+CATEGORIZED_AS -M- EVENTS
+CATEGORIZED_AS -N- CATEGORIES
+
+' has-avatar : USERS (0..N) ──── (0..1) IMAGES
+'   USERS partial — profile_photo is nullable, many users have none.
+'   IMAGES partial — most rows back an event banner, not an avatar.
+HAS_AVATAR -N- USERS
+HAS_AVATAR -1- IMAGES
+
+' has-banner : EVENTS (0..N) ──── (0..1) IMAGES
+'   EVENTS partial — banner_url is nullable.
+'   IMAGES partial — many image rows are avatars rather than banners.
+HAS_BANNER -N- EVENTS
+HAS_BANNER -1- IMAGES
+
+@endchen
