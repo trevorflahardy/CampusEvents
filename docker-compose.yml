@@ -23,7 +23,7 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: postgres://campus:campus123@postgres:5432/campusevents
-      JWT_SECRET: campusevents-dev-secret-change-in-prod
+      JWT_SECRET: ${JWT_SECRET}
       PORT: "3000"
     volumes:
       - ./schema.sql:/app/schema.sql:ro
